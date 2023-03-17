@@ -31,10 +31,11 @@ def to_bool:
 # Replace config in input.
 . + {
   "config": {
-    "ethash": (if env.HIVE_CLIQUE_PERIOD then null else {} end),
-    "clique": (if env.HIVE_CLIQUE_PERIOD == null then null else {
+    "ethash": (if (env.HIVE_CLIQUE_PERIOD == null or .config.aura == null) then null else {} end),
+    "clique": (if (env.HIVE_CLIQUE_PERIOD == null or .config.aura != null) then null else {
       "period": env.HIVE_CLIQUE_PERIOD|to_int,
     } end),
+    "aura": (if .config.aura == null then null else .config.aura end),
     "chainId": (if env.HIVE_CHAIN_ID == null then 1 else env.HIVE_CHAIN_ID|to_int end),
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "daoForkBlock": env.HIVE_FORK_DAO_BLOCK|to_int,

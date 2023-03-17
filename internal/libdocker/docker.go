@@ -5,9 +5,10 @@ import (
 	"io"
 	"regexp"
 
-	"github.com/ethereum/hive/internal/libhive"
 	docker "github.com/fsouza/go-dockerclient"
 	"gopkg.in/inconshreveable/log15.v2"
+
+	"github.com/ethereum/hive/internal/libhive"
 )
 
 // Config is the configuration of the docker backend.
@@ -29,6 +30,9 @@ type Config struct {
 
 	// This tells the docker client whether to authenticate requests with credential helper
 	UseCredentialHelper bool
+
+	// This tells the docker client whether to build a debug container with delve for attaching debugger
+	OverrideDockerfile string
 }
 
 func Connect(dockerEndpoint string, cfg *Config) (*Builder, *ContainerBackend, error) {

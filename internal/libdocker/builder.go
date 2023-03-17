@@ -73,6 +73,9 @@ func (b *Builder) BuildSimulatorImage(ctx context.Context, name string) (string,
 	dir := b.config.Inventory.SimulatorDirectory(name)
 	buildContextPath := dir
 	buildDockerfile := "Dockerfile"
+	if len(b.config.OverrideDockerfile) > 0 {
+		buildDockerfile = b.config.OverrideDockerfile
+	}
 	// build context dir of simulator can be overridden with "hive_context.txt" file containing the desired build path
 	if contextPathBytes, err := os.ReadFile(filepath.Join(filepath.FromSlash(dir), "hive_context.txt")); err == nil {
 		buildContextPath = filepath.Join(dir, strings.TrimSpace(string(contextPathBytes)))
@@ -107,8 +110,10 @@ func (b *Builder) BuildImage(ctx context.Context, name string, fsys fs.FS) error
 }
 
 func (b *Builder) buildConfig(ctx context.Context, name string) docker.BuildImageOptions {
+	fmt.Println("buildConfig")
 	nocache := false
 	if b.config.NoCachePattern != nil {
+		fmt.Println(b.config.NoCachePattern)
 		nocache = b.config.NoCachePattern.MatchString(name)
 	}
 	opts := docker.BuildImageOptions{

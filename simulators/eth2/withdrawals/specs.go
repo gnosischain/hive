@@ -8,11 +8,13 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
+	beacon "github.com/protolambda/zrnt/eth2/beacon/common"
+
 	"github.com/ethereum/hive/simulators/eth2/common/clients"
 	cl "github.com/ethereum/hive/simulators/eth2/common/config/consensus"
 	el "github.com/ethereum/hive/simulators/eth2/common/config/execution"
 	"github.com/ethereum/hive/simulators/eth2/common/testnet"
-	beacon "github.com/protolambda/zrnt/eth2/beacon/common"
+	"github.com/ethereum/hive/simulators/eth2/withdrawals/gnosis"
 )
 
 type BaseWithdrawalsTestSpec struct {
@@ -164,6 +166,8 @@ func (ts BaseWithdrawalsTestSpec) GetTestnetConfig(
 		},
 	}
 
+	gnosis.GetWithdrawalsTestnetConfig(&config, nodeDefinitions)
+
 	return config.Join(&testnet.Config{
 		NodeDefinitions: nodeDefinitions,
 	})
@@ -277,6 +281,9 @@ func (ts BuilderWithdrawalsTestSpec) GetTestnetConfig(
 
 	// Builders are always enabled for these tests
 	tc.EnableBuilders = true
+
+	// call gnosis package to setup gnosis specific test config
+	tc = gnosis.GetBuilderWithdrawalsTestnetConfig(tc, allNodeDefinitions)
 
 	return tc
 }

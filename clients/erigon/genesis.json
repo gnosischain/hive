@@ -7,9 +7,177 @@
     "nonce"      : "0x78cc16f7b4f65485",
     "parentHash" : "0x0000000000000000000000000000000000000000000000000000000000000000",
     "timestamp"  : "0x54c98c81",
+    "config": {
+        "aura": {
+            "DBPath": "",
+            "InMemory": false,
+            "Etherbase": "0x0000000000000000000000000000000000000000"
+        }
+    },
     "alloc"      : {
         "a94f5374fce5edbc8e2a8697c15331677e6ebf0b": {
             "balance" : "0x09184e72a000"
+        },
+        "0x0000000000000000000000000000000000000005": {
+            "builtin": {
+                "name": "modexp",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "modexp": {
+                                "divisor": 20
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000006": {
+            "builtin": {
+                "name": "alt_bn128_add",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "alt_bn128_const_operations": {
+                                "price": 500
+                            }
+                        }
+                    },
+                    "7298030": {
+                        "info": "Istanbul HF",
+                        "price": {
+                            "alt_bn128_const_operations": {
+                                "price": 150
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000007": {
+            "builtin": {
+                "name": "alt_bn128_mul",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "alt_bn128_const_operations": {
+                                "price": 40000
+                            }
+                        }
+                    },
+                    "7298030": {
+                        "info": "Istanbul HF",
+                        "price": {
+                            "alt_bn128_const_operations": {
+                                "price": 6000
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000008": {
+            "builtin": {
+                "name": "alt_bn128_pairing",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "alt_bn128_pairing": {
+                                "base": 100000,
+                                "pair": 80000
+                            }
+                        }
+                    },
+                    "7298030": {
+                        "info": "Istanbul HF",
+                        "price": {
+                            "alt_bn128_pairing": {
+                                "base": 45000,
+                                "pair": 34000
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000009": {
+            "builtin": {
+                "name": "blake2_f",
+                "pricing": {
+                    "7298030": {
+                        "info": "Istanbul HF",
+                        "price": {
+                            "blake2_f": {
+                                "gas_per_round": 1
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000001": {
+            "balance": "1",
+            "builtin": {
+                "name": "ecrecover",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "linear": {
+                                "base": 3000,
+                                "word": 0
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000002": {
+            "balance": "1",
+            "builtin": {
+                "name": "sha256",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "linear": {
+                                "base": 60,
+                                "word": 12
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000003": {
+            "balance": "1",
+            "builtin": {
+                "name": "ripemd160",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "linear": {
+                                "base": 600,
+                                "word": 120
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "0x0000000000000000000000000000000000000004": {
+            "balance": "1",
+            "builtin": {
+                "name": "identity",
+                "pricing": {
+                    "0": {
+                        "price": {
+                            "linear": {
+                                "base": 15,
+                                "word": 3
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 }
