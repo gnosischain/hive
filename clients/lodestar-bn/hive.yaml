@@ -1,4 +1,5 @@
 roles:
   - beacon
+# [max] - this doesn't do anything, isn't in the struct that we parse
 build_targets:
   - gnosis

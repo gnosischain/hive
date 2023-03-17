@@ -64,6 +64,12 @@ An Eth2 genesis state, encoded with SSZ. Not present when genesis is being teste
 
 #### Env vars
 
+// MAX SECTION
+Below vars need setting (probably via HIVE_ETH2_CONFIG_BASE_REWARD_FACTOR etc.)
+BASE_REWARD_FACTOR: 25,
+SLOTS_PER_EPOCH: 16,
+EPOCHS_PER_SYNC_COMMITTEE_PERIOD: 512,
+
 Every standard eth2-config var prefixed with `HIVE_ETH2_CONFIG_`, and additionally:
 
 ```yaml

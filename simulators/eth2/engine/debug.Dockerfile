@@ -22,6 +22,6 @@ RUN go install github.com/go-delve/delve/cmd/dlv@latest
 ADD . /
 COPY --from=geth    /ethash /ethash
 
-EXPOSE 2345
+EXPOSE 40000
 
-ENTRYPOINT ["/go/bin/dlv", "--listen=:2345", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "./sim", "--", "serve"]
+ENTRYPOINT ["/go/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "./sim", "--", "serve"]

@@ -22,6 +22,6 @@ ADD . /source
 WORKDIR /source
 COPY --from=geth    /ethash /ethash
 
-EXPOSE 2345
+EXPOSE 40000
 
-ENTRYPOINT ["/go/bin/dlv", "--listen=:2345", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "./engine", "--", "serve"]
+ENTRYPOINT ["/go/bin/dlv", "--listen=:40000", "--headless=true", "--api-version=2", "--accept-multiclient", "exec", "./engine", "--", "serve"]

@@ -14,10 +14,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/hive/hiveproxy"
-	"github.com/ethereum/hive/internal/libhive"
 	docker "github.com/fsouza/go-dockerclient"
 	"gopkg.in/inconshreveable/log15.v2"
+
+	"github.com/ethereum/hive/hiveproxy"
+	"github.com/ethereum/hive/internal/libhive"
 )
 
 type ContainerBackend struct {
@@ -97,6 +98,29 @@ func (b *ContainerBackend) CreateContainer(ctx context.Context, imageName string
 		// Pre-announce that stdout will be attached. Not sure if this does anything,
 		// but it's probably best to give Docker the info as early as possible.
 		createOpts.Config.AttachStdout = true
+	}
+
+	fmt.Println("[max] CREATING CONTAINER")
+
+	// TODO: [max] - tidy up - this sets up the port bindings for debug on the simulator onlyi
+	// TODO: check on parallelism (should convert to int)
+	if len(opt.Env["HIVE_SIMULATOR"]) > 0 && opt.Env["HIVE_PARALLELISM"] == "1" {
+		hostPort := "40000"
+		containerPort := "40000"
+
+		if createOpts.HostConfig == nil {
+			createOpts.HostConfig = &docker.HostConfig{}
+		}
+
+		// Set the port bindings
+		createOpts.HostConfig.PortBindings = map[docker.Port][]docker.PortBinding{
+			docker.Port(containerPort + "/tcp"): {
+				{
+					HostIP:   "0.0.0.0",
+					HostPort: hostPort,
+				},
+			},
+		}
 	}
 
 	c, err := b.client.CreateContainer(createOpts)
