@@ -585,6 +585,69 @@ var Tests = []test.SpecInterface{
 	//},
 
 	//// Execution layer withdrawals spec
+	// &WithdrawalsExecutionLayerSpec{
+	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
+	// 		Spec: test.Spec{
+	// 			Name: "1",
+	// 			About: `
+	// 			WithdrawalsForkHeight: 1,
+	// 			WithdrawalsBlockCount: 1,
+	// 			WithdrawalsPerBlock:   16,
+	// 			TimeIncrements:        5,
+	// 		},
+	// 		ClaimBlocksCount: 1,
+	// 	},
+	// 			`,
+	// 		},
+	// 		WithdrawalsForkHeight: 1, // Genesis and Block 1 are Pre-Withdrawals
+	// 		WithdrawalsBlockCount: 1,
+	// 		WithdrawalsPerBlock:   16,
+	// 		TimeIncrements:        5,
+	// 	},
+	// 	ClaimBlocksCount: 1,
+	// },
+	// &WithdrawalsExecutionLayerSpec{
+	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
+	// 		Spec: test.Spec{
+	// 			Name: "2",
+	// 			About: `
+	// 			`,
+	// 		},
+	// 		WithdrawalsForkHeight: 1, // Genesis and Block 1 are Pre-Withdrawals
+	// 		WithdrawalsBlockCount: 2,
+	// 		WithdrawalsPerBlock:   16,
+	// 		TimeIncrements:        5,
+	// 	},
+	// 	ClaimBlocksCount: 2,
+	// },
+	// &WithdrawalsExecutionLayerSpec{
+	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
+	// 		Spec: test.Spec{
+	// 			Name: "3",
+	// 			About: `
+	// 			`,
+	// 		},
+	// 		WithdrawalsForkHeight: 2, // Genesis and Block 1 are Pre-Withdrawals
+	// 		WithdrawalsBlockCount: 2,
+	// 		WithdrawalsPerBlock:   16,
+	// 		TimeIncrements:        5,
+	// 	},
+	// 	ClaimBlocksCount: 2,
+	// },
+	// &WithdrawalsExecutionLayerSpec{
+	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
+	// 		Spec: test.Spec{
+	// 			Name: "4",
+	// 			About: `
+	// 			`,
+	// 		},
+	// 		WithdrawalsForkHeight: 2, // Genesis and Block 1 are Pre-Withdrawals
+	// 		WithdrawalsBlockCount: 2,
+	// 		WithdrawalsPerBlock:   16,
+	// 		TimeIncrements:        5,
+	// 	},
+	// 	ClaimBlocksCount: 5,
+	// },
 	&WithdrawalsExecutionLayerSpec{
 		WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
 			Spec: test.Spec{
