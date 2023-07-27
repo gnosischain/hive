@@ -1319,7 +1319,7 @@ func (ws *WithdrawalsSyncSpec) Execute(t *test.Env) {
 			select {
 			case <-t.TimeoutContext.Done():
 				t.Fatalf("FAIL (%s): Timeout while waiting for secondary client to sync", t.TestName)
-			case <-time.After(time.Second):
+			case <-time.After(time.Second * 5):
 				secondaryEngineTest.TestEngineNewPayloadV2(
 					&t.CLMock.LatestExecutedPayload,
 				)
