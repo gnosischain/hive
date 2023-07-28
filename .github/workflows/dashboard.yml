@@ -3,7 +3,7 @@ name: Daily Command
 on:
   push:
     branches:
-      - debug
+      - fix/sync-spec-gh-action
 
 jobs:
   run-command:
