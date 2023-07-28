@@ -343,7 +343,7 @@ var Tests = []test.SpecInterface{
 			- Wait for sync, which include syncing a pre-Withdrawals block, and verify withdrawn account's balance
 			`,
 			},
-			WithdrawalsForkHeight:    2,
+			WithdrawalsForkHeight:    3,
 			WithdrawalsBlockCount:    2,
 			WithdrawalsPerBlock:      16,
 			WithdrawableAccountCount: 16,
@@ -1319,7 +1319,7 @@ func (ws *WithdrawalsSyncSpec) Execute(t *test.Env) {
 			select {
 			case <-t.TimeoutContext.Done():
 				t.Fatalf("FAIL (%s): Timeout while waiting for secondary client to sync", t.TestName)
-			case <-time.After(time.Second * 5):
+			case <-time.After(time.Second * 1):
 				secondaryEngineTest.TestEngineNewPayloadV2(
 					&t.CLMock.LatestExecutedPayload,
 				)
