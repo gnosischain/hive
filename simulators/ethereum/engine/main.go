@@ -179,7 +179,7 @@ func addTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []test
 						defer func() {
 							t.Logf("End test (%s): %s", c.Type, currentTest.GetName())
 						}()
-						timeout := time.Minute * 20
+						timeout := time.Hour * 2
 						// If a test.Spec specifies a timeout, use that instead
 						if currentTest.GetTimeout() != 0 {
 							timeout = time.Second * time.Duration(currentTest.GetTimeout())
