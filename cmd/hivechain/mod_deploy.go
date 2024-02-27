@@ -5,6 +5,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 func init() {
@@ -13,6 +14,9 @@ func init() {
 	})
 	register("deploy-callenv", func() blockModifier {
 		return &modDeploy{code: callenvCode}
+	})
+	register("deploy-callrevert", func() blockModifier {
+		return &modDeploy{code: callrevertCode}
 	})
 }
 
@@ -34,7 +38,9 @@ func (m *modDeploy) apply(ctx *genBlockContext) bool {
 	var code []byte
 	code = append(code, deployerCode...)
 	code = append(code, m.code...)
-	gas := ctx.TxCreateIntrinsicGas(code) + 10000
+	gas := ctx.TxCreateIntrinsicGas(code)
+	gas += uint64(len(m.code)) * params.CreateDataGas
+	gas += 15000 // extra gas for constructor execution
 	if !ctx.HasGas(gas) {
 		return false
 	}

@@ -8,7 +8,9 @@ require (
 	github.com/ethereum/hive/hiveproxy v0.0.0-20230919105823-37cbbe1ef86d
 	github.com/evanw/esbuild v0.17.6
 	github.com/fsouza/go-dockerclient v1.9.8
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/gorilla/mux v1.8.0
+	github.com/holiman/uint256 v1.2.3
 	github.com/lithammer/dedent v1.1.0
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9
 	golang.org/x/net v0.17.0
@@ -51,7 +53,6 @@ require (
 	github.com/gorilla/websocket v1.5.0 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/holiman/bloomfilter/v2 v2.0.3 // indirect
-	github.com/holiman/uint256 v1.2.3 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/kr/pretty v0.3.1 // indirect
 	github.com/kr/text v0.2.0 // indirect
