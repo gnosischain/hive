@@ -109,8 +109,9 @@
     "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
-    "shanghaiTime": 1684934220,
-    "cancunTime": 1696272200,
+    "shanghaiTime": 26865019200,
+    "cancunTime": 26865019200,
+    "barnetTime": 26865019200,
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
@@ -123,9 +124,7 @@
       "validators": {
         "multi": {
           "0": {
-            "list": [
-              "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"
-            ]
+            "list": ["0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"]
           }
         }
       },

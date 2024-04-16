@@ -10,9 +10,7 @@
         "validators": {
           "multi": {
             "0": {
-              "list": [
-                "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"
-              ]
+              "list": ["0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"]
             }
           }
         },
@@ -69,6 +67,7 @@
     "eip1153TransitionTimestamp": "0x64147a940",
     "eip5656TransitionTimestamp": "0x64147a940",
     "eip6780TransitionTimestamp": "0x64147a940",
+    "gipxyzTransitionTimestamp": "0x64147a940",
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
     "eip4844BlobGasPriceUpdateFraction": "0x10fafa",
     "eip4844MaxBlobGasPerBlock": "0x40000",

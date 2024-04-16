@@ -12,6 +12,7 @@ import (
 	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
@@ -19,6 +20,7 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/devp2p"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
+	"github.com/ethereum/hive/simulators/ethereum/engine/libgno"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
 	"github.com/pkg/errors"
@@ -394,6 +396,30 @@ func (step NewPayloads) VerifyBlobBundle(blobDataInPayload []*BlobWrapData, payl
 	return nil
 }
 
+func (step NewPayloads) GetFeeCollectorBalance(
+	client *rpc.Client,
+	at string,
+	result *big.Int,
+) error {
+	// Get fee collector balance at a specific block
+	var raw string
+	err := client.Call(
+		&raw,
+		"eth_getBalance",
+		libgno.FeeCollectorAddress.Hex(),
+		at,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, ok := result.SetString(raw, 0)
+	if !ok {
+		return fmt.Errorf("failed to parse fee collector balance: %s", raw)
+	}
+	return nil
+}
+
 func (step NewPayloads) Execute(t *CancunTestContext) error {
 	// Create a new payload
 	// Produce the payload
@@ -405,10 +431,21 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 		t.CLMock.PayloadProductionClientDelay = time.Duration(step.GetPayloadDelay) * time.Second
 	}
 	var (
-		previousPayload = t.CLMock.LatestPayloadBuilt
+		previousPayload                  = t.CLMock.LatestPayloadBuilt
+		prevFeeCollectorBalance *big.Int = nil
+		rpc                              = t.Client.RPC()
 	)
+	if rpc == nil {
+		return errors.New("rpc client is nil")
+	}
 	for p := uint64(0); p < payloadCount; p++ {
 		t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{
+			OnPayloadProducerSelected: func() {
+				// Get fee collector balance before producing the new payload
+				if err := step.GetFeeCollectorBalance(rpc, "latest", prevFeeCollectorBalance); err != nil {
+					t.Fatalf("FAIL: Error getting fee collector balance: %v", err)
+				}
+			},
 			OnPayloadAttributesGenerated: func() {
 				if step.FcUOnPayloadRequest != nil {
 					var (
@@ -585,6 +622,35 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 					t.Fatalf("FAIL: Error verifying payload (payload %d/%d): %v", p+1, payloadCount, err)
 				}
 				previousPayload = t.CLMock.LatestPayloadBuilt
+			},
+			OnFinalizedBlockChange: func() {
+				// Get fee collector balance for the new block
+				var feeCollectorBalance *big.Int
+				if err := step.GetFeeCollectorBalance(rpc, "latest", feeCollectorBalance); err != nil {
+					t.Fatalf("FAIL: Error getting fee collector balance: %v", err)
+				}
+
+				// Calculate txs fees for the new block
+				feesCollected := common.Big0
+				payload := &t.CLMock.LatestPayloadBuilt
+				for _, rawTx := range payload.Transactions {
+					// Get transaction
+					txHash := common.BytesToHash(rawTx)
+					tx, ok := t.Transactions[txHash]
+					if !ok {
+						t.Fatalf("FAIL: Transaction %s not found in the transaction pool", txHash.String())
+					}
+					// Calculate fees
+					feeCollected := new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas()))
+					if tx.Type() == types.BlobTxType && t.CLMock.IsBarnet(payload.Timestamp) {
+						// Add blob gas fees if devnet is after barnet fork
+						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.BlobGasFeeCap(), new(big.Int).SetUint64(tx.BlobGas())))
+					}
+					feesCollected.Add(feesCollected, feeCollected)
+				}
+				if feesCollected.Cmp(feeCollectorBalance) != 0 {
+					t.Fatalf("FAIL: Incorrect fee collector balance: expected %s, got %s", feesCollected.String(), feeCollectorBalance.String())
+				}
 			},
 		})
 		t.Logf("INFO: Correctly produced payload %d/%d", p+1, payloadCount)

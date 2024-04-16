@@ -2,12 +2,13 @@
 package suite_cancun
 
 import (
+	"math/big"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config/cancun"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
-	"math/big"
 )
 
 // Precalculate the first data gas cost increase
@@ -364,6 +365,34 @@ var Tests = []test.Spec{
 				ExpectedIncludedBlobCount: 1,
 				// Wait a bit more on before requesting the built payload from the client
 				GetPayloadDelay: 2,
+			},
+		},
+	},
+
+	&CancunBaseSpec{
+		BaseSpec: test.BaseSpec{
+			Name: "Blob transactions on Barnet, Cancun genesis ",
+			About: `
+			Tests the Barnet fork since Cancun genesis.
+
+			Verifications performed:
+			- Correct implementation of Barnet fork fix to Blob fee gas collection
+			`,
+			MainFork:   config.Barnet,
+			ForkHeight: 1,
+		},
+
+		TestSequence: TestSequence{
+			NewPayloads{},
+
+			SendBlobTransactions{
+				TransactionCount:              cancun.TARGET_BLOBS_PER_BLOCK,
+				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+			},
+
+			NewPayloads{
+				ExpectedIncludedBlobCount: cancun.TARGET_BLOBS_PER_BLOCK,
+				ExpectedBlobs:             helper.GetBlobList(0, cancun.TARGET_BLOBS_PER_BLOCK),
 			},
 		},
 	},
