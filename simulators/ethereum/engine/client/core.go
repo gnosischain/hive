@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -41,7 +42,7 @@ type Genesis interface {
 	Nonce() uint64
 	SetNonce(nonce uint64)
 	Timestamp() uint64
-	SetTimestamp(timestamp int64, cancun bool)
+	SetTimestamp(timestamp int64, fork config.Fork)
 	ExtraData() []byte
 	SetExtraData(data []byte)
 	GasLimit() uint64
@@ -175,6 +176,7 @@ type NethermindParams struct {
 	Eip1153TransitionTimestamp              string `json:"eip1153TransitionTimestamp,omitempty"`
 	Eip5656TransitionTimestamp              string `json:"eip5656TransitionTimestamp,omitempty"`
 	Eip6780TransitionTimestamp              string `json:"eip6780TransitionTimestamp,omitempty"`
+	GipXYZTransitionTimestamp               string `json:"gipxyzTransitionTimestamp,omitempty"`
 	Eip4844BlobGasPriceUpdateFraction       string `json:"eip4844BlobGasPriceUpdateFraction"`
 	Eip4844MaxBlobGasPerBlock               string `json:"eip4844MaxBlobGasPerBlock"`
 	Eip4844MinBlobGasPrice                  string `json:"eip4844MinBlobGasPrice"`
@@ -307,19 +309,41 @@ func (n *NethermindChainSpec) Timestamp() uint64 {
 	panic("implement me")
 }
 
-func (n *NethermindChainSpec) SetTimestamp(timestamp int64, cancun bool) {
+func (n *NethermindChainSpec) SetTimestamp(timestamp int64, fork config.Fork) {
 	//n.Params.TerminalTotalDifficulty = fmt.Sprintf("%v", timestamp)
-	n.Params.Eip3651TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
-	n.Params.Eip4895TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
-	n.Params.Eip3855TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
-	n.Params.Eip3651TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
-	n.Params.Eip3860TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
-	if cancun {
+	shangaiTimestamp := int64(0)
+	cancunTimestamp := int64(0)
+	barnetTimestamp := int64(0)
+	if fork == config.Shanghai {
+		shangaiTimestamp = timestamp
+	} else if fork == config.Cancun {
+		shangaiTimestamp = timestamp
+		cancunTimestamp = timestamp
+	} else if fork == config.Barnet {
+		shangaiTimestamp = timestamp
+		cancunTimestamp = timestamp
+		barnetTimestamp = timestamp
+	}
+
+	// Set Shangai timestamps
+	if shangaiTimestamp != 0 {
+		n.Params.Eip3651TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
+		n.Params.Eip4895TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
+		n.Params.Eip3855TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
+		n.Params.Eip3651TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
+		n.Params.Eip3860TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
+	}
+	// Set Cancun timestamps
+	if cancunTimestamp != 0 {
 		n.Params.Eip4844TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
 		n.Params.Eip4788TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
 		n.Params.Eip1153TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
 		n.Params.Eip5656TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
 		n.Params.Eip6780TransitionTimestamp = fmt.Sprintf("%#x", timestamp)
+	}
+	// Set Barnet timestamps
+	if barnetTimestamp != 0 {
+		n.Params.GipXYZTransitionTimestamp = fmt.Sprintf("%#x", timestamp)
 	}
 }
 
@@ -470,8 +494,9 @@ type ErigonConfig struct {
 	Eip1559FeeCollector           string     `json:"eip1559FeeCollector"`
 	TerminalTotalDifficulty       *big.Int   `json:"terminalTotalDifficulty"`
 	TerminalTotalDifficultyPassed bool       `json:"terminalTotalDifficultyPassed"`
-	ShanghaiTimestamp             *big.Int   `json:"shanghaiTime"`
+	ShanghaiTime                  *big.Int   `json:"shanghaiTime"`
 	CancunTime                    *big.Int   `json:"cancunTime"`
+	BarnetTime                    *big.Int   `json:"barnetTime"`
 	MinBlobGasPrice               int        `json:"minBlobGasPrice"`
 	MaxBlobGasPerBlock            int        `json:"maxBlobGasPerBlock"`
 	TargetBlobGasPerBlock         int        `json:"targetBlobGasPerBlock"`
@@ -512,8 +537,8 @@ func (v *ErigonGenesis) SetExcessBlobGas(u *uint64) {
 func (v *ErigonGenesis) Config() *params.ChainConfig {
 	chainID := big.NewInt(int64(v.ErigonConfig.ChainID))
 	ttd := big.NewInt(0).SetBytes(common.Hex2Bytes(v.ErigonDifficulty))
-	shangai := v.ErigonConfig.ShanghaiTimestamp.Uint64() //big.NewInt(v.ErigonConfig.ShanghaiTimestamp
-	cancun := v.ErigonConfig.CancunTime.Uint64()         //big.NewInt(v.ErigonConfig.ShanghaiTimestamp
+	shangai := v.ErigonConfig.ShanghaiTime.Uint64() //big.NewInt(v.ErigonConfig.ShanghaiTime
+	cancun := v.ErigonConfig.CancunTime.Uint64()    //big.NewInt(v.ErigonConfig.ShanghaiTime
 	return &params.ChainConfig{
 		ChainID:                 chainID,
 		TerminalTotalDifficulty: ttd,
@@ -542,12 +567,16 @@ func (v *ErigonGenesis) Timestamp() uint64 {
 	panic("implement me")
 }
 
-func (v *ErigonGenesis) SetTimestamp(timestamp int64, cancun bool) {
-	v.ErigonConfig.ShanghaiTimestamp = big.NewInt(timestamp)
-	if cancun {
+func (v *ErigonGenesis) SetTimestamp(timestamp int64, fork config.Fork) {
+	if fork == config.Shanghai {
+		v.ErigonConfig.ShanghaiTime = big.NewInt(timestamp)
+	} else if fork == config.Cancun {
+		v.ErigonConfig.ShanghaiTime = big.NewInt(timestamp)
 		v.ErigonConfig.CancunTime = big.NewInt(timestamp)
-	} else {
-		v.ErigonConfig.CancunTime = big.NewInt(timestamp+12000000)
+	} else if fork == config.Barnet {
+		v.ErigonConfig.ShanghaiTime = big.NewInt(timestamp)
+		v.ErigonConfig.CancunTime = big.NewInt(timestamp)
+		v.ErigonConfig.BarnetTime = big.NewInt(timestamp)
 	}
 }
 
@@ -637,7 +666,7 @@ func (v *ErigonGenesis) ToBlock() *types.Block {
 	alloc := make(core.GenesisAlloc)
 	for address, account := range v.ErigonAlloc {
 		balance := big.NewInt(0)
-		code := make([]byte, 0)
+		var code []byte
 		val := account.Balance
 		if val != "" {
 			bytesBalance := common.Hex2Bytes(val)

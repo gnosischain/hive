@@ -18,7 +18,7 @@ var (
 	_ easyjson.Marshaler
 )
 
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(in *jlexer.Lexer, out *NethermindParams) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient(in *jlexer.Lexer, out *NethermindParams) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -103,6 +103,8 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(i
 			out.Eip5656TransitionTimestamp = string(in.String())
 		case "eip6780TransitionTimestamp":
 			out.Eip6780TransitionTimestamp = string(in.String())
+		case "gipxyzTransitionTimestamp":
+			out.GipXYZTransitionTimestamp = string(in.String())
 		case "eip4844BlobGasPriceUpdateFraction":
 			out.Eip4844BlobGasPriceUpdateFraction = string(in.String())
 		case "eip4844MaxBlobGasPerBlock":
@@ -137,7 +139,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(i
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(out *jwriter.Writer, in NethermindParams) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient(out *jwriter.Writer, in NethermindParams) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -467,6 +469,16 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(o
 		}
 		out.String(string(in.Eip6780TransitionTimestamp))
 	}
+	if in.GipXYZTransitionTimestamp != "" {
+		const prefix string = ",\"gipxyzTransitionTimestamp\":"
+		if first {
+			first = false
+			out.RawString(prefix[1:])
+		} else {
+			out.RawString(prefix)
+		}
+		out.String(string(in.GipXYZTransitionTimestamp))
+	}
 	{
 		const prefix string = ",\"eip4844BlobGasPriceUpdateFraction\":"
 		if first {
@@ -538,27 +550,27 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(o
 // MarshalJSON supports json.Marshaler interface
 func (v NethermindParams) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v NethermindParams) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *NethermindParams) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *NethermindParams) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient(l, v)
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(in *jlexer.Lexer, out *NethermindGenesis) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient1(in *jlexer.Lexer, out *NethermindGenesis) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -595,7 +607,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(out *jwriter.Writer, in NethermindGenesis) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient1(out *jwriter.Writer, in NethermindGenesis) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -641,25 +653,25 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(
 // MarshalJSON supports json.Marshaler interface
 func (v NethermindGenesis) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient1(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v NethermindGenesis) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient1(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *NethermindGenesis) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient1(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *NethermindGenesis) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper1(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient1(l, v)
 }
 func easyjson3d34c335Decode(in *jlexer.Lexer, out *struct {
 	AuthorityRound struct {
@@ -775,7 +787,7 @@ func easyjson3d34c335Encode1(out *jwriter.Writer, in struct {
 	}
 	out.RawByte('}')
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(in *jlexer.Lexer, out *NethermindEngine) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient2(in *jlexer.Lexer, out *NethermindEngine) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -806,7 +818,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(out *jwriter.Writer, in NethermindEngine) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient2(out *jwriter.Writer, in NethermindEngine) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -822,25 +834,25 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(
 // MarshalJSON supports json.Marshaler interface
 func (v NethermindEngine) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient2(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v NethermindEngine) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient2(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *NethermindEngine) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient2(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *NethermindEngine) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper2(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient2(l, v)
 }
 func easyjson3d34c335Decode2(in *jlexer.Lexer, out *struct {
 	Params AuthorityParams `json:"params,omitempty"`
@@ -889,7 +901,7 @@ func easyjson3d34c335Encode2(out *jwriter.Writer, in struct {
 	}
 	out.RawByte('}')
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(in *jlexer.Lexer, out *NethermindChainSpec) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient3(in *jlexer.Lexer, out *NethermindChainSpec) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -970,7 +982,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(out *jwriter.Writer, in NethermindChainSpec) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient3(out *jwriter.Writer, in NethermindChainSpec) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1062,27 +1074,27 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(
 // MarshalJSON supports json.Marshaler interface
 func (v NethermindChainSpec) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient3(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v NethermindChainSpec) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient3(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *NethermindChainSpec) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient3(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *NethermindChainSpec) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper3(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient3(l, v)
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(in *jlexer.Lexer, out *ErigonGenesis) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient4(in *jlexer.Lexer, out *ErigonGenesis) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1135,7 +1147,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(out *jwriter.Writer, in ErigonGenesis) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient4(out *jwriter.Writer, in ErigonGenesis) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1186,27 +1198,27 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(
 // MarshalJSON supports json.Marshaler interface
 func (v ErigonGenesis) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient4(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ErigonGenesis) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient4(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ErigonGenesis) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient4(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ErigonGenesis) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper4(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient4(l, v)
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(in *jlexer.Lexer, out *ErigonConfig) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient5(in *jlexer.Lexer, out *ErigonConfig) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1270,13 +1282,13 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(
 		case "shanghaiTime":
 			if in.IsNull() {
 				in.Skip()
-				out.ShanghaiTimestamp = nil
+				out.ShanghaiTime = nil
 			} else {
-				if out.ShanghaiTimestamp == nil {
-					out.ShanghaiTimestamp = new(big.Int)
+				if out.ShanghaiTime == nil {
+					out.ShanghaiTime = new(big.Int)
 				}
 				if data := in.Raw(); in.Ok() {
-					in.AddError((*out.ShanghaiTimestamp).UnmarshalJSON(data))
+					in.AddError((*out.ShanghaiTime).UnmarshalJSON(data))
 				}
 			}
 		case "cancunTime":
@@ -1289,6 +1301,18 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(
 				}
 				if data := in.Raw(); in.Ok() {
 					in.AddError((*out.CancunTime).UnmarshalJSON(data))
+				}
+			}
+		case "barnetTime":
+			if in.IsNull() {
+				in.Skip()
+				out.BarnetTime = nil
+			} else {
+				if out.BarnetTime == nil {
+					out.BarnetTime = new(big.Int)
+				}
+				if data := in.Raw(); in.Ok() {
+					in.AddError((*out.BarnetTime).UnmarshalJSON(data))
 				}
 			}
 		case "minBlobGasPrice":
@@ -1311,7 +1335,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(out *jwriter.Writer, in ErigonConfig) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient5(out *jwriter.Writer, in ErigonConfig) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1402,10 +1426,10 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(
 	{
 		const prefix string = ",\"shanghaiTime\":"
 		out.RawString(prefix)
-		if in.ShanghaiTimestamp == nil {
+		if in.ShanghaiTime == nil {
 			out.RawString("null")
 		} else {
-			out.Raw((*in.ShanghaiTimestamp).MarshalJSON())
+			out.Raw((*in.ShanghaiTime).MarshalJSON())
 		}
 	}
 	{
@@ -1415,6 +1439,15 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(
 			out.RawString("null")
 		} else {
 			out.Raw((*in.CancunTime).MarshalJSON())
+		}
+	}
+	{
+		const prefix string = ",\"barnetTime\":"
+		out.RawString(prefix)
+		if in.BarnetTime == nil {
+			out.RawString("null")
+		} else {
+			out.Raw((*in.BarnetTime).MarshalJSON())
 		}
 	}
 	{
@@ -1448,27 +1481,27 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(
 // MarshalJSON supports json.Marshaler interface
 func (v ErigonConfig) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient5(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ErigonConfig) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient5(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ErigonConfig) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient5(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ErigonConfig) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper5(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient5(l, v)
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(in *jlexer.Lexer, out *ErigonAura) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient6(in *jlexer.Lexer, out *ErigonAura) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1549,7 +1582,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(out *jwriter.Writer, in ErigonAura) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient6(out *jwriter.Writer, in ErigonAura) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1651,25 +1684,25 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(
 // MarshalJSON supports json.Marshaler interface
 func (v ErigonAura) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient6(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ErigonAura) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient6(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ErigonAura) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient6(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ErigonAura) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper6(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient6(l, v)
 }
 func easyjson3d34c335Decode3(in *jlexer.Lexer, out *struct {
 	Multi map[string]map[string][]string `json:"multi,omitempty"`
@@ -1816,7 +1849,7 @@ func easyjson3d34c335Encode3(out *jwriter.Writer, in struct {
 	}
 	out.RawByte('}')
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(in *jlexer.Lexer, out *ErigonAccount) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient7(in *jlexer.Lexer, out *ErigonAccount) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1851,7 +1884,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(out *jwriter.Writer, in ErigonAccount) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient7(out *jwriter.Writer, in ErigonAccount) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1876,27 +1909,27 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(
 // MarshalJSON supports json.Marshaler interface
 func (v ErigonAccount) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient7(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v ErigonAccount) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient7(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *ErigonAccount) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient7(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *ErigonAccount) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper7(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient7(l, v)
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(in *jlexer.Lexer, out *Builtin) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient8(in *jlexer.Lexer, out *Builtin) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -1953,7 +1986,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(out *jwriter.Writer, in Builtin) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient8(out *jwriter.Writer, in Builtin) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -1999,27 +2032,27 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(
 // MarshalJSON supports json.Marshaler interface
 func (v Builtin) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient8(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v Builtin) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient8(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *Builtin) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient8(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *Builtin) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper8(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient8(l, v)
 }
-func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(in *jlexer.Lexer, out *AuthorityParams) {
+func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient9(in *jlexer.Lexer, out *AuthorityParams) {
 	isTopLevel := in.IsStart()
 	if in.IsNull() {
 		if isTopLevel {
@@ -2108,7 +2141,7 @@ func easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(
 		in.Consumed()
 	}
 }
-func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(out *jwriter.Writer, in AuthorityParams) {
+func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient9(out *jwriter.Writer, in AuthorityParams) {
 	out.RawByte('{')
 	first := true
 	_ = first
@@ -2262,23 +2295,23 @@ func easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(
 // MarshalJSON supports json.Marshaler interface
 func (v AuthorityParams) MarshalJSON() ([]byte, error) {
 	w := jwriter.Writer{}
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(&w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient9(&w, v)
 	return w.Buffer.BuildBytes(), w.Error
 }
 
 // MarshalEasyJSON supports easyjson.Marshaler interface
 func (v AuthorityParams) MarshalEasyJSON(w *jwriter.Writer) {
-	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(w, v)
+	easyjson3d34c335EncodeGithubComEthereumHiveSimulatorsEthereumEngineClient9(w, v)
 }
 
 // UnmarshalJSON supports json.Unmarshaler interface
 func (v *AuthorityParams) UnmarshalJSON(data []byte) error {
 	r := jlexer.Lexer{Data: data}
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(&r, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient9(&r, v)
 	return r.Error()
 }
 
 // UnmarshalEasyJSON supports easyjson.Unmarshaler interface
 func (v *AuthorityParams) UnmarshalEasyJSON(l *jlexer.Lexer) {
-	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineHelper9(l, v)
+	easyjson3d34c335DecodeGithubComEthereumHiveSimulatorsEthereumEngineClient9(l, v)
 }

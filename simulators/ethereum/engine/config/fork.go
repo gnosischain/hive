@@ -14,6 +14,7 @@ const (
 	Paris    Fork = "Paris"
 	Shanghai Fork = "Shanghai"
 	Cancun   Fork = "Cancun"
+	Barnet   Fork = "Barnet"
 )
 
 func (f Fork) PreviousFork() Fork {
@@ -24,6 +25,8 @@ func (f Fork) PreviousFork() Fork {
 		return Paris
 	case Cancun:
 		return Shanghai
+	case Barnet:
+		return Cancun
 	default:
 		return NA
 	}
@@ -34,6 +37,7 @@ type ForkConfig struct {
 	ParisNumber       *big.Int
 	ShanghaiTimestamp *big.Int
 	CancunTimestamp   *big.Int
+	BarnetTimestamp   *big.Int
 }
 
 func (f *ForkConfig) IsShanghai(blockTimestamp uint64) bool {
@@ -42,6 +46,10 @@ func (f *ForkConfig) IsShanghai(blockTimestamp uint64) bool {
 
 func (f *ForkConfig) IsCancun(blockTimestamp uint64) bool {
 	return f.CancunTimestamp != nil && new(big.Int).SetUint64(blockTimestamp).Cmp(f.CancunTimestamp) >= 0
+}
+
+func (f *ForkConfig) IsBarnet(blockTimestamp uint64) bool {
+	return f.BarnetTimestamp != nil && new(big.Int).SetUint64(blockTimestamp).Cmp(f.BarnetTimestamp) >= 0
 }
 
 func (f *ForkConfig) ForkchoiceUpdatedVersion(headTimestamp uint64, payloadAttributesTimestamp *uint64) int {
