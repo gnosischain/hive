@@ -432,7 +432,7 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 	}
 	var (
 		previousPayload                  = t.CLMock.LatestPayloadBuilt
-		prevFeeCollectorBalance *big.Int = nil
+		prevFeeCollectorBalance *big.Int = new(big.Int)
 		rpc                              = t.Client.RPC()
 	)
 	if rpc == nil {
@@ -625,7 +625,7 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 			},
 			OnFinalizedBlockChange: func() {
 				// Get fee collector balance for the new block
-				var feeCollectorBalance *big.Int
+				feeCollectorBalance := new(big.Int)
 				if err := step.GetFeeCollectorBalance(rpc, "latest", feeCollectorBalance); err != nil {
 					t.Fatalf("FAIL: Error getting fee collector balance: %v", err)
 				}
