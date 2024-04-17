@@ -3,9 +3,10 @@ package test
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
@@ -197,6 +198,9 @@ func (s BaseSpec) GetForkConfig() *config.ForkConfig {
 	} else if mainFork == config.Cancun {
 		forkConfig.ShanghaiTimestamp = new(big.Int).SetUint64(previousForkTime)
 		forkConfig.CancunTimestamp = new(big.Int).SetUint64(forkTime)
+	} else if mainFork == config.Barnet {
+		forkConfig.CancunTimestamp = new(big.Int).SetUint64(previousForkTime)
+		forkConfig.BarnetTimestamp = new(big.Int).SetUint64(forkTime)
 	} else {
 		panic(fmt.Errorf("unknown fork: %s", mainFork))
 	}
