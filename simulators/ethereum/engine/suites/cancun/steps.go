@@ -633,17 +633,19 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 				// Calculate txs fees for the new block
 				feesCollected := common.Big0
 				payload := &t.CLMock.LatestPayloadBuilt
-				for _, rawTx := range payload.Transactions {
-					// Get transaction
-					txHash := common.BytesToHash(rawTx)
-					tx, ok := t.Transactions[txHash]
-					if !ok {
-						t.Fatalf("FAIL: Transaction %s not found in the transaction pool", txHash.String())
+				for _, binaryTx := range payload.Transactions {
+					// Unmarshal the tx from the payload
+					tx := new(types.Transaction)
+					if err := tx.UnmarshalBinary(binaryTx); err != nil {
+						t.Fatalf("FAIL: Error getting transaction: %v", err)
 					}
 					// Calculate fees
-					feeCollected := new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas()))
-					if tx.Type() == types.BlobTxType && t.CLMock.IsBarnet(payload.Timestamp) {
+					feeCollected := common.Big0
+					if tx.Type() != types.BlobTxType {
+						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas())))
+					} else if tx.Type() == types.BlobTxType && t.CLMock.IsBarnet(payload.Timestamp) {
 						// Add blob gas fees if devnet is after barnet fork
+						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas())))
 						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.BlobGasFeeCap(), new(big.Int).SetUint64(tx.BlobGas())))
 					}
 					feesCollected.Add(feesCollected, feeCollected)
@@ -741,10 +743,12 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 			t.Fatalf("FAIL: Error sending blob transaction: %v", err)
 		}
 		if !step.SkipVerificationFromNode {
-			VerifyTransactionFromNode(t.TestContext, engine, blobTx)
+			if err := VerifyTransactionFromNode(t.TestContext, engine, blobTx); err != nil {
+				t.Fatalf("FAIL: Error verifying blob transaction: %v", err)
+			}
 		}
 		t.TestBlobTxPool.Mutex.Lock()
-		t.AddBlobTransaction(blobTx)
+		t.AddTransaction(blobTx)
 		t.HashesByIndex[t.CurrentTransactionIndex] = blobTx.Hash()
 		t.CurrentTransactionIndex += 1
 		t.Logf("INFO: Sent blob transaction: %s", blobTx.Hash().String())
@@ -756,6 +760,80 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 
 func (step SendBlobTransactions) Description() string {
 	return fmt.Sprintf("SendBlobTransactions: %d Transactions, %d blobs each, %d max data gas fee", step.TransactionCount, step.GetBlobsPerTransaction(), step.BlobTransactionMaxBlobGasCost.Uint64())
+}
+
+// Send transactions to the client
+type SendTransactions struct {
+	// Number of transactions to send
+	TransactionCount uint64
+	// Sender Account index
+	SenderAccountIndex uint64
+	// Receiver Account index
+	ReceiverAccountIndex uint64
+	// Gas Fee Cap for every transaction
+	GasFeeCap *big.Int
+	// Gas Tip Cap for every transaction
+	GasTipCap *big.Int
+	// Amount to send in every transaction
+	Amount *big.Int
+	// Skip verification of retrieving the tx from node
+	SkipVerificationFromNode bool
+	// Client index to send the transactions to
+	ClientIndex uint64
+}
+
+func (step SendTransactions) GetAmount() *big.Int {
+	if step.Amount == nil || step.Amount.Cmp(big.NewInt(0)) <= 0 {
+		return big.NewInt(1)
+	}
+	return step.Amount
+}
+
+func (step SendTransactions) Execute(t *CancunTestContext) error {
+	receiver := globals.TestAccounts[step.ReceiverAccountIndex].GetAddress()
+	var engine client.EngineClient
+	if step.ClientIndex >= uint64(len(t.Engines)) {
+		return fmt.Errorf("invalid client index %d", step.ClientIndex)
+	}
+	engine = t.Engines[step.ClientIndex]
+	// Send the transactions
+	for ntx := uint64(0); ntx < step.TransactionCount; ntx++ {
+		txCreator := &helper.BaseTransactionCreator{
+			Recipient: &receiver,
+			GasLimit:  t.Genesis.GasLimit(),
+			GasFee:    step.GasFeeCap,
+			GasTip:    step.GasTipCap,
+			Amount:    step.GetAmount(),
+			Payload:   nil,
+			TxType:    helper.LegacyTxOnly,
+		}
+		sender := globals.TestAccounts[step.SenderAccountIndex]
+		tx, err := t.SendTransaction(
+			t.TestContext,
+			sender,
+			engine,
+			txCreator,
+		)
+		if err != nil {
+			t.Fatalf("FAIL: Error sending transaction: %v", err)
+		}
+		if !step.SkipVerificationFromNode {
+			if err := VerifyTransactionFromNode(t.TestContext, engine, tx); err != nil {
+				t.Fatalf("FAIL: Error verifying transaction: %v", err)
+			}
+		}
+		t.TestBlobTxPool.Mutex.Lock()
+		t.AddTransaction(tx)
+		t.HashesByIndex[t.CurrentTransactionIndex] = tx.Hash()
+		t.CurrentTransactionIndex += 1
+		t.Logf("INFO: Sent transaction: %s", tx.Hash().String())
+		t.TestBlobTxPool.Mutex.Unlock()
+	}
+	return nil
+}
+
+func (step SendTransactions) Description() string {
+	return fmt.Sprintf("SendTransactions: %d Transactions, %d amount", step.TransactionCount, step.GetAmount().Uint64())
 }
 
 // Send a modified version of the latest payload produced using NewPayloadV3

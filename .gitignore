@@ -9,3 +9,6 @@ hiveview
 # build output for rust simulators files
 simulators/**/Cargo.lock
 simulators/**/target
+
+# simulations outputs
+runs

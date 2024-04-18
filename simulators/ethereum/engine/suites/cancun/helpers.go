@@ -68,7 +68,7 @@ type TestBlobTxPool struct {
 	HashesByIndex           map[uint64]common.Hash
 }
 
-func (pool *TestBlobTxPool) AddBlobTransaction(tx typ.Transaction) {
+func (pool *TestBlobTxPool) AddTransaction(tx typ.Transaction) {
 	if pool.Transactions == nil {
 		pool.Transactions = make(map[common.Hash]typ.Transaction)
 	}
