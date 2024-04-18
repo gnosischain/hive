@@ -199,6 +199,7 @@ func (s BaseSpec) GetForkConfig() *config.ForkConfig {
 		forkConfig.ShanghaiTimestamp = new(big.Int).SetUint64(previousForkTime)
 		forkConfig.CancunTimestamp = new(big.Int).SetUint64(forkTime)
 	} else if mainFork == config.Barnet {
+		forkConfig.ShanghaiTimestamp = new(big.Int).SetUint64(previousForkTime)
 		forkConfig.CancunTimestamp = new(big.Int).SetUint64(previousForkTime)
 		forkConfig.BarnetTimestamp = new(big.Int).SetUint64(forkTime)
 	} else {

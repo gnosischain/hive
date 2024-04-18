@@ -436,7 +436,7 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 		rpc                              = t.Client.RPC()
 	)
 	if rpc == nil {
-		return errors.New("rpc client is nil")
+		t.Fatalf("FAIL: Rpc client is nil")
 	}
 	for p := uint64(0); p < payloadCount; p++ {
 		t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{
@@ -622,8 +622,7 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 					t.Fatalf("FAIL: Error verifying payload (payload %d/%d): %v", p+1, payloadCount, err)
 				}
 				previousPayload = t.CLMock.LatestPayloadBuilt
-			},
-			OnFinalizedBlockChange: func() {
+
 				// Get fee collector balance for the new block
 				feeCollectorBalance := new(big.Int)
 				if err := step.GetFeeCollectorBalance(rpc, "latest", feeCollectorBalance); err != nil {
@@ -631,8 +630,7 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 				}
 
 				// Calculate txs fees for the new block
-				feesCollected := common.Big0
-				payload := &t.CLMock.LatestPayloadBuilt
+				feesCollected := big.NewInt(0)
 				for _, binaryTx := range payload.Transactions {
 					// Unmarshal the tx from the payload
 					tx := new(types.Transaction)
@@ -640,7 +638,7 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 						t.Fatalf("FAIL: Error getting transaction: %v", err)
 					}
 					// Calculate fees
-					feeCollected := common.Big0
+					feeCollected := big.NewInt(0)
 					if tx.Type() != types.BlobTxType {
 						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas())))
 					} else if tx.Type() == types.BlobTxType && t.CLMock.IsBarnet(payload.Timestamp) {

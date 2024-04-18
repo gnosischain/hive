@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/ethereum/hive/hivesim"
+	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
@@ -96,18 +97,19 @@ type ClientGenesis interface {
 	GetTTD()
 }
 
-func getTimestamp(spec test.Spec) int64 {
+func getTimestamp(spec test.Spec) (int64, int64) {
 	now := time.Now()
 
-	preShapellaBlock := spec.GetPreShapellaBlockCount()
-	if preShapellaBlock == 0 {
-		preShapellaBlock = 1
-	}
+	preMainForkBlock := spec.GetPreShapellaBlockCount()
+	// if preMainForkBlock == 0 {
+	// 	preMainForkBlock = 1
+	// }
 
-	preShapellaTime := time.Duration(uint64(preShapellaBlock)*spec.GetBlockTimeIncrements()) * time.Second
-	// after setup wait chain will produce blocks in preShapellaTime and than shapella happens
-	shanghaiTimestamp := now.Add(SetupTime).Add(preShapellaTime)
-	return shanghaiTimestamp.Unix()
+	preForkTime := time.Duration(uint64(preMainForkBlock)*spec.GetBlockTimeIncrements()) * time.Second
+	// after setup wait chain will produce blocks during `preForkTime` and then main fork happens
+	genesisTimestamp := now.Add(SetupTime)
+	mainForkTimestamp := now.Add(SetupTime).Add(preForkTime)
+	return genesisTimestamp.Unix(), mainForkTimestamp.Unix()
 }
 
 // Add test cases to a given test suite
@@ -128,8 +130,11 @@ func addTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []test
 		genesis := currentTest.GetGenesis(clientName)
 
 		// Set the timestamp of the genesis to the next 2 minutes
-		timestamp := getTimestamp(currentTest)
-		genesis.SetTimestamp(timestamp, currentTest.GetMainFork())
+		genesisTimestamp, mainForktimestamp := getTimestamp(currentTest)
+		genesis.SetTimestamp(mainForktimestamp, currentTest.GetMainFork())
+		if currentTest.GetMainFork().PreviousFork() != config.NA {
+			genesis.SetTimestamp(genesisTimestamp, currentTest.GetMainFork().PreviousFork())
+		}
 		genesis.SetDifficulty(big.NewInt(100))
 		//genesis.UpdateTimestamp(getTimestamp())
 		genesisStartOption, err := helper.GenesisStartOptionBasedOnClient(genesis, clientName)

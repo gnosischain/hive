@@ -6,9 +6,10 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	beacon "github.com/ethereum/go-ethereum/beacon/engine"
@@ -894,6 +895,13 @@ func (ws *WithdrawalsBaseSpec) GetWithdrawalsStartAccount() *big.Int {
 //	genesis := ws.BaseSpec.GetGenesisTest(base)
 //	return genesis
 //}
+
+func (ws *WithdrawalsBaseSpec) GetMainFork() config.Fork {
+	if ws.BaseSpec.MainFork != config.NA {
+		return ws.BaseSpec.MainFork
+	}
+	return config.Shanghai
+}
 
 // Append the accounts we are going to withdraw to, which should also include
 // bytecode for testing purposes.
