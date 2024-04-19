@@ -9,7 +9,7 @@ import (
 func GenerateInvalidPayloadBlock(baseBlock *types.Block, uncle *types.Block, payloadField InvalidPayloadBlockField) (*types.Block, error) {
 	if payloadField == InvalidOmmers {
 		if uncle == nil {
-			return nil, fmt.Errorf("No ommer provided")
+			return nil, fmt.Errorf("no ommer provided")
 		}
 		uncles := []*types.Header{
 			uncle.Header(),

@@ -19,10 +19,10 @@ type ReExecutePayloadTest struct {
 	PayloadCount int
 }
 
-func (s ReExecutePayloadTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *ReExecutePayloadTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (s ReExecutePayloadTest) GetName() string {
@@ -92,10 +92,10 @@ type InOrderPayloadExecutionTest struct {
 	test.BaseSpec
 }
 
-func (s InOrderPayloadExecutionTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *InOrderPayloadExecutionTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (s InOrderPayloadExecutionTest) GetName() string {
@@ -214,10 +214,10 @@ type MultiplePayloadsExtendingCanonicalChainTest struct {
 	SetHeadToFirstPayloadReceived bool
 }
 
-func (s MultiplePayloadsExtendingCanonicalChainTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *MultiplePayloadsExtendingCanonicalChainTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (s MultiplePayloadsExtendingCanonicalChainTest) GetName() string {
@@ -310,10 +310,10 @@ type NewPayloadOnSyncingClientTest struct {
 	test.BaseSpec
 }
 
-func (s NewPayloadOnSyncingClientTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *NewPayloadOnSyncingClientTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (s NewPayloadOnSyncingClientTest) GetName() string {
@@ -460,10 +460,10 @@ type NewPayloadWithMissingFcUTest struct {
 	test.BaseSpec
 }
 
-func (s NewPayloadWithMissingFcUTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *NewPayloadWithMissingFcUTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (s NewPayloadWithMissingFcUTest) GetName() string {

@@ -18,10 +18,10 @@ type SuggestedFeeRecipientTest struct {
 	TransactionCount int
 }
 
-func (s SuggestedFeeRecipientTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *SuggestedFeeRecipientTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (t SuggestedFeeRecipientTest) GetName() string {

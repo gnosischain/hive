@@ -33,7 +33,8 @@ type Spec interface {
 	GetForkConfig() *config.ForkConfig
 	// Get the genesis file to initialize the clients
 	GetGenesis(string) client.Genesis
-	//GetGenesisTest(string) string
+	// Set the genesis and previous fork timestamps
+	SetTimestamp(uint64)
 	// Get the test transaction type to use throughout the test
 	GetTestTransactionType() helper.TestTransactionType
 	// Get the maximum execution time until a timeout is raised
@@ -144,10 +145,10 @@ func (s BaseSpec) GetMainFork() config.Fork {
 	return mainFork
 }
 
-func (s BaseSpec) WithMainFork(fork config.Fork) Spec {
-	specCopy := s
+func (s *BaseSpec) WithMainFork(fork config.Fork) Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (s BaseSpec) GetGenesisTimestamp() uint64 {
@@ -231,6 +232,19 @@ func (s BaseSpec) GetGenesis(base string) client.Genesis {
 	}
 	genesis := helper.LoadGenesis(genesisPath, gen)
 	return genesis
+}
+
+func (s *BaseSpec) SetTimestamp(genesisTime uint64) {
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		s.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	s.ForkTime = *s.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		s.PreviousForkTime = genesisTime
+	}
 }
 
 //func (s BaseSpec) GetGenesisTest(base string) string {

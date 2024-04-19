@@ -17,10 +17,10 @@ type ForkIDSpec struct {
 	ProduceBlocksBeforePeering int
 }
 
-func (s ForkIDSpec) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *ForkIDSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (ft ForkIDSpec) GetName() string {

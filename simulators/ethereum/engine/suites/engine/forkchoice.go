@@ -26,10 +26,10 @@ type InconsistentForkchoiceTest struct {
 	Field ForkchoiceStateField
 }
 
-func (s InconsistentForkchoiceTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *InconsistentForkchoiceTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (tc InconsistentForkchoiceTest) GetName() string {
@@ -92,10 +92,10 @@ type ForkchoiceUpdatedUnknownBlockHashTest struct {
 	Field ForkchoiceStateField
 }
 
-func (s ForkchoiceUpdatedUnknownBlockHashTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *ForkchoiceUpdatedUnknownBlockHashTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (tc ForkchoiceUpdatedUnknownBlockHashTest) GetName() string {

@@ -1,11 +1,12 @@
 package suite_engine
 
 import (
+	"math/big"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -34,7 +35,7 @@ func init() {
 	// Register bad hash tests
 	for _, syncing := range []bool{false, true} {
 		for _, sidechain := range []bool{false, true} {
-			Tests = append(Tests, BadHashOnNewPayload{
+			Tests = append(Tests, &BadHashOnNewPayload{
 				Syncing:   syncing,
 				Sidechain: sidechain,
 			})
@@ -43,10 +44,10 @@ func init() {
 
 	// Parent hash == block hash tests
 	Tests = append(Tests,
-		ParentHashOnNewPayload{
+		&ParentHashOnNewPayload{
 			Syncing: false,
 		},
-		ParentHashOnNewPayload{
+		&ParentHashOnNewPayload{
 			Syncing: true,
 		},
 	)
@@ -58,7 +59,7 @@ func init() {
 		SafeOnSafeBlockHash,
 		FinalizedOnFinalizedBlockHash,
 	} {
-		Tests = append(Tests, BlockStatus{CheckType: field})
+		Tests = append(Tests, &BlockStatus{CheckType: field})
 	}
 
 	// Register ForkchoiceUpdate tests
@@ -68,10 +69,10 @@ func init() {
 		FinalizedBlockHash,
 	} {
 		Tests = append(Tests,
-			InconsistentForkchoiceTest{
+			&InconsistentForkchoiceTest{
 				Field: field,
 			},
-			ForkchoiceUpdatedUnknownBlockHashTest{
+			&ForkchoiceUpdatedUnknownBlockHashTest{
 				Field: field,
 			},
 		)
@@ -93,9 +94,9 @@ func init() {
 			},
 		},
 	} {
-		Tests = append(Tests, t)
+		Tests = append(Tests, &t)
 		t.Syncing = true
-		Tests = append(Tests, t)
+		Tests = append(Tests, &t)
 	}
 
 	// Payload ID Tests
@@ -104,7 +105,7 @@ func init() {
 		PayloadAttributesRandom,
 		PayloadAttributesSuggestedFeeRecipient,
 	} {
-		Tests = append(Tests, UniquePayloadIDTest{
+		Tests = append(Tests, &UniquePayloadIDTest{
 			FieldModification: payloadAttributeFieldChange,
 		})
 	}
@@ -112,7 +113,7 @@ func init() {
 	// Endpoint Versions Tests
 	// Early upgrade of ForkchoiceUpdated when requesting a payload
 	Tests = append(Tests,
-		ForkchoiceUpdatedOnPayloadRequestTest{
+		&ForkchoiceUpdatedOnPayloadRequestTest{
 			BaseSpec: test.BaseSpec{
 				Name: "Early upgrade",
 				About: `
@@ -141,16 +142,16 @@ func init() {
 
 	// Payload Execution Tests
 	Tests = append(Tests,
-		ReExecutePayloadTest{},
-		InOrderPayloadExecutionTest{},
-		MultiplePayloadsExtendingCanonicalChainTest{
+		&ReExecutePayloadTest{},
+		&InOrderPayloadExecutionTest{},
+		&MultiplePayloadsExtendingCanonicalChainTest{
 			SetHeadToFirstPayloadReceived: true,
 		},
-		MultiplePayloadsExtendingCanonicalChainTest{
+		&MultiplePayloadsExtendingCanonicalChainTest{
 			SetHeadToFirstPayloadReceived: false,
 		},
-		NewPayloadOnSyncingClientTest{},
-		NewPayloadWithMissingFcUTest{},
+		&NewPayloadOnSyncingClientTest{},
+		&NewPayloadWithMissingFcUTest{},
 	)
 
 	// Invalid Payload Tests
@@ -167,20 +168,20 @@ func init() {
 	} {
 		for _, syncing := range []bool{false, true} {
 			if invalidField == helper.InvalidStateRoot {
-				Tests = append(Tests, InvalidPayloadTestCase{
+				Tests = append(Tests, &InvalidPayloadTestCase{
 					InvalidField:      invalidField,
 					Syncing:           syncing,
 					EmptyTransactions: true,
 				})
 			}
-			Tests = append(Tests, InvalidPayloadTestCase{
+			Tests = append(Tests, &InvalidPayloadTestCase{
 				InvalidField: invalidField,
 				Syncing:      syncing,
 			})
 		}
 	}
 
-	Tests = append(Tests, PayloadBuildAfterInvalidPayloadTest{
+	Tests = append(Tests, &PayloadBuildAfterInvalidPayloadTest{
 		InvalidField: helper.InvalidStateRoot,
 	})
 
@@ -198,7 +199,7 @@ func init() {
 		for _, syncing := range []bool{false, true} {
 			if invalidField != helper.InvalidTransactionGasTipPrice {
 				for _, testTxType := range []helper.TestTransactionType{helper.LegacyTxOnly, helper.DynamicFeeTxOnly} {
-					Tests = append(Tests, InvalidPayloadTestCase{
+					Tests = append(Tests, &InvalidPayloadTestCase{
 						BaseSpec: test.BaseSpec{
 							TestTransactionType: testTxType,
 						},
@@ -208,7 +209,7 @@ func init() {
 					})
 				}
 			} else {
-				Tests = append(Tests, InvalidPayloadTestCase{
+				Tests = append(Tests, &InvalidPayloadTestCase{
 					BaseSpec: test.BaseSpec{
 						TestTransactionType: helper.DynamicFeeTxOnly,
 					},
@@ -223,12 +224,12 @@ func init() {
 
 	// Invalid Transaction ChainID Tests
 	Tests = append(Tests,
-		InvalidTxChainIDTest{
+		&InvalidTxChainIDTest{
 			BaseSpec: test.BaseSpec{
 				TestTransactionType: helper.LegacyTxOnly,
 			},
 		},
-		InvalidTxChainIDTest{
+		&InvalidTxChainIDTest{
 			BaseSpec: test.BaseSpec{
 				TestTransactionType: helper.DynamicFeeTxOnly,
 			},
@@ -238,7 +239,7 @@ func init() {
 	// Invalid Ancestor Re-Org Tests (Reveal Via NewPayload)
 	for _, invalidIndex := range []int{1, 9, 10} {
 		for _, emptyTxs := range []bool{false, true} {
-			Tests = append(Tests, InvalidMissingAncestorReOrgTest{
+			Tests = append(Tests, &InvalidMissingAncestorReOrgTest{
 				BaseSpec: test.BaseSpec{
 					SlotsToSafe:      big.NewInt(32),
 					SlotsToFinalized: big.NewInt(64),
@@ -283,7 +284,7 @@ func init() {
 				invalidIndex = 8
 			}
 			if invalidField == helper.InvalidStateRoot {
-				Tests = append(Tests, InvalidMissingAncestorReOrgSyncTest{
+				Tests = append(Tests, &InvalidMissingAncestorReOrgSyncTest{
 					BaseSpec:           spec,
 					InvalidField:       invalidField,
 					ReOrgFromCanonical: reOrgFromCanonical,
@@ -291,7 +292,7 @@ func init() {
 					InvalidIndex:       invalidIndex,
 				})
 			}
-			Tests = append(Tests, InvalidMissingAncestorReOrgSyncTest{
+			Tests = append(Tests, &InvalidMissingAncestorReOrgSyncTest{
 				BaseSpec:           spec,
 				InvalidField:       invalidField,
 				ReOrgFromCanonical: reOrgFromCanonical,
@@ -304,20 +305,20 @@ func init() {
 
 	// Sidechain re-org tests
 	Tests = append(Tests,
-		SidechainReOrgTest{},
-		ReOrgBackFromSyncingTest{
+		&SidechainReOrgTest{},
+		&ReOrgBackFromSyncingTest{
 			BaseSpec: test.BaseSpec{
 				SlotsToSafe:      big.NewInt(32),
 				SlotsToFinalized: big.NewInt(64),
 			},
 		},
-		ReOrgPrevValidatedPayloadOnSideChainTest{
+		&ReOrgPrevValidatedPayloadOnSideChainTest{
 			BaseSpec: test.BaseSpec{
 				SlotsToSafe:      big.NewInt(32),
 				SlotsToFinalized: big.NewInt(64),
 			},
 		},
-		SafeReOrgToSideChainTest{
+		&SafeReOrgToSideChainTest{
 			BaseSpec: test.BaseSpec{
 				SlotsToSafe:      big.NewInt(1),
 				SlotsToFinalized: big.NewInt(2),
@@ -327,23 +328,23 @@ func init() {
 
 	// Re-org a transaction out of a block, or into a new block
 	Tests = append(Tests,
-		TransactionReOrgTest{
+		&TransactionReOrgTest{
 			Scenario: TransactionReOrgScenarioReOrgOut,
 		},
-		TransactionReOrgTest{
+		&TransactionReOrgTest{
 			Scenario: TransactionReOrgScenarioReOrgDifferentBlock,
 		},
-		TransactionReOrgTest{
+		&TransactionReOrgTest{
 			Scenario: TransactionReOrgScenarioNewPayloadOnRevert,
 		},
-		TransactionReOrgTest{
+		&TransactionReOrgTest{
 			Scenario: TransactionReOrgScenarioReOrgBackIn,
 		},
 	)
 
 	// Re-Org back into the canonical chain tests
 	Tests = append(Tests,
-		ReOrgBackToCanonicalTest{
+		&ReOrgBackToCanonicalTest{
 			BaseSpec: test.BaseSpec{
 				SlotsToSafe:      big.NewInt(10),
 				SlotsToFinalized: big.NewInt(20),
@@ -352,7 +353,7 @@ func init() {
 			TransactionPerPayload: 1,
 			ReOrgDepth:            5,
 		},
-		ReOrgBackToCanonicalTest{
+		&ReOrgBackToCanonicalTest{
 			BaseSpec: test.BaseSpec{
 				SlotsToSafe:      big.NewInt(32),
 				SlotsToFinalized: big.NewInt(64),
@@ -366,13 +367,13 @@ func init() {
 
 	// Suggested Fee Recipient Tests
 	Tests = append(Tests,
-		SuggestedFeeRecipientTest{
+		&SuggestedFeeRecipientTest{
 			BaseSpec: test.BaseSpec{
 				TestTransactionType: helper.LegacyTxOnly,
 			},
 			TransactionCount: 20,
 		},
-		SuggestedFeeRecipientTest{
+		&SuggestedFeeRecipientTest{
 			BaseSpec: test.BaseSpec{
 				TestTransactionType: helper.DynamicFeeTxOnly,
 			},
@@ -382,12 +383,12 @@ func init() {
 
 	// PrevRandao opcode tests
 	Tests = append(Tests,
-		PrevRandaoTransactionTest{
+		&PrevRandaoTransactionTest{
 			BaseSpec: test.BaseSpec{
 				TestTransactionType: helper.LegacyTxOnly,
 			},
 		},
-		PrevRandaoTransactionTest{
+		&PrevRandaoTransactionTest{
 			BaseSpec: test.BaseSpec{
 				TestTransactionType: helper.DynamicFeeTxOnly,
 			},
@@ -400,7 +401,7 @@ func init() {
 			for prevForkTime := uint64(0); prevForkTime <= forkTime; prevForkTime++ {
 				for currentBlock := 0; currentBlock <= 1; currentBlock++ {
 					Tests = append(Tests,
-						ForkIDSpec{
+						&ForkIDSpec{
 							BaseSpec: test.BaseSpec{
 								MainFork:         config.Paris,
 								GenesisTimestamp: pUint64(genesisTimestamp),
@@ -418,7 +419,7 @@ func init() {
 	// Misc Tests
 	Tests = append(Tests,
 		// Pre-merge & merge fork occur at block 1, post-merge forks occur at block 2
-		NonZeroPreMergeFork{
+		&NonZeroPreMergeFork{
 			BaseSpec: test.BaseSpec{
 				ForkHeight: 2,
 			},

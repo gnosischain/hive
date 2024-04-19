@@ -26,10 +26,10 @@ type BlockStatus struct {
 	// TODO: Syncing   bool
 }
 
-func (s BlockStatus) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *BlockStatus) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (b BlockStatus) GetName() string {

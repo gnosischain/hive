@@ -29,10 +29,10 @@ type UniquePayloadIDTest struct {
 	FieldModification PayloadAttributesFieldChange
 }
 
-func (s UniquePayloadIDTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *UniquePayloadIDTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (tc UniquePayloadIDTest) GetName() string {

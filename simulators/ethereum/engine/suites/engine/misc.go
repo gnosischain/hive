@@ -14,10 +14,10 @@ type NonZeroPreMergeFork struct {
 	test.BaseSpec
 }
 
-func (s NonZeroPreMergeFork) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *NonZeroPreMergeFork) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (b NonZeroPreMergeFork) GetName() string {

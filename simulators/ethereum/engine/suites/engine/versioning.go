@@ -13,10 +13,10 @@ type EngineNewPayloadVersionTest struct {
 	test.BaseSpec
 }
 
-func (s EngineNewPayloadVersionTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *EngineNewPayloadVersionTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 // Test modifying the ForkchoiceUpdated version on Payload Request to the previous/upcoming version
@@ -26,10 +26,10 @@ type ForkchoiceUpdatedOnPayloadRequestTest struct {
 	helper.ForkchoiceUpdatedCustomizer
 }
 
-func (s ForkchoiceUpdatedOnPayloadRequestTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := s
+func (s *ForkchoiceUpdatedOnPayloadRequestTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *s
 	specCopy.MainFork = fork
-	return specCopy
+	return &specCopy
 }
 
 func (tc ForkchoiceUpdatedOnPayloadRequestTest) GetName() string {

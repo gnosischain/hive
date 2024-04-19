@@ -131,6 +131,7 @@ func addTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []test
 
 		// Set the timestamp of the genesis to the next 2 minutes
 		genesisTimestamp, mainForktimestamp := getTimestamp(currentTest)
+		currentTest.SetTimestamp(uint64(genesisTimestamp))
 		genesis.SetTimestamp(mainForktimestamp, currentTest.GetMainFork())
 		if currentTest.GetMainFork().PreviousFork() != config.NA {
 			genesis.SetTimestamp(genesisTimestamp, currentTest.GetMainFork().PreviousFork())
