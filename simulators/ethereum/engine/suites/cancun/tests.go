@@ -51,7 +51,10 @@ var Tests = []test.Spec{
 
 		TestSequence: TestSequence{
 			// We are starting at Shanghai genesis so send a couple payloads to reach the fork
-			NewPayloads{},
+			NewPayloads{
+				// Nethermind rejects to receive blobs transactions until at least 1 post cancun block is processed
+				PayloadCount: 2,
+			},
 
 			// First, we send a couple of blob transactions on genesis,
 			// with enough data gas cost to make sure they are included in the first block.
@@ -94,7 +97,7 @@ var Tests = []test.Spec{
 			},
 		},
 	},
-	//
+
 	&CancunBaseSpec{
 
 		BaseSpec: test.BaseSpec{
@@ -272,7 +275,9 @@ var Tests = []test.Spec{
 		},
 
 		TestSequence: TestSequence{
-			NewPayloads{},
+			NewPayloads{
+				PayloadCount: 2,
+			},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
 			// account A.
 			SendBlobTransactions{
@@ -415,7 +420,9 @@ var Tests = []test.Spec{
 		},
 
 		TestSequence: TestSequence{
-			NewPayloads{},
+			NewPayloads{
+				PayloadCount: 2,
+			},
 
 			SendBlobTransactions{
 				TransactionCount:              cancun.TARGET_BLOBS_PER_BLOCK,
