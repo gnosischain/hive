@@ -241,7 +241,7 @@ func (s BaseSpec) WithTimestamp(genesisTime uint64) Spec {
 		specCopy.GenesisTimestamp = &genesisTime
 	}
 	// Set fork time, will be ignored if fork height is set
-	specCopy.ForkTime = *s.GenesisTimestamp
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
 	if s.ForkHeight > 0 {
 		specCopy.PreviousForkTime = genesisTime
