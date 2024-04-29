@@ -15,7 +15,7 @@ import (
 // JWT Authentication Tests
 
 var Tests = []test.Spec{
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: No time drift, correct secret",
 		},
@@ -23,7 +23,7 @@ var Tests = []test.Spec{
 		CustomAuthSecretBytes: nil,
 		AuthOk:                true,
 	},
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: No time drift, incorrect secret (shorter)",
 		},
@@ -31,7 +31,7 @@ var Tests = []test.Spec{
 		CustomAuthSecretBytes: []byte("secretsecretsecretsecretsecrets"),
 		AuthOk:                false,
 	},
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: No time drift, incorrect secret (longer)",
 		},
@@ -39,7 +39,7 @@ var Tests = []test.Spec{
 		CustomAuthSecretBytes: append([]byte{0}, []byte("secretsecretsecretsecretsecretse")...),
 		AuthOk:                false,
 	},
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: Negative time drift, exceeding limit, correct secret",
 		},
@@ -48,7 +48,7 @@ var Tests = []test.Spec{
 		AuthOk:                false,
 		RetryAttempts:         5,
 	},
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: Negative time drift, within limit, correct secret",
 		},
@@ -57,7 +57,7 @@ var Tests = []test.Spec{
 		AuthOk:                true,
 		RetryAttempts:         5,
 	},
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: Positive time drift, exceeding limit, correct secret",
 		},
@@ -66,7 +66,7 @@ var Tests = []test.Spec{
 		AuthOk:                false,
 		RetryAttempts:         5,
 	},
-	&AuthTestSpec{
+	AuthTestSpec{
 		BaseSpec: test.BaseSpec{
 			Name: "JWT Authentication: Positive time drift, within limit, correct secret",
 		},
@@ -132,8 +132,8 @@ func (authTestSpec AuthTestSpec) Execute(t *test.Env) {
 	}
 }
 
-func (s *AuthTestSpec) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s AuthTestSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }

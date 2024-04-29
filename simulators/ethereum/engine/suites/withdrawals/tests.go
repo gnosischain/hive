@@ -243,7 +243,7 @@ var Tests = []test.Spec{
 
 	// Block value tests
 	// &BlockValueSpec{
-	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
+	// 	WithdrawalsBaseSpec: WithdrawalsBaseSpec{
 	// 		Spec: test.Spec{
 	// 			Name: "GetPayloadV2 Block Value",
 	// 			About: `
@@ -727,7 +727,7 @@ var Tests = []test.Spec{
 	},
 
 	// TODO: Remove since this will be automatically inherited when this test suite is refactored
-	&suite_engine.NonZeroPreMergeFork{
+	suite_engine.NonZeroPreMergeFork{
 		BaseSpec: test.BaseSpec{
 			MainFork:   config.Shanghai,
 			ForkHeight: 1,

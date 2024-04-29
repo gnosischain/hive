@@ -21,10 +21,10 @@ type SidechainReOrgTest struct {
 	test.BaseSpec
 }
 
-func (s *SidechainReOrgTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s SidechainReOrgTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s SidechainReOrgTest) GetName() string {
@@ -130,10 +130,10 @@ type TransactionReOrgTest struct {
 	Scenario         TransactionReOrgScenario
 }
 
-func (s *TransactionReOrgTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s TransactionReOrgTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s TransactionReOrgTest) GetName() string {
@@ -417,10 +417,10 @@ type ReOrgBackToCanonicalTest struct {
 	ExecuteSidePayloadOnReOrg bool
 }
 
-func (s *ReOrgBackToCanonicalTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s ReOrgBackToCanonicalTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s ReOrgBackToCanonicalTest) GetName() string {
@@ -553,10 +553,10 @@ type ReOrgBackFromSyncingTest struct {
 	test.BaseSpec
 }
 
-func (s *ReOrgBackFromSyncingTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s ReOrgBackFromSyncingTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s ReOrgBackFromSyncingTest) GetName() string {
@@ -642,10 +642,10 @@ type ReOrgPrevValidatedPayloadOnSideChainTest struct {
 	test.BaseSpec
 }
 
-func (s *ReOrgPrevValidatedPayloadOnSideChainTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s ReOrgPrevValidatedPayloadOnSideChainTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s ReOrgPrevValidatedPayloadOnSideChainTest) GetName() string {
@@ -759,10 +759,10 @@ type SafeReOrgToSideChainTest struct {
 	test.BaseSpec
 }
 
-func (s *SafeReOrgToSideChainTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s SafeReOrgToSideChainTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s SafeReOrgToSideChainTest) GetName() string {

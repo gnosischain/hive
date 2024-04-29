@@ -57,7 +57,7 @@ func init() {
 				nameStr = "Not active"
 				forkTime = globals.GenesisTimestamp * 2
 			}
-			Tests = append(Tests, &ExchangeCapabilitiesSpec{
+			Tests = append(Tests, ExchangeCapabilitiesSpec{
 				BaseSpec: test.BaseSpec{
 					Name:     fmt.Sprintf("Exchange Capabilities - %s (%s)", fork, nameStr),
 					MainFork: fork,
@@ -74,10 +74,10 @@ type ExchangeCapabilitiesSpec struct {
 	MinimalExpectedCapabilitiesSet []string
 }
 
-func (s *ExchangeCapabilitiesSpec) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s ExchangeCapabilitiesSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s ExchangeCapabilitiesSpec) Execute(t *test.Env) {

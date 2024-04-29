@@ -35,10 +35,10 @@ type InvalidPayloadTestCase struct {
 	NilLatestValidHash bool
 }
 
-func (s *InvalidPayloadTestCase) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s InvalidPayloadTestCase) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (i InvalidPayloadTestCase) GetName() string {
@@ -313,10 +313,10 @@ type PayloadBuildAfterInvalidPayloadTest struct {
 	InvalidField helper.InvalidPayloadBlockField
 }
 
-func (s *PayloadBuildAfterInvalidPayloadTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s PayloadBuildAfterInvalidPayloadTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (i PayloadBuildAfterInvalidPayloadTest) GetName() string {
@@ -401,10 +401,10 @@ type InvalidTxChainIDTest struct {
 	test.BaseSpec
 }
 
-func (s *InvalidTxChainIDTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s InvalidTxChainIDTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (s InvalidTxChainIDTest) GetName() string {

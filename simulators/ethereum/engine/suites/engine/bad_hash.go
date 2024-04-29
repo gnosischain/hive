@@ -44,10 +44,10 @@ type BadHashOnNewPayload struct {
 	Sidechain bool
 }
 
-func (s *BadHashOnNewPayload) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s BadHashOnNewPayload) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (b BadHashOnNewPayload) GetName() string {
@@ -144,10 +144,10 @@ type ParentHashOnNewPayload struct {
 	Syncing bool
 }
 
-func (s *ParentHashOnNewPayload) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s ParentHashOnNewPayload) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (p ParentHashOnNewPayload) GetName() string {

@@ -32,10 +32,10 @@ type InvalidMissingAncestorReOrgTest struct {
 	EmptyTransactions bool
 }
 
-func (s *InvalidMissingAncestorReOrgTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s InvalidMissingAncestorReOrgTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (tc InvalidMissingAncestorReOrgTest) GetName() string {
@@ -199,10 +199,10 @@ type InvalidMissingAncestorReOrgSyncTest struct {
 	ReOrgFromCanonical bool
 }
 
-func (s *InvalidMissingAncestorReOrgSyncTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s InvalidMissingAncestorReOrgSyncTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (tc InvalidMissingAncestorReOrgSyncTest) GetName() string {

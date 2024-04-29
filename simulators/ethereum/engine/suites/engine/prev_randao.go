@@ -18,10 +18,10 @@ type PrevRandaoTransactionTest struct {
 	BlockCount int
 }
 
-func (s *PrevRandaoTransactionTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s PrevRandaoTransactionTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (t PrevRandaoTransactionTest) GetName() string {

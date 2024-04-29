@@ -17,10 +17,10 @@ type InvalidPayloadAttributesTest struct {
 	Syncing     bool
 }
 
-func (s *InvalidPayloadAttributesTest) WithMainFork(fork config.Fork) test.Spec {
-	specCopy := *s
+func (s InvalidPayloadAttributesTest) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
 	specCopy.MainFork = fork
-	return &specCopy
+	return specCopy
 }
 
 func (tc InvalidPayloadAttributesTest) GetName() string {

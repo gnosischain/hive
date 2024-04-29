@@ -115,8 +115,6 @@ func getTimestamp(spec test.Spec) (int64, int64) {
 // Add test cases to a given test suite
 func addTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []test.Spec, nodeType string) {
 	for _, currentTest := range tests {
-		currentTest := currentTest
-
 		// Load the genesis file specified and dynamically bundle it.
 		clientTypes, err := sim.ClientTypes()
 		if err != nil {
@@ -131,7 +129,7 @@ func addTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []test
 
 		// Set the timestamp of the genesis to the next 2 minutes
 		genesisTimestamp, mainForktimestamp := getTimestamp(currentTest)
-		currentTest.SetTimestamp(uint64(genesisTimestamp))
+		currentTest := currentTest.WithTimestamp(uint64(genesisTimestamp))
 		genesis.SetTimestamp(mainForktimestamp, currentTest.GetMainFork())
 		if currentTest.GetMainFork().PreviousFork() != config.NA {
 			genesis.SetTimestamp(genesisTimestamp, currentTest.GetMainFork().PreviousFork())
