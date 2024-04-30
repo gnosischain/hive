@@ -50,6 +50,21 @@ func (s BadHashOnNewPayload) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s BadHashOnNewPayload) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (b BadHashOnNewPayload) GetName() string {
 	return fmt.Sprintf("Bad Hash on NewPayload (Syncing=%v, Sidechain=%v)", b.Syncing, b.Sidechain)
 }
@@ -147,6 +162,21 @@ type ParentHashOnNewPayload struct {
 func (s ParentHashOnNewPayload) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s ParentHashOnNewPayload) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 

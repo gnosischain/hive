@@ -27,6 +27,21 @@ func (s SidechainReOrgTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s SidechainReOrgTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (s SidechainReOrgTest) GetName() string {
 	name := "Sidechain Reorg"
 	return name
@@ -133,6 +148,21 @@ type TransactionReOrgTest struct {
 func (s TransactionReOrgTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s TransactionReOrgTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 
@@ -423,6 +453,21 @@ func (s ReOrgBackToCanonicalTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s ReOrgBackToCanonicalTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (s ReOrgBackToCanonicalTest) GetName() string {
 	name := fmt.Sprintf("Re-Org Back into Canonical Chain, Depth=%d", s.ReOrgDepth)
 
@@ -559,6 +604,21 @@ func (s ReOrgBackFromSyncingTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s ReOrgBackFromSyncingTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (s ReOrgBackFromSyncingTest) GetName() string {
 	name := "Re-Org Back to Canonical Chain From Syncing Chain"
 	return name
@@ -645,6 +705,21 @@ type ReOrgPrevValidatedPayloadOnSideChainTest struct {
 func (s ReOrgPrevValidatedPayloadOnSideChainTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s ReOrgPrevValidatedPayloadOnSideChainTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 
@@ -762,6 +837,21 @@ type SafeReOrgToSideChainTest struct {
 func (s SafeReOrgToSideChainTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s SafeReOrgToSideChainTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 

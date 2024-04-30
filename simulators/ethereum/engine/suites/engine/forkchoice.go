@@ -32,6 +32,21 @@ func (s InconsistentForkchoiceTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s InconsistentForkchoiceTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (tc InconsistentForkchoiceTest) GetName() string {
 	return fmt.Sprintf("Inconsistent %s in ForkchoiceState", tc.Field)
 }
@@ -95,6 +110,21 @@ type ForkchoiceUpdatedUnknownBlockHashTest struct {
 func (s ForkchoiceUpdatedUnknownBlockHashTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s ForkchoiceUpdatedUnknownBlockHashTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 

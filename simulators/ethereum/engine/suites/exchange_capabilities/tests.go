@@ -80,6 +80,21 @@ func (s ExchangeCapabilitiesSpec) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s ExchangeCapabilitiesSpec) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (s ExchangeCapabilitiesSpec) Execute(t *test.Env) {
 	if returnedCapabilities, err := t.HiveEngine.ExchangeCapabilities(t.TestContext, s.MinimalExpectedCapabilitiesSet); err != nil {
 		t.Fatalf("FAIL (%s): Unable request capabilities: %v", t.TestName, err)

@@ -888,6 +888,27 @@ func (ws *WithdrawalsBaseSpec) GetWithdrawalsStartAccount() *big.Int {
 	return big.NewInt(0x1000)
 }
 
+func (ws *WithdrawalsBaseSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *ws
+	specCopy.MainFork = fork
+	return &specCopy
+}
+
+func (s *WithdrawalsBaseSpec) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := *s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return &specCopy
+}
+
 // Append the accounts we are going to withdraw to, which should also include
 // bytecode for testing purposes.
 //func (ws *WithdrawalsBaseSpec) GetGenesisTest(base string) string {
@@ -1336,6 +1357,27 @@ type WithdrawalsSyncSpec struct {
 	SyncShouldFail bool //
 }
 
+func (ws *WithdrawalsSyncSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *ws
+	specCopy.MainFork = fork
+	return &specCopy
+}
+
+func (s *WithdrawalsSyncSpec) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := *s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return &specCopy
+}
+
 func (ws *WithdrawalsSyncSpec) Execute(t *test.Env) {
 	//var secondaryEngineTestChan chan *test.TestEngineClient
 	//var secondaryEngineChan chan client.EngineClient
@@ -1425,6 +1467,27 @@ type WithdrawalsReorgSpec struct {
 	ReOrgBlockCount         uint64 // How many blocks the re-org will replace, including the head
 	ReOrgViaSync            bool   // Whether the client should fetch the sidechain by syncing from the secondary client
 	SidechainTimeIncrements uint64
+}
+
+func (ws *WithdrawalsReorgSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *ws
+	specCopy.MainFork = fork
+	return &specCopy
+}
+
+func (s *WithdrawalsReorgSpec) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := *s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return &specCopy
 }
 
 func (ws *WithdrawalsReorgSpec) GetSidechainSplitHeight() uint64 {
@@ -1742,6 +1805,27 @@ func (ws *WithdrawalsReorgSpec) Execute(t *test.Env) {
 type WithdrawalsExecutionLayerSpec struct {
 	*WithdrawalsBaseSpec
 	ClaimBlocksCount int
+}
+
+func (ws *WithdrawalsExecutionLayerSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := *ws
+	specCopy.MainFork = fork
+	return &specCopy
+}
+
+func (s *WithdrawalsExecutionLayerSpec) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := *s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return &specCopy
 }
 
 func (ws *WithdrawalsExecutionLayerSpec) claimBlocksCount() int {

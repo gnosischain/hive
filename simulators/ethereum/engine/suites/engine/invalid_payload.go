@@ -41,6 +41,21 @@ func (s InvalidPayloadTestCase) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s InvalidPayloadTestCase) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (i InvalidPayloadTestCase) GetName() string {
 	syncStatus := "False"
 	if i.Syncing {
@@ -319,6 +334,21 @@ func (s PayloadBuildAfterInvalidPayloadTest) WithMainFork(fork config.Fork) test
 	return specCopy
 }
 
+func (s PayloadBuildAfterInvalidPayloadTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (i PayloadBuildAfterInvalidPayloadTest) GetName() string {
 	name := fmt.Sprintf("Payload Build after New Invalid Payload: Invalid %s", i.InvalidField)
 	return name
@@ -404,6 +434,21 @@ type InvalidTxChainIDTest struct {
 func (s InvalidTxChainIDTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s InvalidTxChainIDTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	if s.ForkHeight > 0 {
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 
