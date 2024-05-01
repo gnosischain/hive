@@ -34,7 +34,9 @@ func (s ReExecutePayloadTest) WithTimestamp(genesisTime uint64) test.Spec {
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy
@@ -122,7 +124,9 @@ func (s InOrderPayloadExecutionTest) WithTimestamp(genesisTime uint64) test.Spec
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy
@@ -259,7 +263,9 @@ func (s MultiplePayloadsExtendingCanonicalChainTest) WithTimestamp(genesisTime u
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy
@@ -370,7 +376,9 @@ func (s NewPayloadOnSyncingClientTest) WithTimestamp(genesisTime uint64) test.Sp
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy
@@ -535,7 +543,9 @@ func (s NewPayloadWithMissingFcUTest) WithTimestamp(genesisTime uint64) test.Spe
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy

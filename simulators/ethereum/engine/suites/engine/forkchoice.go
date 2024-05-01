@@ -41,7 +41,9 @@ func (s InconsistentForkchoiceTest) WithTimestamp(genesisTime uint64) test.Spec 
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy
@@ -122,7 +124,9 @@ func (s ForkchoiceUpdatedUnknownBlockHashTest) WithTimestamp(genesisTime uint64)
 	// Set fork time, will be ignored if fork height is set
 	specCopy.ForkTime = *specCopy.GenesisTimestamp
 	// Set previous fork time if fork height is set
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		specCopy.PreviousForkTime = genesisTime
 	}
 	return specCopy
