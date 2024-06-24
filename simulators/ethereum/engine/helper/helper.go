@@ -18,7 +18,6 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 
-	gokzg4844 "github.com/crate-crypto/go-kzg-4844"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
@@ -27,7 +26,7 @@ import (
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
 )
 
-var kzg4844Context *gokzg4844.Context
+// var kzg4844Context *gokzg4844.Context
 
 // From ethereum/rpc:
 
@@ -188,7 +187,7 @@ func gethDebugPrevRandaoTransaction(ctx context.Context, c *rpc.Client, tx typ.T
 	return nil
 }
 
-func nethermindDebugPrevRandaoTransaction(ctx context.Context, c *rpc.Client, tx typ.Transaction, expectedPrevRandao *common.Hash) error {
+func nethermindDebugPrevRandaoTransaction(ctx context.Context, c *rpc.Client, tx typ.Transaction, _ *common.Hash) error {
 	var er *interface{}
 	if err := c.CallContext(ctx, &er, "trace_transaction", tx.Hash()); err != nil {
 		return err

@@ -3,9 +3,10 @@ package test
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
@@ -32,7 +33,8 @@ type Spec interface {
 	GetForkConfig() *config.ForkConfig
 	// Get the genesis file to initialize the clients
 	GetGenesis(string) client.Genesis
-	//GetGenesisTest(string) string
+	// Creates a copy of the spec with the genesis and previous fork timestamps configured
+	WithTimestamp(uint64) Spec
 	// Get the test transaction type to use throughout the test
 	GetTestTransactionType() helper.TestTransactionType
 	// Get the maximum execution time until a timeout is raised
@@ -170,7 +172,9 @@ func (s BaseSpec) GetBlockTime(blockNumber uint64) uint64 {
 
 func (s BaseSpec) GetForkTime() uint64 {
 	forkTime := s.ForkTime
-	if s.ForkHeight > 0 {
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
 		forkTime = s.GetBlockTime(s.ForkHeight)
 	}
 	return forkTime
@@ -197,6 +201,10 @@ func (s BaseSpec) GetForkConfig() *config.ForkConfig {
 	} else if mainFork == config.Cancun {
 		forkConfig.ShanghaiTimestamp = new(big.Int).SetUint64(previousForkTime)
 		forkConfig.CancunTimestamp = new(big.Int).SetUint64(forkTime)
+	} else if mainFork == config.Barnet {
+		forkConfig.ShanghaiTimestamp = new(big.Int).SetUint64(previousForkTime)
+		forkConfig.CancunTimestamp = new(big.Int).SetUint64(previousForkTime)
+		forkConfig.BarnetTimestamp = new(big.Int).SetUint64(forkTime)
 	} else {
 		panic(fmt.Errorf("unknown fork: %s", mainFork))
 	}
@@ -226,6 +234,23 @@ func (s BaseSpec) GetGenesis(base string) client.Genesis {
 	}
 	genesis := helper.LoadGenesis(genesisPath, gen)
 	return genesis
+}
+
+func (s BaseSpec) WithTimestamp(genesisTime uint64) Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
 }
 
 //func (s BaseSpec) GetGenesisTest(base string) string {

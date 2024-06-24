@@ -1,11 +1,12 @@
 package suite_engine
 
 import (
+	"math/big"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
-	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 )

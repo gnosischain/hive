@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"strings"
 	"time"
 
 	api "github.com/ethereum/go-ethereum/beacon/engine"
@@ -53,8 +54,9 @@ func AddSyncTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []
 			}
 			testFiles := hivesim.Params{"/genesis.json": genesisPath}
 			// Calculate and set the TTD for this test
-			genesis := helper.LoadGenesis(genesisPath)
-			ttd := helper.CalculateRealTTD(&genesis, currentTest.TTD)
+			clientName := strings.Split(clientDef.Name, "_")[0]
+			genesis := currentTest.GetGenesis(clientName)
+			ttd := helper.CalculateRealTTD(genesis, currentTest.TTD)
 			newParams := globals.DefaultClientEnv.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", ttd))
 			if currentTest.ChainFile != "" {
 				// We are using a Proof of Work chain file, remove all clique-related settings
@@ -100,7 +102,7 @@ func AddSyncTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []
 						}
 
 						// Run the test case
-						test.Run(&currentTest, big.NewInt(ttd), timeout, t, c, &genesis, rand.New(rand.NewSource(0)), syncClientParams, testFiles.Copy())
+						test.Run(&currentTest, big.NewInt(ttd), timeout, t, c, genesis, rand.New(rand.NewSource(0)), syncClientParams, testFiles.Copy())
 					},
 				})
 			}

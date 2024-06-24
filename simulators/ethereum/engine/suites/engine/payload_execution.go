@@ -25,6 +25,23 @@ func (s ReExecutePayloadTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s ReExecutePayloadTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (s ReExecutePayloadTest) GetName() string {
 	name := "Re-Execute Payload"
 	return name
@@ -95,6 +112,23 @@ type InOrderPayloadExecutionTest struct {
 func (s InOrderPayloadExecutionTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s InOrderPayloadExecutionTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 
@@ -220,6 +254,23 @@ func (s MultiplePayloadsExtendingCanonicalChainTest) WithMainFork(fork config.Fo
 	return specCopy
 }
 
+func (s MultiplePayloadsExtendingCanonicalChainTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (s MultiplePayloadsExtendingCanonicalChainTest) GetName() string {
 	name := "Multiple New Payloads Extending Canonical Chain,"
 	if s.SetHeadToFirstPayloadReceived {
@@ -313,6 +364,23 @@ type NewPayloadOnSyncingClientTest struct {
 func (s NewPayloadOnSyncingClientTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s NewPayloadOnSyncingClientTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 
@@ -463,6 +531,23 @@ type NewPayloadWithMissingFcUTest struct {
 func (s NewPayloadWithMissingFcUTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s NewPayloadWithMissingFcUTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 

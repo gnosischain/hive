@@ -23,6 +23,23 @@ func (s InvalidPayloadAttributesTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s InvalidPayloadAttributesTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 func (tc InvalidPayloadAttributesTest) GetName() string {
 	name := fmt.Sprintf("Invalid PayloadAttributes, %s,", tc.Description)
 	if tc.Syncing {

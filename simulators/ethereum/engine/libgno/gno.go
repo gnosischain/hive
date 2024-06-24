@@ -23,6 +23,7 @@ var (
 	// var SYSTEM_SENDER = common.HexToAddress("0xfffffffffffffffffffffffffffffffffffffffe")
 	GNOTokenAddress            = common.HexToAddress("0xbabe2bed00000000000000000000000000000002")
 	WithdrawalsContractAddress = common.HexToAddress("0xbabe2bed00000000000000000000000000000003")
+	FeeCollectorAddress        = common.HexToAddress("0x1559000000000000000000000000000000000000")
 
 	// GNOWithdrawalContractABI represents the path to the GNO withdrawal contract ABI.
 	//

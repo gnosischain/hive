@@ -19,6 +19,23 @@ func (s EngineNewPayloadVersionTest) WithMainFork(fork config.Fork) test.Spec {
 	return specCopy
 }
 
+func (s EngineNewPayloadVersionTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
+}
+
 // Test modifying the ForkchoiceUpdated version on Payload Request to the previous/upcoming version
 // when the timestamp payload attribute does not match the upgraded/downgraded version.
 type ForkchoiceUpdatedOnPayloadRequestTest struct {
@@ -29,6 +46,23 @@ type ForkchoiceUpdatedOnPayloadRequestTest struct {
 func (s ForkchoiceUpdatedOnPayloadRequestTest) WithMainFork(fork config.Fork) test.Spec {
 	specCopy := s
 	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s ForkchoiceUpdatedOnPayloadRequestTest) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
 	return specCopy
 }
 

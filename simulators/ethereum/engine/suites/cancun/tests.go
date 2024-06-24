@@ -2,12 +2,13 @@
 package suite_cancun
 
 import (
+	"math/big"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config/cancun"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
-	"math/big"
 )
 
 // Precalculate the first data gas cost increase
@@ -15,9 +16,9 @@ var (
 	DATA_GAS_COST_INCREMENT_EXCEED_BLOBS = GetMinExcessBlobsForBlobGasPrice(2)
 )
 
-func pUint64(v uint64) *uint64 {
-	return &v
-}
+// func pUint64(v uint64) *uint64 {
+// 	return &v
+// }
 
 // Execution specification reference:
 // https://github.com/ethereum/execution-apis/blob/main/src/engine/cancun.md
@@ -30,7 +31,7 @@ var Tests = []test.Spec{
 			Name: "Blob Transactions On Block 1, Shanghai Genesis",
 			About: `
 			Tests the Cancun fork since Block 1.
-	
+
 			Verifications performed:
 			- Correct implementation of Engine API changes for Cancun:
 			  - engine_newPayloadV3, engine_forkchoiceUpdatedV3, engine_getPayloadV3
@@ -50,7 +51,10 @@ var Tests = []test.Spec{
 
 		TestSequence: TestSequence{
 			// We are starting at Shanghai genesis so send a couple payloads to reach the fork
-			NewPayloads{},
+			NewPayloads{
+				// Nethermind rejects to receive blobs transactions until at least 1 post cancun block is processed
+				PayloadCount: 2,
+			},
 
 			// First, we send a couple of blob transactions on genesis,
 			// with enough data gas cost to make sure they are included in the first block.
@@ -93,14 +97,14 @@ var Tests = []test.Spec{
 			},
 		},
 	},
-	//
+
 	&CancunBaseSpec{
 
 		BaseSpec: test.BaseSpec{
 			Name: "Blob Transactions On Block 1, Cancun Genesis",
 			About: `
 			Tests the Cancun fork since genesis.
-	
+
 			Verifications performed:
 			* See Blob Transactions On Block 1, Shanghai Genesis
 			`,
@@ -271,7 +275,9 @@ var Tests = []test.Spec{
 		},
 
 		TestSequence: TestSequence{
-			NewPayloads{},
+			NewPayloads{
+				PayloadCount: 2,
+			},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
 			// account A.
 			SendBlobTransactions{
@@ -364,6 +370,100 @@ var Tests = []test.Spec{
 				ExpectedIncludedBlobCount: 1,
 				// Wait a bit more on before requesting the built payload from the client
 				GetPayloadDelay: 2,
+			},
+		},
+	},
+
+	&CancunBaseSpec{
+		BaseSpec: test.BaseSpec{
+			Name: "Fee Collector test for transactions, Cancun genesis",
+			About: `
+			Tests the Fee Collector since Cancun genesis.
+
+			Verifications performed:
+			- Expected behaivior of the Fee Collector for transactions before the Barnet fork.
+			`,
+			MainFork: config.Cancun,
+		},
+		TestSequence: TestSequence{
+			NewPayloads{},
+
+			SendTransactions{
+				TransactionCount:   1,
+				SenderAccountIndex: 0,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              cancun.TARGET_BLOBS_PER_BLOCK,
+				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				AccountIndex:                  1,
+			},
+
+			NewPayloads{
+				ExpectedIncludedBlobCount: cancun.TARGET_BLOBS_PER_BLOCK,
+				ExpectedBlobs:             helper.GetBlobList(0, cancun.TARGET_BLOBS_PER_BLOCK),
+			},
+		},
+	},
+
+	&CancunBaseSpec{
+		BaseSpec: test.BaseSpec{
+			Name: "Blob transactions on Barnet, Cancun genesis ",
+			About: `
+			Tests the Barnet fork since Cancun genesis.
+
+			Verifications performed:
+			- Correct implementation of Barnet fork fix to Blob fee gas collection
+			`,
+			MainFork:   config.Barnet,
+			ForkHeight: 1,
+		},
+
+		TestSequence: TestSequence{
+			NewPayloads{
+				PayloadCount: 2,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              cancun.TARGET_BLOBS_PER_BLOCK,
+				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+			},
+
+			NewPayloads{
+				ExpectedIncludedBlobCount: cancun.TARGET_BLOBS_PER_BLOCK,
+				ExpectedBlobs:             helper.GetBlobList(0, cancun.TARGET_BLOBS_PER_BLOCK),
+			},
+		},
+	},
+
+	&CancunBaseSpec{
+		BaseSpec: test.BaseSpec{
+			Name: "Fee Collector test for transactions, Barnet genesis",
+			About: `
+			Tests the Fee Collector since Barnet genesis.
+
+			Verifications performed:
+			- Expected behaivior of the Fee Collector for transactions after the Barnet fork.
+			`,
+			MainFork: config.Barnet,
+		},
+		TestSequence: TestSequence{
+			NewPayloads{},
+
+			SendTransactions{
+				TransactionCount:   1,
+				SenderAccountIndex: 0,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              cancun.TARGET_BLOBS_PER_BLOCK,
+				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				AccountIndex:                  1,
+			},
+
+			NewPayloads{
+				ExpectedIncludedBlobCount: cancun.TARGET_BLOBS_PER_BLOCK,
+				ExpectedBlobs:             helper.GetBlobList(0, cancun.TARGET_BLOBS_PER_BLOCK),
 			},
 		},
 	},

@@ -1,8 +1,10 @@
 package suite_cancun
 
 import (
-	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"time"
+
+	"github.com/ethereum/hive/simulators/ethereum/engine/client"
+	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
@@ -70,7 +72,7 @@ type CancunBaseSpec struct {
 
 // Append the accounts we are going to withdraw to, which should also include
 // bytecode for testing purposes.
-func (cs *CancunBaseSpec) GetGenesis(base string) client.Genesis {
+func (cs CancunBaseSpec) GetGenesis(base string) client.Genesis {
 
 	genesis := cs.BaseSpec.GetGenesis(base)
 
@@ -95,12 +97,12 @@ func (cs *CancunBaseSpec) GetGenesis(base string) client.Genesis {
 	return genesis
 }
 
-func (cs *CancunBaseSpec) GetPreShapellaBlockCount() int {
+func (cs CancunBaseSpec) GetPreShapellaBlockCount() int {
 	return int(cs.BaseSpec.ForkHeight)
 }
 
 // Get the per-block timestamp increments configured for this test
-func (cs *CancunBaseSpec) GetBlockTimeIncrements() uint64 {
+func (cs CancunBaseSpec) GetBlockTimeIncrements() uint64 {
 	return 1
 }
 
@@ -120,8 +122,7 @@ func (cs *CancunBaseSpec) waitForSetup(t *test.Env) {
 }
 
 // Base test case execution procedure for blobs tests.
-func (cs *CancunBaseSpec) Execute(t *test.Env) {
-
+func (cs CancunBaseSpec) Execute(t *test.Env) {
 	t.CLMock.WaitForTTD()
 	cs.waitForSetup(t)
 
@@ -142,5 +143,27 @@ func (cs *CancunBaseSpec) Execute(t *test.Env) {
 			t.Fatalf("FAIL: Error executing step %d: %v", stepId+1, err)
 		}
 	}
+}
 
+func (s CancunBaseSpec) WithMainFork(fork config.Fork) test.Spec {
+	specCopy := s
+	specCopy.MainFork = fork
+	return specCopy
+}
+
+func (s CancunBaseSpec) WithTimestamp(genesisTime uint64) test.Spec {
+	specCopy := s
+	// Set genesis time if not defined
+	if s.GenesisTimestamp == nil {
+		specCopy.GenesisTimestamp = &genesisTime
+	}
+	// Set fork time, will be ignored if fork height is set
+	specCopy.ForkTime = *specCopy.GenesisTimestamp
+	// Set previous fork time if fork height is set
+	mainFork := s.GetMainFork()
+	if s.ForkHeight > 0 && mainFork != config.Paris && mainFork != config.Shanghai {
+		// No previous fork time for Paris and Shanghai
+		specCopy.PreviousForkTime = genesisTime
+	}
+	return specCopy
 }

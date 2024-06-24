@@ -12,6 +12,7 @@ import (
 	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
@@ -19,6 +20,7 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/devp2p"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
+	"github.com/ethereum/hive/simulators/ethereum/engine/libgno"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
 	"github.com/pkg/errors"
@@ -394,6 +396,30 @@ func (step NewPayloads) VerifyBlobBundle(blobDataInPayload []*BlobWrapData, payl
 	return nil
 }
 
+func (step NewPayloads) GetFeeCollectorBalance(
+	client *rpc.Client,
+	at string,
+	result *big.Int,
+) error {
+	// Get fee collector balance at a specific block
+	var raw string
+	err := client.Call(
+		&raw,
+		"eth_getBalance",
+		libgno.FeeCollectorAddress.Hex(),
+		at,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, ok := result.SetString(raw, 0)
+	if !ok {
+		return fmt.Errorf("failed to parse fee collector balance: %s", raw)
+	}
+	return nil
+}
+
 func (step NewPayloads) Execute(t *CancunTestContext) error {
 	// Create a new payload
 	// Produce the payload
@@ -405,10 +431,21 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 		t.CLMock.PayloadProductionClientDelay = time.Duration(step.GetPayloadDelay) * time.Second
 	}
 	var (
-		previousPayload = t.CLMock.LatestPayloadBuilt
+		previousPayload                  = t.CLMock.LatestPayloadBuilt
+		prevFeeCollectorBalance *big.Int = new(big.Int)
+		rpc                              = t.Client.RPC()
 	)
+	if rpc == nil {
+		t.Fatalf("FAIL: Rpc client is nil")
+	}
 	for p := uint64(0); p < payloadCount; p++ {
 		t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{
+			OnPayloadProducerSelected: func() {
+				// Get fee collector balance before producing the new payload
+				if err := step.GetFeeCollectorBalance(rpc, "latest", prevFeeCollectorBalance); err != nil {
+					t.Fatalf("FAIL: Error getting fee collector balance: %v", err)
+				}
+			},
 			OnPayloadAttributesGenerated: func() {
 				if step.FcUOnPayloadRequest != nil {
 					var (
@@ -585,6 +622,35 @@ func (step NewPayloads) Execute(t *CancunTestContext) error {
 					t.Fatalf("FAIL: Error verifying payload (payload %d/%d): %v", p+1, payloadCount, err)
 				}
 				previousPayload = t.CLMock.LatestPayloadBuilt
+
+				// Get fee collector balance for the new block
+				feeCollectorBalance := new(big.Int)
+				if err := step.GetFeeCollectorBalance(rpc, "latest", feeCollectorBalance); err != nil {
+					t.Fatalf("FAIL: Error getting fee collector balance: %v", err)
+				}
+
+				// Calculate txs fees for the new block
+				feesCollected := big.NewInt(0)
+				for _, binaryTx := range payload.Transactions {
+					// Unmarshal the tx from the payload
+					tx := new(types.Transaction)
+					if err := tx.UnmarshalBinary(binaryTx); err != nil {
+						t.Fatalf("FAIL: Error getting transaction: %v", err)
+					}
+					// Calculate fees
+					feeCollected := big.NewInt(0)
+					if tx.Type() != types.BlobTxType {
+						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas())))
+					} else if tx.Type() == types.BlobTxType && t.CLMock.IsBarnet(payload.Timestamp) {
+						// Add blob gas fees if devnet is after barnet fork
+						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.GasPrice(), new(big.Int).SetUint64(tx.Gas())))
+						feeCollected.Add(feeCollected, new(big.Int).Mul(tx.BlobGasFeeCap(), new(big.Int).SetUint64(tx.BlobGas())))
+					}
+					feesCollected.Add(feesCollected, feeCollected)
+				}
+				if feesCollected.Cmp(feeCollectorBalance) != 0 {
+					t.Fatalf("FAIL: Incorrect fee collector balance: expected %s, got %s", feesCollected.String(), feeCollectorBalance.String())
+				}
 			},
 		})
 		t.Logf("INFO: Correctly produced payload %d/%d", p+1, payloadCount)
@@ -675,10 +741,12 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 			t.Fatalf("FAIL: Error sending blob transaction: %v", err)
 		}
 		if !step.SkipVerificationFromNode {
-			VerifyTransactionFromNode(t.TestContext, engine, blobTx)
+			if err := VerifyTransactionFromNode(t.TestContext, engine, blobTx); err != nil {
+				t.Fatalf("FAIL: Error verifying blob transaction: %v", err)
+			}
 		}
 		t.TestBlobTxPool.Mutex.Lock()
-		t.AddBlobTransaction(blobTx)
+		t.AddTransaction(blobTx)
 		t.HashesByIndex[t.CurrentTransactionIndex] = blobTx.Hash()
 		t.CurrentTransactionIndex += 1
 		t.Logf("INFO: Sent blob transaction: %s", blobTx.Hash().String())
@@ -690,6 +758,80 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 
 func (step SendBlobTransactions) Description() string {
 	return fmt.Sprintf("SendBlobTransactions: %d Transactions, %d blobs each, %d max data gas fee", step.TransactionCount, step.GetBlobsPerTransaction(), step.BlobTransactionMaxBlobGasCost.Uint64())
+}
+
+// Send transactions to the client
+type SendTransactions struct {
+	// Number of transactions to send
+	TransactionCount uint64
+	// Sender Account index
+	SenderAccountIndex uint64
+	// Receiver Account index
+	ReceiverAccountIndex uint64
+	// Gas Fee Cap for every transaction
+	GasFeeCap *big.Int
+	// Gas Tip Cap for every transaction
+	GasTipCap *big.Int
+	// Amount to send in every transaction
+	Amount *big.Int
+	// Skip verification of retrieving the tx from node
+	SkipVerificationFromNode bool
+	// Client index to send the transactions to
+	ClientIndex uint64
+}
+
+func (step SendTransactions) GetAmount() *big.Int {
+	if step.Amount == nil || step.Amount.Cmp(big.NewInt(0)) <= 0 {
+		return big.NewInt(1)
+	}
+	return step.Amount
+}
+
+func (step SendTransactions) Execute(t *CancunTestContext) error {
+	receiver := globals.TestAccounts[step.ReceiverAccountIndex].GetAddress()
+	var engine client.EngineClient
+	if step.ClientIndex >= uint64(len(t.Engines)) {
+		return fmt.Errorf("invalid client index %d", step.ClientIndex)
+	}
+	engine = t.Engines[step.ClientIndex]
+	// Send the transactions
+	for ntx := uint64(0); ntx < step.TransactionCount; ntx++ {
+		txCreator := &helper.BaseTransactionCreator{
+			Recipient: &receiver,
+			GasLimit:  t.Genesis.GasLimit(),
+			GasFee:    step.GasFeeCap,
+			GasTip:    step.GasTipCap,
+			Amount:    step.GetAmount(),
+			Payload:   nil,
+			TxType:    helper.LegacyTxOnly,
+		}
+		sender := globals.TestAccounts[step.SenderAccountIndex]
+		tx, err := t.SendTransaction(
+			t.TestContext,
+			sender,
+			engine,
+			txCreator,
+		)
+		if err != nil {
+			t.Fatalf("FAIL: Error sending transaction: %v", err)
+		}
+		if !step.SkipVerificationFromNode {
+			if err := VerifyTransactionFromNode(t.TestContext, engine, tx); err != nil {
+				t.Fatalf("FAIL: Error verifying transaction: %v", err)
+			}
+		}
+		t.TestBlobTxPool.Mutex.Lock()
+		t.AddTransaction(tx)
+		t.HashesByIndex[t.CurrentTransactionIndex] = tx.Hash()
+		t.CurrentTransactionIndex += 1
+		t.Logf("INFO: Sent transaction: %s", tx.Hash().String())
+		t.TestBlobTxPool.Mutex.Unlock()
+	}
+	return nil
+}
+
+func (step SendTransactions) Description() string {
+	return fmt.Sprintf("SendTransactions: %d Transactions, %d amount", step.TransactionCount, step.GetAmount().Uint64())
 }
 
 // Send a modified version of the latest payload produced using NewPayloadV3
