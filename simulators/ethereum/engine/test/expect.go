@@ -1154,8 +1154,8 @@ func (tr *TransactionReceiptExpectObject) ExpectBlobGasUsed(expectedBlobGasUsed 
 func (tr *TransactionReceiptExpectObject) ExpectBlobGasPrice(expectedBlobGasPrice *big.Int) {
 	tr.ExpectNoError()
 	if (expectedBlobGasPrice == nil || tr.Receipt.BlobGasPrice == nil) && expectedBlobGasPrice != tr.Receipt.BlobGasPrice {
-		tr.Fatalf("FAIL (%s): Unexpected transaction blob gas price on %s: %v, BlobGasPrice=%v, expected=%v", tr.TestName, tr.Call, tr.Receipt.TxHash, tr.Receipt.BlobGasPrice, expectedBlobGasPrice)
+		tr.Fatalf("FAIL (%s): Unexpected transaction blob gas price on %s: %v, BlobGasPrice=%d, expected=%d", tr.TestName, tr.Call, tr.Receipt.TxHash, tr.Receipt.BlobGasPrice, expectedBlobGasPrice)
 	} else if expectedBlobGasPrice != nil && tr.Receipt.BlobGasPrice != nil && expectedBlobGasPrice.Cmp(tr.Receipt.BlobGasPrice) != 0 {
-		tr.Fatalf("FAIL (%s): Unexpected transaction blob gas price on %s: %v, BlobGasPrice=0x%x, expected=0x%x", tr.TestName, tr.Call, tr.Receipt.TxHash, *tr.Receipt.BlobGasPrice, *expectedBlobGasPrice)
+		tr.Fatalf("FAIL (%s): Unexpected transaction blob gas price on %s: %v, BlobGasPrice=%d, expected=%d", tr.TestName, tr.Call, tr.Receipt.TxHash, tr.Receipt.BlobGasPrice, expectedBlobGasPrice)
 	}
 }

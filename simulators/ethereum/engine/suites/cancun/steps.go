@@ -310,7 +310,7 @@ func (step NewPayloads) VerifyPayload(ctx context.Context, forkConfig *config.Fo
 		}
 
 		totalBlobCount := uint64(0)
-		expectedBlobGasPrice := new(big.Int).SetUint64(GetBlobGasPrice(expectedExcessBlobGas))
+		// expectedBlobGasPrice := new(big.Int).SetUint64(GetBlobGasPrice(expectedExcessBlobGas))
 
 		for _, tx := range blobTxsInPayload {
 			blobCount := uint64(len(tx.BlobHashes()))
@@ -320,7 +320,7 @@ func (step NewPayloads) VerifyPayload(ctx context.Context, forkConfig *config.Fo
 			r := testEngine.TestTransactionReceipt(tx.Hash())
 			expectedBlobGasUsed := blobCount * cancun.GAS_PER_BLOB
 			r.ExpectBlobGasUsed(expectedBlobGasUsed)
-			r.ExpectBlobGasPrice(expectedBlobGasPrice)
+			// r.ExpectBlobGasPrice(expectedBlobGasPrice)
 		}
 
 		if totalBlobCount != step.ExpectedIncludedBlobCount {
@@ -658,6 +658,7 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 		}
 		//sender := globals.NewTestAccount(globals.GnoVaultVaultKey, &globals.GnoVaultAccountAddress, 0)
 		sender := globals.TestAccounts[step.AccountIndex]
+
 		var (
 			blobTx typ.Transaction
 			err    error

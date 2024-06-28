@@ -38,6 +38,7 @@ func GetBlobGasPrice(excessBlobGas uint64) uint64 {
 func GetMinExcessBlobGasForBlobGasPrice(data_gas_price uint64) uint64 {
 	var (
 		current_excess_data_gas = uint64(0)
+		// TODO:
 		current_data_gas_price  = uint64(1)
 	)
 	for current_data_gas_price < data_gas_price {
