@@ -6,9 +6,10 @@ import (
 	"crypto/rand"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	beacon "github.com/ethereum/go-ethereum/beacon/engine"
@@ -240,20 +241,6 @@ var Tests = []test.Spec{
 		TestCorrupedHashPayloads: true,
 	},
 
-	// Block value tests
-	// &BlockValueSpec{
-	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
-	// 		Spec: test.Spec{
-	// 			Name: "GetPayloadV2 Block Value",
-	// 			About: `
-	// 			Verify the block value returned in GetPayloadV2.
-	// 			`,
-	// 		},
-	// 		WithdrawalsForkHeight: 1,
-	// 		WithdrawalsBlockCount: 1,
-	// 	},
-	// },
-
 	// Sync Tests
 	&WithdrawalsSyncSpec{
 		WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
@@ -315,7 +302,7 @@ var Tests = []test.Spec{
 		SyncSteps: 1,
 	},
 
-	// // TODO:
+	// // FIXME:
 	// &WithdrawalsSyncSpec{
 	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
 	// 		Spec: test.Spec{
@@ -358,7 +345,7 @@ var Tests = []test.Spec{
 	// 	SyncSteps: 1,
 	// },
 
-	// TODO: This test is failing, need to investigate.
+	// FIXME: This test is failing, need to investigate.
 	// &WithdrawalsSyncSpec{
 	// 	WithdrawalsBaseSpec: &WithdrawalsBaseSpec{
 	// 		Spec: test.Spec{

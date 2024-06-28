@@ -69,9 +69,24 @@ func ConfigTestAccounts(genesis *core.Genesis) error {
 		}
 		genesis.Alloc[address] = core.GenesisAccount{
 			Code:    datahashCode,
-			Balance: common.Big0,
+			Balance: common.Big1,
 		}
 	}
+
+	// for i := uint64(0); i < 1000; i++ {
+	// 	bs := make([]byte, 8)
+	// 	binary.BigEndian.PutUint64(bs, uint64(i))
+	// 	b := sha256.Sum256(bs)
+	// 	k, err := crypto.ToECDSA(b[:])
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+
+	// 	addr := crypto.PubkeyToAddress(k.PublicKey)
+	// 	genesis.Alloc[addr] = core.GenesisAccount{
+	// 		Balance: big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(1e18)),
+	// 	}
+	// }
 
 	return nil
 }

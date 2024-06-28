@@ -2,17 +2,19 @@
 package suite_cancun
 
 import (
+	"math/big"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config/cancun"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
-	"math/big"
 )
 
 // Precalculate the first data gas cost increase
 var (
 	DATA_GAS_COST_INCREMENT_EXCEED_BLOBS = GetMinExcessBlobsForBlobGasPrice(2)
+	X10_BLOB_GAS_PRICE                   = big.NewInt(int64(cancun.MIN_DATA_GASPRICE * 100))
 )
 
 func pUint64(v uint64) *uint64 {
@@ -30,7 +32,7 @@ var Tests = []test.Spec{
 			Name: "Blob Transactions On Block 1, Shanghai Genesis",
 			About: `
 			Tests the Cancun fork since Block 1.
-	
+
 			Verifications performed:
 			- Correct implementation of Engine API changes for Cancun:
 			  - engine_newPayloadV3, engine_forkchoiceUpdatedV3, engine_getPayloadV3
@@ -100,7 +102,7 @@ var Tests = []test.Spec{
 			Name: "Blob Transactions On Block 1, Cancun Genesis",
 			About: `
 			Tests the Cancun fork since genesis.
-	
+
 			Verifications performed:
 			* See Blob Transactions On Block 1, Shanghai Genesis
 			`,
@@ -172,27 +174,29 @@ var Tests = []test.Spec{
 			NewPayloads{},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
 			SendBlobTransactions{
-				TransactionCount:    5,
-				BlobsPerTransaction: 2,
-				//BlobTransactionGasTipCap:
-				BlobTransactionMaxBlobGasCost: big.NewInt(500000000),
+				TransactionCount:              5,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+
 			},
 			// Then send the single-blob transactions
 			SendBlobTransactions{
-				TransactionCount:              cancun.MAX_BLOBS_PER_BLOCK + 1,
-				BlobsPerTransaction:           1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(00000000),
-			},
+				TransactionCount:              2,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
 
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+
+			},
 			// First four payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
-				PayloadCount:              4,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK - 1,
+				PayloadCount:              1,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK-1,
 			},
 
 			// The rest of the payloads have full blobs
 			NewPayloads{
-				PayloadCount:              2,
+				PayloadCount:              3,
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
 			},
 		},
@@ -220,38 +224,79 @@ var Tests = []test.Spec{
 			NewPayloads{},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				TransactionCount:              3,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 			},
 
 			// Then send the dual-blob transaction
 			SendBlobTransactions{
 				TransactionCount:              1,
-				BlobsPerTransaction:           2,
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK-1,
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 			},
 
 			// First five payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
-				PayloadCount:              5,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK - 1,
+				PayloadCount:              3,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK ,
 			},
 
 			// First five payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
 				PayloadCount:              1,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
-			},
-			// The rest of the payloads have full blobs
-			NewPayloads{
-				PayloadCount:              1,
-				ExpectedIncludedBlobCount: 0,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK-1,
 			},
 		},
 	},
+
+	&CancunBaseSpec{
+
+		BaseSpec: test.BaseSpec{
+			Name: "Blob Transaction Ordering, Single Account, Dual Blob",
+			About: `
+			// TODO::
+			`,
+			MainFork: config.Cancun,
+		},
+
+		TestSequence: TestSequence{
+			NewPayloads{},
+			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
+			SendBlobTransactions{
+				TransactionCount:              2,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+			},
+
+			// Then send the dual-blob transaction
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK-1,
+				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE)),
+			},
+
+			//
+			NewPayloads{
+				PayloadCount:              2,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK ,
+			},
+
+			// TODO:
+			NewPayloads{
+				PayloadCount:              2,
+				ExpectedIncludedBlobCount: 0,
+			},
+
+			NewPayloads{
+				PayloadCount: 1,
+				ExpectedIncludedBlobCount: 1,
+			},
+		},
+	},
+
 
 	&CancunBaseSpec{
 
@@ -277,31 +322,35 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           1,
-				BlobTransactionGasFeeCap:      big.NewInt(1e10),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				// BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  0,
 			},
 			// Then send the single-blob transactions from account B
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           1,
-				BlobTransactionGasFeeCap:      big.NewInt(1e10),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				// BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  1,
 			},
 
 			// All payloads have full blobs
 			NewPayloads{
-				PayloadCount:              5,
+				PayloadCount:              1,
 				ExpectedIncludedBlobCount: 1,
 			},
-			// All payloads have full blobs
 			NewPayloads{
-				PayloadCount:              5,
+				PayloadCount:              4,
+				ExpectedIncludedBlobCount: 2,
+			},
+			NewPayloads{
+				PayloadCount:              1,
 				ExpectedIncludedBlobCount: 1,
 			},
 		},
 	},
+
 
 	&CancunBaseSpec{
 
@@ -342,8 +391,8 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				// BlobTransactionGasTipCap:      big.NewInt(1e12),
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  0,
 				ClientIndex:                   0,
 			},
@@ -351,277 +400,285 @@ var Tests = []test.Spec{
 			// B.
 			SendBlobTransactions{
 				TransactionCount:              5,
-				BlobsPerTransaction:           1,
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				// BlobTransactionGasTipCap:      big.NewInt(1e12),
+				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  1,
 				ClientIndex:                   1,
 			},
 
+
 			// All payloads have full blobs
 			NewPayloads{
-				PayloadCount:              10,
+				PayloadCount:              1,
 				ExpectedIncludedBlobCount: 1,
-				// Wait a bit more on before requesting the built payload from the client
-				GetPayloadDelay: 2,
+			},
+			NewPayloads{
+				PayloadCount:              4,
+				ExpectedIncludedBlobCount: 2,
+			},
+			NewPayloads{
+				PayloadCount:              1,
+				ExpectedIncludedBlobCount: 1,
 			},
 		},
 	},
 
-	//&CancunBaseSpec{
-	//
-	//	BaseSpec: test.BaseSpec{
-	//		Name: "Replace Blob Transactions",
-	//		About: `
-	//		Test sending multiple blob transactions with the same nonce, but
-	//		higher gas tip so the transaction is replaced.
-	//		`,
-	//		MainFork: config.Cancun,
-	//	},
-	//
-	//	TestSequence: TestSequence{
-	//		NewPayloads{},
-	//		// Send multiple blob transactions with the same nonce.
-	//		SendBlobTransactions{ // Blob ID 0
-	//			TransactionCount:              1,
-	//			BlobTransactionMaxBlobGasCost: big.NewInt(1),
-	//			BlobTransactionGasFeeCap:      big.NewInt(1e9),
-	//			BlobTransactionGasTipCap:      big.NewInt(1e9),
-	//		},
-	//		SendBlobTransactions{ // Blob ID 1
-	//			TransactionCount:              1,
-	//			BlobTransactionMaxBlobGasCost: big.NewInt(1e2),
-	//			BlobTransactionGasFeeCap:      big.NewInt(1e10),
-	//			BlobTransactionGasTipCap:      big.NewInt(1e10),
-	//			ReplaceTransactions:           true,
-	//		},
-	//		SendBlobTransactions{ // Blob ID 2
-	//			TransactionCount:              1,
-	//			BlobTransactionMaxBlobGasCost: big.NewInt(1e3),
-	//			BlobTransactionGasFeeCap:      big.NewInt(1e11),
-	//			BlobTransactionGasTipCap:      big.NewInt(1e11),
-	//			ReplaceTransactions:           true,
-	//		},
-	//		SendBlobTransactions{ // Blob ID 3
-	//			TransactionCount:              1,
-	//			BlobTransactionMaxBlobGasCost: big.NewInt(1e4),
-	//			BlobTransactionGasFeeCap:      big.NewInt(1e12),
-	//			BlobTransactionGasTipCap:      big.NewInt(1e12),
-	//			ReplaceTransactions:           true,
-	//		},
-	//
-	//		// We create the first payload, which must contain the blob tx
-	//		// with the higher tip.
-	//		NewPayloads{
-	//			ExpectedIncludedBlobCount: 1,
-	//			ExpectedBlobs:             []helper.BlobID{1},
-	//		},
-	//	},
-	//},
-	//
-	//&CancunBaseSpec{
-	//
-	//	BaseSpec: test.BaseSpec{
-	//		Name: "Parallel Blob Transactions",
-	//		About: `
-	//		Test sending multiple blob transactions in parallel from different accounts.
-	//
-	//		Verify that a payload is created with the maximum number of blobs.
-	//		`,
-	//		MainFork: config.Cancun,
-	//	},
-	//
-	//	TestSequence: TestSequence{
-	//		// Send multiple blob transactions with the same nonce.
-	//		ParallelSteps{
-	//			Steps: []TestStep{
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  0,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  1,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  2,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  3,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  4,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  5,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  6,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  7,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  8,
-	//				},
-	//				SendBlobTransactions{
-	//					TransactionCount:              5,
-	//					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-	//					BlobTransactionMaxBlobGasCost: big.NewInt(100),
-	//					AccountIndex:                  9,
-	//				},
-	//			},
-	//		},
-	//
-	//		// We create the first payload, which is guaranteed to have the first cancun.MAX_BLOBS_PER_BLOCK blobs.
-	//		NewPayloads{
-	//			ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
-	//			ExpectedBlobs:             helper.GetBlobList(0, cancun.MAX_BLOBS_PER_BLOCK),
-	//		},
-	//	},
-	//},
-	//
-	//// ForkchoiceUpdatedV3 before cancun
-	//&CancunBaseSpec{
-	//	BaseSpec: test.BaseSpec{
-	//		Name: "ForkchoiceUpdatedV3 Set Head to Shanghai Payload, Null Payload Attributes",
-	//		About: `
-	//		Test sending ForkchoiceUpdatedV3 to set the head of the chain to a Shanghai payload:
-	//		- Send NewPayloadV2 with Shanghai payload on block 1
-	//		- Use ForkchoiceUpdatedV3 to set the head to the payload, with null payload attributes
-	//
-	//		Verify that client returns no error
-	//		`,
-	//		MainFork:   config.Cancun,
-	//		ForkHeight: 2,
-	//	},
-	//
-	//	TestSequence: TestSequence{
-	//		NewPayloads{
-	//			FcUOnHeadSet: &helper.UpgradeForkchoiceUpdatedVersion{
-	//				ForkchoiceUpdatedCustomizer: &helper.BaseForkchoiceUpdatedCustomizer{},
-	//			},
-	//			ExpectationDescription: `
-	//			ForkchoiceUpdatedV3 before Cancun returns no error without payload attributes
-	//			`,
-	//		},
-	//	},
-	//},
-	//
-	//&CancunBaseSpec{
-	//	BaseSpec: test.BaseSpec{
-	//		Name: "ForkchoiceUpdatedV3 To Request Shanghai Payload, Null Beacon Root",
-	//		About: `
-	//		Test sending ForkchoiceUpdatedV3 to request a Shanghai payload:
-	//		- Payload Attributes uses Shanghai timestamp
-	//		- Payload Attributes Beacon Root is null
-	//
-	//		Verify that client returns INVALID_PAYLOAD_ATTRIBUTES.
-	//		`,
-	//		MainFork:   config.Cancun,
-	//		ForkHeight: 2,
-	//	},
-	//
-	//	TestSequence: TestSequence{
-	//		NewPayloads{
-	//			FcUOnPayloadRequest: &helper.UpgradeForkchoiceUpdatedVersion{
-	//				ForkchoiceUpdatedCustomizer: &helper.BaseForkchoiceUpdatedCustomizer{
-	//					ExpectedError: globals.INVALID_PAYLOAD_ATTRIBUTES,
-	//				},
-	//			},
-	//			ExpectationDescription: fmt.Sprintf(`
-	//			ForkchoiceUpdatedV3 before Cancun with any null field must return INVALID_PAYLOAD_ATTRIBUTES (code %d)
-	//			`, *globals.INVALID_PAYLOAD_ATTRIBUTES),
-	//		},
-	//	},
-	//},
-	//
-	//&CancunBaseSpec{
-	//	BaseSpec: test.BaseSpec{
-	//		Name: "ForkchoiceUpdatedV3 To Request Shanghai Payload, Non-Null Beacon Root",
-	//		About: `
-	//		Test sending ForkchoiceUpdatedV3 to request a Shanghai payload:
-	//		- Payload Attributes uses Shanghai timestamp
-	//		- Payload Attributes Beacon Root is non-null
-	//
-	//		Verify that client returns UNSUPPORTED_FORK_ERROR.
-	//		`,
-	//		MainFork:   config.Cancun,
-	//		ForkHeight: 2,
-	//	},
-	//
-	//	TestSequence: TestSequence{
-	//		NewPayloads{
-	//			FcUOnPayloadRequest: &helper.UpgradeForkchoiceUpdatedVersion{
-	//				ForkchoiceUpdatedCustomizer: &helper.BaseForkchoiceUpdatedCustomizer{
-	//					PayloadAttributesCustomizer: &helper.BasePayloadAttributesCustomizer{
-	//						BeaconRoot: &(common.Hash{}),
-	//					},
-	//					ExpectedError: globals.UNSUPPORTED_FORK_ERROR,
-	//				},
-	//			},
-	//			ExpectationDescription: fmt.Sprintf(`
-	//			ForkchoiceUpdatedV3 before Cancun with beacon root field present must return UNSUPPORTED_FORK_ERROR (code %d)
-	//			`, *globals.UNSUPPORTED_FORK_ERROR),
-	//		},
-	//	},
-	//},
-	//
-	//// ForkchoiceUpdatedV2 before cancun with beacon root
-	//&CancunBaseSpec{
-	//	BaseSpec: test.BaseSpec{
-	//		Name: "ForkchoiceUpdatedV2 To Request Shanghai Payload, Non-Null Beacon Root",
-	//		About: `
-	//		Test sending ForkchoiceUpdatedV2 to request a Shanghai payload:
-	//		- Payload Attributes uses Shanghai timestamp
-	//		- Payload Attributes Beacon Root is non-null
-	//
-	//		Verify that client returns INVALID_PAYLOAD_ATTRIBUTES.
-	//		`,
-	//		MainFork:   config.Cancun,
-	//		ForkHeight: 2,
-	//	},
-	//
-	//	TestSequence: TestSequence{
-	//		NewPayloads{
-	//			FcUOnPayloadRequest: &helper.BaseForkchoiceUpdatedCustomizer{
-	//				PayloadAttributesCustomizer: &helper.BasePayloadAttributesCustomizer{
-	//					BeaconRoot: &(common.Hash{}),
-	//				},
-	//				ExpectedError: globals.INVALID_PAYLOAD_ATTRIBUTES,
-	//			},
-	//			ExpectationDescription: fmt.Sprintf(`
-	//			ForkchoiceUpdatedV2 before Cancun with beacon root field must return INVALID_PAYLOAD_ATTRIBUTES (code %d)
-	//			`, *globals.INVALID_PAYLOAD_ATTRIBUTES),
-	//		},
-	//	},
-	//},
-	//
+	&CancunBaseSpec{
+
+		BaseSpec: test.BaseSpec{
+			Name: "Replace Blob Transactions",
+			About: `
+			Test sending multiple blob transactions with the same nonce, but
+			higher gas tip so the transaction is replaced.
+			`,
+			MainFork: config.Cancun,
+		},
+
+		TestSequence: TestSequence{
+			NewPayloads{},
+			// Send multiple blob transactions with the same nonce.
+			SendBlobTransactions{ // Blob ID 0
+				TransactionCount:              1,
+				BlobTransactionMaxBlobGasCost: big.NewInt(1),
+				BlobTransactionGasFeeCap:      big.NewInt(1e9),
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+			},
+			SendBlobTransactions{ // Blob ID 1
+				TransactionCount:              1,
+				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE)),
+				//BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				//BlobTransactionGasTipCap:      big.NewInt(1e10),
+				ReplaceTransactions:           true,
+			},
+			SendBlobTransactions{ // Blob ID 2
+				TransactionCount:              1,
+				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE*10)),
+				//BlobTransactionGasFeeCap:      big.NewInt(1e11),
+				//BlobTransactionGasTipCap:      big.NewInt(1e11),
+				ReplaceTransactions:           true,
+			},
+			SendBlobTransactions{ // Blob ID 3
+				TransactionCount:              1,
+				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE*100)),
+				//BlobTransactionGasFeeCap:      big.NewInt(1e12),
+				//BlobTransactionGasTipCap:      big.NewInt(1e12),
+				ReplaceTransactions:           true,
+			},
+
+			// We create the first payload, which must contain the blob tx
+			// with the higher tip.
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+				ExpectedBlobs:             []helper.BlobID{1},
+			},
+		},
+	},
+
+	// FIXME:
+	&CancunBaseSpec{
+
+		BaseSpec: test.BaseSpec{
+			Name: "Parallel Blob Transactions",
+			About: `
+			Test sending multiple blob transactions in parallel from different accounts.
+
+			Verify that a payload is created with the maximum number of blobs.
+			`,
+			MainFork: config.Cancun,
+		},
+
+		TestSequence: TestSequence{
+			// Send multiple blob transactions with the same nonce.
+			ParallelSteps{
+				Steps: []TestStep{
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  0,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  1,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  2,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  3,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  4,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  5,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  6,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  7,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  8,
+					},
+					SendBlobTransactions{
+						TransactionCount:              5,
+						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+						AccountIndex:                  9,
+					},
+				},
+			},
+
+			// We create the first payload, which is guaranteed to have the first cancun.MAX_BLOBS_PER_BLOCK blobs.
+			NewPayloads{
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
+				ExpectedBlobs:             helper.GetBlobList(0, cancun.MAX_BLOBS_PER_BLOCK),
+			},
+		},
+	},
+
+	// ForkchoiceUpdatedV3 before cancun
+	// &CancunBaseSpec{
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "ForkchoiceUpdatedV3 Set Head to Shanghai Payload, Null Payload Attributes",
+	// 		About: `
+	// 		Test sending ForkchoiceUpdatedV3 to set the head of the chain to a Shanghai payload:
+	// 		- Send NewPayloadV2 with Shanghai payload on block 1
+	// 		- Use ForkchoiceUpdatedV3 to set the head to the payload, with null payload attributes
+
+	// 		Verify that client returns no error
+	// 		`,
+	// 		MainFork:   config.Cancun,
+	// 		ForkHeight: 2,
+	// 	},
+
+	// 	TestSequence: TestSequence{
+	// 		NewPayloads{
+	// 			FcUOnHeadSet: &helper.UpgradeForkchoiceUpdatedVersion{
+	// 				ForkchoiceUpdatedCustomizer: &helper.BaseForkchoiceUpdatedCustomizer{},
+	// 			},
+	// 			ExpectationDescription: `
+	// 			ForkchoiceUpdatedV3 before Cancun returns no error without payload attributes
+	// 			`,
+	// 		},
+	// 	},
+	// },
+
+	// &CancunBaseSpec{
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "ForkchoiceUpdatedV3 To Request Shanghai Payload, Null Beacon Root",
+	// 		About: `
+	// 		Test sending ForkchoiceUpdatedV3 to request a Shanghai payload:
+	// 		- Payload Attributes uses Shanghai timestamp
+	// 		- Payload Attributes Beacon Root is null
+
+	// 		Verify that client returns INVALID_PAYLOAD_ATTRIBUTES.
+	// 		`,
+	// 		MainFork:   config.Cancun,
+	// 		ForkHeight: 2,
+	// 	},
+
+	// 	TestSequence: TestSequence{
+	// 		NewPayloads{
+	// 			FcUOnPayloadRequest: &helper.UpgradeForkchoiceUpdatedVersion{
+	// 				ForkchoiceUpdatedCustomizer: &helper.BaseForkchoiceUpdatedCustomizer{
+	// 					ExpectedError: globals.INVALID_PAYLOAD_ATTRIBUTES,
+	// 				},
+	// 			},
+	// 			ExpectationDescription: fmt.Sprintf(`
+	// 			ForkchoiceUpdatedV3 before Cancun with any null field must return INVALID_PAYLOAD_ATTRIBUTES (code %d)
+	// 			`, *globals.INVALID_PAYLOAD_ATTRIBUTES),
+	// 		},
+	// 	},
+	// },
+
+	// &CancunBaseSpec{
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "ForkchoiceUpdatedV3 To Request Shanghai Payload, Non-Null Beacon Root",
+	// 		About: `
+	// 		Test sending ForkchoiceUpdatedV3 to request a Shanghai payload:
+	// 		- Payload Attributes uses Shanghai timestamp
+	// 		- Payload Attributes Beacon Root is non-null
+
+	// 		Verify that client returns UNSUPPORTED_FORK_ERROR.
+	// 		`,
+	// 		MainFork:   config.Cancun,
+	// 		ForkHeight: 2,
+	// 	},
+
+	// 	TestSequence: TestSequence{
+	// 		NewPayloads{
+	// 			FcUOnPayloadRequest: &helper.UpgradeForkchoiceUpdatedVersion{
+	// 				ForkchoiceUpdatedCustomizer: &helper.BaseForkchoiceUpdatedCustomizer{
+	// 					PayloadAttributesCustomizer: &helper.BasePayloadAttributesCustomizer{
+	// 						BeaconRoot: &(common.Hash{}),
+	// 					},
+	// 					ExpectedError: globals.UNSUPPORTED_FORK_ERROR,
+	// 				},
+	// 			},
+	// 			ExpectationDescription: fmt.Sprintf(`
+	// 			ForkchoiceUpdatedV3 before Cancun with beacon root field present must return UNSUPPORTED_FORK_ERROR (code %d)
+	// 			`, *globals.UNSUPPORTED_FORK_ERROR),
+	// 		},
+	// 	},
+	// },
+
+	// // ForkchoiceUpdatedV2 before cancun with beacon root
+	// &CancunBaseSpec{
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "ForkchoiceUpdatedV2 To Request Shanghai Payload, Non-Null Beacon Root",
+	// 		About: `
+	// 		Test sending ForkchoiceUpdatedV2 to request a Shanghai payload:
+	// 		- Payload Attributes uses Shanghai timestamp
+	// 		- Payload Attributes Beacon Root is non-null
+
+	// 		Verify that client returns INVALID_PAYLOAD_ATTRIBUTES.
+	// 		`,
+	// 		MainFork:   config.Cancun,
+	// 		ForkHeight: 2,
+	// 	},
+
+	// 	TestSequence: TestSequence{
+	// 		NewPayloads{
+	// 			FcUOnPayloadRequest: &helper.BaseForkchoiceUpdatedCustomizer{
+	// 				PayloadAttributesCustomizer: &helper.BasePayloadAttributesCustomizer{
+	// 					BeaconRoot: &(common.Hash{}),
+	// 				},
+	// 				ExpectedError: globals.INVALID_PAYLOAD_ATTRIBUTES,
+	// 			},
+	// 			ExpectationDescription: fmt.Sprintf(`
+	// 			ForkchoiceUpdatedV2 before Cancun with beacon root field must return INVALID_PAYLOAD_ATTRIBUTES (code %d)
+	// 			`, *globals.INVALID_PAYLOAD_ATTRIBUTES),
+	// 		},
+	// 	},
+	// },
+
 	//// ForkchoiceUpdatedV2 after cancun with beacon root
 	//&CancunBaseSpec{
 	//	BaseSpec: test.BaseSpec{
