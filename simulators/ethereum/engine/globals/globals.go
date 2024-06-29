@@ -114,9 +114,13 @@ var (
 )
 
 func init() {
-	// Fill the test accounts with deterministic addresses
 	TestAccounts = make([]*TestAccount, TestAccountCount)
-	for i := uint64(0); i < TestAccountCount; i++ {
+
+	TestAccounts[0] = NewTestAccount(GnoVaultVaultKey, &GnoVaultAccountAddress, 0)
+	TestAccounts[1] = NewTestAccount(VaultKey, &VaultAccountAddress, 0)
+
+	// Fill the test accounts with deterministic addresses
+	for i := uint64(2); i < TestAccountCount; i++ {
 		bs := make([]byte, 8)
 		binary.BigEndian.PutUint64(bs, uint64(i))
 		b := sha256.Sum256(bs)
