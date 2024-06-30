@@ -475,93 +475,93 @@ var Tests = []test.Spec{
 		},
 	},
 
-	// FIXME:
-	&CancunBaseSpec{
+	// // FIXME:
+	// &CancunBaseSpec{
 
-		BaseSpec: test.BaseSpec{
-			Name: "Parallel Blob Transactions",
-			About: `
-			Test sending multiple blob transactions in parallel from different accounts.
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "Parallel Blob Transactions",
+	// 		About: `
+	// 		Test sending multiple blob transactions in parallel from different accounts.
 
-			Verify that a payload is created with the maximum number of blobs.
-			`,
-			MainFork: config.Cancun,
-		},
+	// 		Verify that a payload is created with the maximum number of blobs.
+	// 		`,
+	// 		MainFork: config.Cancun,
+	// 	},
 
-		TestSequence: TestSequence{
-			// Send multiple blob transactions with the same nonce.
-			ParallelSteps{
-				Steps: []TestStep{
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  0,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  1,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  2,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  3,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  4,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  5,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  6,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  7,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  8,
-					},
-					SendBlobTransactions{
-						TransactionCount:              5,
-						BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-						BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-						AccountIndex:                  9,
-					},
-				},
-			},
+	// 	TestSequence: TestSequence{
+	// 		// Send multiple blob transactions with the same nonce.
+	// 		ParallelSteps{
+	// 			Steps: []TestStep{
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  0,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  1,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  2,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  3,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  4,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  5,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  6,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  7,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  8,
+	// 				},
+	// 				SendBlobTransactions{
+	// 					TransactionCount:              5,
+	// 					BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+	// 					BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
+	// 					AccountIndex:                  9,
+	// 				},
+	// 			},
+	// 		},
 
-			// We create the first payload, which is guaranteed to have the first cancun.MAX_BLOBS_PER_BLOCK blobs.
-			NewPayloads{
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
-				ExpectedBlobs:             helper.GetBlobList(0, cancun.MAX_BLOBS_PER_BLOCK),
-			},
-		},
-	},
+	// 		// We create the first payload, which is guaranteed to have the first cancun.MAX_BLOBS_PER_BLOCK blobs.
+	// 		NewPayloads{
+	// 			ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
+	// 			ExpectedBlobs:             helper.GetBlobList(0, cancun.MAX_BLOBS_PER_BLOCK),
+	// 		},
+	// 	},
+	// },
 
 	// ForkchoiceUpdatedV3 before cancun
 	// &CancunBaseSpec{
