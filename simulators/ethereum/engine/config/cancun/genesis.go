@@ -1,11 +1,14 @@
 package cancun
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
 	"fmt"
 	"math/big"
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 // ConfigGenesis configures the genesis block for the Cancun fork.
@@ -33,7 +36,8 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 		Code:    common.Hex2Bytes("3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500"),
 	}
 
-	return nil
+
+	return ConfigTestAccounts(genesis)
 }
 
 // Configure specific test genesis accounts related to Cancun funtionality.
@@ -69,24 +73,24 @@ func ConfigTestAccounts(genesis *core.Genesis) error {
 		}
 		genesis.Alloc[address] = core.GenesisAccount{
 			Code:    datahashCode,
-			Balance: common.Big1,
+			Balance: big.NewInt(1e18),
 		}
 	}
 
-	// for i := uint64(0); i < 1000; i++ {
-	// 	bs := make([]byte, 8)
-	// 	binary.BigEndian.PutUint64(bs, uint64(i))
-	// 	b := sha256.Sum256(bs)
-	// 	k, err := crypto.ToECDSA(b[:])
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
+	for i := uint64(2); i < 11; i++ {
+		bs := make([]byte, 8)
+		binary.BigEndian.PutUint64(bs, uint64(i))
+		b := sha256.Sum256(bs)
+		k, err := crypto.ToECDSA(b[:])
+		if err != nil {
+			panic(err)
+		}
 
-	// 	addr := crypto.PubkeyToAddress(k.PublicKey)
-	// 	genesis.Alloc[addr] = core.GenesisAccount{
-	// 		Balance: big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(1e18)),
-	// 	}
-	// }
+		addr := crypto.PubkeyToAddress(k.PublicKey)
+		genesis.Alloc[addr] = core.GenesisAccount{
+			Balance: big.NewInt(1e18),
+		}
+	}
 
 	return nil
 }

@@ -137,7 +137,7 @@ func addTestsToSuite(sim *hivesim.Simulation, suite *hivesim.Suite, tests []test
 			panic("unable to inject genesis")
 		}
 		forkConfig := currentTest.GetForkConfig()
-		//forkConfig.ConfigGenesisHelper(genesis)
+		// forkConfig.ConfigGenesis(genesis)
 		// Calculate and set the TTD for this test
 		//ttd := helper.CalculateulateRealTTD(genesis, currentTest.GetTTD())
 

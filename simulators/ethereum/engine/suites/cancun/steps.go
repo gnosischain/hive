@@ -663,6 +663,7 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 			blobTx typ.Transaction
 			err    error
 		)
+
 		if step.ReplaceTransactions {
 			blobTx, err = t.ReplaceTransaction(t.TestContext, sender, engine,
 				blobTxCreator,
@@ -676,7 +677,9 @@ func (step SendBlobTransactions) Execute(t *CancunTestContext) error {
 			t.Fatalf("FAIL: Error sending blob transaction: %v", err)
 		}
 		if !step.SkipVerificationFromNode {
-			VerifyTransactionFromNode(t.TestContext, engine, blobTx)
+			if err := VerifyTransactionFromNode(t.TestContext, engine, blobTx); err != nil {
+				t.Fatalf("FAIL: Error verifying transaction from node: %v", err)
+			}
 		}
 		t.TestBlobTxPool.Mutex.Lock()
 		t.AddBlobTransaction(blobTx)

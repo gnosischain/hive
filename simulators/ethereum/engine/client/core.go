@@ -91,9 +91,10 @@ func (a Account) Balance() *big.Int {
 	if !ok {
 		return common.Big0
 	}
+
 	hexStr := hexBalance.(common.Hash)
-	balance := common.Big0
-	_ = balance.FillBytes(common.Hex2Bytes(hexStr.String()))
+	balance := hexStr.Big()
+
 	return balance
 }
 

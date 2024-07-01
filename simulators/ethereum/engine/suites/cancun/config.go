@@ -1,11 +1,15 @@
 package suite_cancun
 
 import (
+	"crypto/sha256"
+	"encoding/binary"
+	"math/big"
 	"time"
 
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 )
 
@@ -93,20 +97,20 @@ func (cs *CancunBaseSpec) GetGenesis(base string) client.Genesis {
 	push0Acc.SetCode(push0Code)
 
 	genesis.AllocGenesis(PUSH0_ADDRESS, push0Acc)
-	// for i := uint64(0); i < 1000; i++ {
-	// 	bs := make([]byte, 8)
-	// 	binary.BigEndian.PutUint64(bs, uint64(i))
-	// 	b := sha256.Sum256(bs)
-	// 	k, err := crypto.ToECDSA(b[:])
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
+	for i := uint64(0); i < 1000; i++ {
+		bs := make([]byte, 8)
+		binary.BigEndian.PutUint64(bs, uint64(i))
+		b := sha256.Sum256(bs)
+		k, err := crypto.ToECDSA(b[:])
+		if err != nil {
+			panic(err)
+		}
 
-	// 	addr := crypto.PubkeyToAddress(k.PublicKey)
-	// 	acc := client.NewAccount()
-	// 	acc.SetBalance(big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(1e18)))
-	// 	genesis.AllocGenesis(addr, acc)
-	// }
+		addr := crypto.PubkeyToAddress(k.PublicKey)
+		acc := client.NewAccount()
+		acc.SetBalance(big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(10)))
+		genesis.AllocGenesis(addr, acc)
+	}
 
 	return genesis
 }
