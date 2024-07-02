@@ -182,22 +182,20 @@ var Tests = []test.Spec{
 			},
 			// Then send the single-blob transactions
 			SendBlobTransactions{
-				TransactionCount:              2,
+				TransactionCount:              cancun.MAX_BLOBS_PER_BLOCK + 1,
 				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
-
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-
 			},
 			// First four payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
-				PayloadCount:              1,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK-1,
+				PayloadCount:              4,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK - 1,
 			},
 
 			// The rest of the payloads have full blobs
 			NewPayloads{
-				PayloadCount:              3,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
+				PayloadCount:              2,
+				ExpectedIncludedBlobCount: 1,
 			},
 		},
 	},
@@ -322,7 +320,6 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           1,
-				// BlobTransactionGasFeeCap:      big.NewInt(1e10),
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  0,
 			},
@@ -330,22 +327,13 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           1,
-				// BlobTransactionGasFeeCap:      big.NewInt(1e10),
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  1,
 			},
 
 			// All payloads have full blobs
 			NewPayloads{
-				PayloadCount:              1,
-				ExpectedIncludedBlobCount: 1,
-			},
-			NewPayloads{
-				PayloadCount:              4,
-				ExpectedIncludedBlobCount: 2,
-			},
-			NewPayloads{
-				PayloadCount:              1,
+				PayloadCount:              5,
 				ExpectedIncludedBlobCount: 1,
 			},
 		},
@@ -410,16 +398,10 @@ var Tests = []test.Spec{
 
 			// All payloads have full blobs
 			NewPayloads{
-				PayloadCount:              1,
+				PayloadCount:              5,
 				ExpectedIncludedBlobCount: 1,
-			},
-			NewPayloads{
-				PayloadCount:              4,
-				ExpectedIncludedBlobCount: 2,
-			},
-			NewPayloads{
-				PayloadCount:              1,
-				ExpectedIncludedBlobCount: 1,
+				// Wait a bit more on before requesting the built payload from the client
+				GetPayloadDelay: 2,
 			},
 		},
 	},
