@@ -4,6 +4,8 @@ package suite_withdrawals
 import (
 	"context"
 	"crypto/rand"
+	"crypto/sha256"
+	"encoding/binary"
 	"encoding/json"
 	"fmt"
 	"math/big"
@@ -15,6 +17,7 @@ import (
 	beacon "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
@@ -900,6 +903,20 @@ func (ws *WithdrawalsBaseSpec) GetGenesis(base string) client.Genesis {
 	push0Acc.SetCode(push0Code)
 
 	genesis.AllocGenesis(PUSH0_ADDRESS, push0Acc)
+	for i := uint64(0); i < 1000; i++ {
+		bs := make([]byte, 8)
+		binary.BigEndian.PutUint64(bs, uint64(i))
+		b := sha256.Sum256(bs)
+		k, err := crypto.ToECDSA(b[:])
+		if err != nil {
+			panic(err)
+		}
+
+		addr := crypto.PubkeyToAddress(k.PublicKey)
+		acc := client.NewAccount()
+		acc.SetBalance(big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(10)))
+		genesis.AllocGenesis(addr, acc)
+	}
 	return genesis
 }
 
