@@ -111,7 +111,7 @@ func (cs *CancunBaseSpec) GetGenesis(base string) client.Genesis {
 		acc.SetBalance(big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(10)))
 		genesis.AllocGenesis(addr, acc)
 	}
-
+	genesis.SetGasLimit(30000000)
 	return genesis
 }
 
