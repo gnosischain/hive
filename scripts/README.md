@@ -74,3 +74,6 @@ Will stop the server.
 
 ## clear_debug.sh
 Clear `scripts/experiments/01` directory and move all files to `scripts/experiments/01-prev`.
+
+## report_loader.sh
+Load the archive of requests and responses from the `scripts/experiments/01` to the new mitmproxy instance. Load hive report.
