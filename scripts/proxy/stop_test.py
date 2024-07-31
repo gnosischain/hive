@@ -10,9 +10,11 @@ import urllib.request
 config = configparser.ConfigParser()
 config.read(f'/home/mitmproxy/.mitmproxy/{os.getenv("MITMPROXY_CONFIG_NAME", "config")}.ini')
 container_id = None
+print("Config is:", os.getenv("MITMPROXY_CONFIG_NAME", "config"))
+print("Experiment ID is:", os.getenv("MITMPROXY_EXPERIMENT_ID", "debug"))
 
 def request(flow: http.HTTPFlow) -> None:
-    print(f"Sending request to: {flow.request.url}{flow.request.path}")
+    print(f"Sending request to: {flow.request.url}")
     test_end = config['settings'].get('test_end', None)
     post_url = config['settings']['target_url']
     copy_files = config['settings']['copy_files']
@@ -29,7 +31,8 @@ def request(flow: http.HTTPFlow) -> None:
                 print("Valid config is found for experiment: " + experiment_id)
                 file_number = key.split('_')[-1]
                 container_file_path = config['copy_files'][key]
-                host_file_path = config['copy_files'][f'host_file_path_{file_number}'] + "/" + experiment_id + config['copy_files'][f'container_file_path_{file_number}']
+                file_name = container_file_path.split('/')[-1]
+                host_file_path = config['copy_files'][f'host_file_path_{file_number}'] + "/" + experiment_id + "/" + file_name
                 # Create the POST request
                 data = {
                     "container_id": container_id,
