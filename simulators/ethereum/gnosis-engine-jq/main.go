@@ -107,6 +107,22 @@ func main() {
 	hivesim.MustRunSuite(simulator, cancun)
 }
 
+const SetupTime = time.Minute
+
+func getTimestamp(spec test.Spec) uint64 {
+	now := time.Now()
+
+	preShapellaBlock := spec.GetPreShapellaBlockCount()
+	if preShapellaBlock == 0 {
+		preShapellaBlock = 1
+	}
+
+	preShapellaTime := time.Duration(uint64(preShapellaBlock)*spec.GetBlockTimeIncrements()) * time.Second
+	// after setup wait chain will produce blocks in preShapellaTime and than shapella happens
+	shanghaiTimestamp := now.Add(SetupTime).Add(preShapellaTime)
+	return uint64(shanghaiTimestamp.Unix())
+}
+
 func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 	return func(t *hivesim.T) {
 		parallelism := 16
@@ -144,9 +160,18 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 		for _, currentTest := range tests {
 			currentTest := currentTest
 			currentTestName := fmt.Sprintf("%s (%s)", currentTest.GetName(), currentTest.GetMainFork())
+			if currentTestName == "Blob Transaction Ordering, Single Account, Single Blob (Cancun)" {
+				fmt.Printf("Current test", currentTestName)
+			}
+
 			// Load the genesis file specified and dynamically bundle it.
 			genesis := currentTest.GetGenesis()
 			forkConfig := currentTest.GetForkConfig()
+
+			timestamp := new(big.Int).SetUint64(getTimestamp(currentTest))
+			forkConfig.ShanghaiTimestamp = timestamp
+			forkConfig.CancunTimestamp = timestamp
+
 			if forkConfig == nil {
 				// Test cannot be configured as is for current fork, skip
 				fmt.Printf("skipping test \"%s\" because fork configuration is not possible\n", currentTestName)
