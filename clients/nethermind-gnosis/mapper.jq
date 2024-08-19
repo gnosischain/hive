@@ -175,18 +175,19 @@ def clique_engine:
     # "MergeForkIdTransition": env.HIVE_MERGE_BLOCK_ID|to_hex,
 
     # Shanghai
-    "eip3651TransitionTimestamp": "1684934220"|to_hex,
-    "eip3855TransitionTimestamp": "1684934220"|to_hex,
-    "eip3860TransitionTimestamp": "1684934220"|to_hex,
-    "eip4895TransitionTimestamp": "1684934220"|to_hex,
+    "eip3651TransitionTimestamp": env.HIVE_SHANGHAI_TIMESTAMP|to_hex,
+    "eip3855TransitionTimestamp": env.HIVE_SHANGHAI_TIMESTAMP|to_hex,
+    "eip3860TransitionTimestamp": env.HIVE_SHANGHAI_TIMESTAMP|to_hex,
+    "eip4895TransitionTimestamp": env.HIVE_SHANGHAI_TIMESTAMP|to_hex,
 
-    # Cancun
-    "eip4844TransitionTimestamp": "1696272200"|to_hex,
-    "eip4788TransitionTimestamp": "1696272200"|to_hex,
+    # # Cancun
+    "eip4844TransitionTimestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
+    "eip4788TransitionTimestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
     # "eip1153TransitionTimestamp": now |tonumber |to_hex,
-    "eip1153TransitionTimestamp": "1696272200"|to_hex,
-    "eip5656TransitionTimestamp": "1696272200"|to_hex,
-    "eip6780TransitionTimestamp": "1696272200"|to_hex,
+    "eip1153TransitionTimestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
+    "eip5656TransitionTimestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
+    "eip6780TransitionTimestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
+
 
     # Other chain parameters
     # "networkID": env.HIVE_NETWORK_ID|to_hex,

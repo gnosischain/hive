@@ -5,7 +5,7 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Connect to docker server",
+      "name": "Connect to JQ hive",
       "type": "go",
       "request": "attach",
       "mode": "remote",
@@ -17,6 +17,23 @@
       "substitutePath": [
         {
           "from": "${workspaceFolder}/simulators/ethereum/gnosis-engine-jq",
+          "to": "/source"
+        }
+      ]
+    },
+    {
+      "name": "Connect to OLD hive",
+      "type": "go",
+      "request": "attach",
+      "mode": "remote",
+      "apiVersion": 2,
+      "remotePath": "/source",
+      "port": 40000,
+      "host": "127.0.0.1",
+      "cwd": "${workspaceFolder}/simulators/ethereum/engine-gnosis-nethermind",
+      "substitutePath": [
+        {
+          "from": "${workspaceFolder}/simulators/ethereum/engine-gnosis-nethermind",
           "to": "/source"
         }
       ]
