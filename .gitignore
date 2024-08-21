@@ -12,3 +12,6 @@ hivesim-rs/target
 
 scripts/experiments/*
 scripts/proxy/*
+
+.lh/*
+hiveview
