@@ -13,5 +13,7 @@ hivesim-rs/target
 scripts/experiments/*
 scripts/proxy/*
 
-.lh/*
+.DS_Store
 hiveview
+.lh/*
+simulators/eth2/go.work.sum
