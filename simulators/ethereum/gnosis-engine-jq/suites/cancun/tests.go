@@ -4,6 +4,7 @@ package suite_cancun
 import (
 	"math/big"
 
+	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config/cancun"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
@@ -149,7 +150,8 @@ var Tests = []test.Spec{
 			},
 		},
 	},
-	// Invalid for Gnosis
+
+	// This test is not valid since cancun.MAX_BLOBS_PER_BLOCK=2 for Gnosis network and cancun.MAX_BLOBS_PER_BLOCK-1 will be the same as single blob.
 	// &CancunBaseSpec{
 
 	// 	BaseSpec: test.BaseSpec{
@@ -197,6 +199,7 @@ var Tests = []test.Spec{
 	// 		},
 	// 	},
 	// },
+
 	&CancunBaseSpec{
 
 		BaseSpec: test.BaseSpec{
@@ -252,122 +255,121 @@ var Tests = []test.Spec{
 			},
 		},
 	},
-	// Invalid for Gnosis
-	// &CancunBaseSpec{
 
-	// 	BaseSpec: test.BaseSpec{
-	// 		Name: "Blob Transaction Ordering, Multiple Accounts",
-	// 		About: `
-	// 		Send N blob transactions with cancun.MAX_BLOBS_PER_BLOCK-1 blobs each,
-	// 		using account A.
-	// 		Send N blob transactions with 1 blob each from account B.
-	// 		Verify that the payloads are created with the correct ordering:
-	// 		 - All payloads must have full blobs.
-	// 		All transactions have sufficient data gas price to be included any
-	// 		of the payloads.
-	// 		`,
-	// 		MainFork:   config.Cancun,
-	// 		ForkHeight: 1,
-	// 	},
+	&CancunBaseSpec{
 
-	// 	TestSequence: TestSequence{
-	// 		NewPayloads{},
-	// 		// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
-	// 		// account A.
-	// 		SendBlobTransactions{
-	// 			TransactionCount:              5,
-	// 			BlobsPerTransaction:           1,
-	// 			BlobTransactionGasFeeCap:      big.NewInt(1e10),
-	// 			BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
-	// 			AccountIndex:                  0,
-	// 		},
-	// 		// Then send the single-blob transactions from account B
-	// 		SendBlobTransactions{
-	// 			TransactionCount:              5,
-	// 			BlobsPerTransaction:           1,
-	// 			BlobTransactionGasFeeCap:      big.NewInt(1e10),
-	// 			BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
-	// 			AccountIndex:                  1,
-	// 		},
+		BaseSpec: test.BaseSpec{
+			Name: "Blob Transaction Ordering, Multiple Accounts",
+			About: `
+			Send N blob transactions with cancun.MAX_BLOBS_PER_BLOCK-1 blobs each,
+			using account A.
+			Send N blob transactions with 1 blob each from account B.
+			Verify that the payloads are created with the correct ordering:
+			 - All payloads must have full blobs.
+			All transactions have sufficient data gas price to be included any
+			of the payloads.
+			`,
+			MainFork:   config.Cancun,
+			ForkHeight: 1,
+		},
 
-	// 		// All payloads have full blobs
-	// 		NewPayloads{
-	// 			PayloadCount:              5,
-	// 			ExpectedIncludedBlobCount: 1,
-	// 		},
-	// 		// All payloads have full blobs
-	// 		NewPayloads{
-	// 			PayloadCount:              5,
-	// 			ExpectedIncludedBlobCount: 1,
-	// 		},
-	// 	},
-	// },
+		TestSequence: TestSequence{
+			NewPayloads{},
+			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
+			// account A.
+			SendBlobTransactions{
+				TransactionCount:              5,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  0,
+			},
+			// Then send the single-blob transactions from account B
+			SendBlobTransactions{
+				TransactionCount:              5,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  1,
+			},
 
-	// Invalid for Gnosis
-	// &CancunBaseSpec{
+			// All payloads have full blobs
+			NewPayloads{
+				PayloadCount:              5,
+				ExpectedIncludedBlobCount: 1,
+			},
+			// All payloads have full blobs
+			NewPayloads{
+				PayloadCount:              5,
+				ExpectedIncludedBlobCount: 1,
+			},
+		},
+	},
 
-	// 	BaseSpec: test.BaseSpec{
-	// 		Name: "Blob Transaction Ordering, Multiple Clients",
-	// 		About: `
-	// 		Send N blob transactions with cancun.MAX_BLOBS_PER_BLOCK-1 blobs each,
-	// 		using account A, to client A.
-	// 		Send N blob transactions with 1 blob each from account B, to client
-	// 		B.
-	// 		Verify that the payloads are created with the correct ordering:
-	// 		 - All payloads must have full blobs.
-	// 		All transactions have sufficient data gas price to be included any
-	// 		of the payloads.
-	// 		`,
-	// 		MainFork: config.Cancun,
-	// 	},
+	&CancunBaseSpec{
 
-	// 	TestSequence: TestSequence{
-	// 		// Start a secondary client to also receive blob transactions
-	// 		LaunchClients{
-	// 			EngineStarter: hive_rpc.HiveRPCEngineStarter{},
-	// 			// Skip adding the second client to the CL Mock to guarantee
-	// 			// that all payloads are produced by client A.
-	// 			// This is done to not have client B prioritizing single-blob
-	// 			// transactions to fill one single payload.
-	// 			//SkipAddingToCLMock: true,
-	// 		},
+		BaseSpec: test.BaseSpec{
+			Name: "Blob Transaction Ordering, Multiple Clients",
+			About: `
+			Send N blob transactions with cancun.MAX_BLOBS_PER_BLOCK-1 blobs each,
+			using account A, to client A.
+			Send N blob transactions with 1 blob each from account B, to client
+			B.
+			Verify that the payloads are created with the correct ordering:
+			 - All payloads must have full blobs.
+			All transactions have sufficient data gas price to be included any
+			of the payloads.
+			`,
+			MainFork: config.Cancun,
+		},
 
-	// 		// Create a block without any blobs to get past genesis
-	// 		NewPayloads{
-	// 			PayloadCount:              1,
-	// 			ExpectedIncludedBlobCount: 0,
-	// 		},
+		TestSequence: TestSequence{
+			// Start a secondary client to also receive blob transactions
+			LaunchClients{
+				EngineStarter: hive_rpc.HiveRPCEngineStarter{},
+				// Skip adding the second client to the CL Mock to guarantee
+				// that all payloads are produced by client A.
+				// This is done to not have client B prioritizing single-blob
+				// transactions to fill one single payload.
+				//SkipAddingToCLMock: true,
+			},
 
-	// 		// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
-	// 		// account A, to client A.
-	// 		SendBlobTransactions{
-	// 			TransactionCount:              5,
-	// 			BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
-	// 			BlobTransactionGasTipCap:      big.NewInt(1e9),
-	// 			BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
-	// 			AccountIndex:                  0,
-	// 			ClientIndex:                   0,
-	// 		},
-	// 		// Then send the single-blob transactions from account B, to client
-	// 		// B.
-	// 		SendBlobTransactions{
-	// 			TransactionCount:              5,
-	// 			BlobsPerTransaction:           1,
-	// 			BlobTransactionGasTipCap:      big.NewInt(1e9),
-	// 			BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
-	// 			AccountIndex:                  1,
-	// 			ClientIndex:                   1,
-	// 		},
+			// Create a block without any blobs to get past genesis
+			NewPayloads{
+				PayloadCount:              1,
+				ExpectedIncludedBlobCount: 0,
+			},
 
-	// 		// All payloads have full blobs
-	// 		NewPayloads{
-	// 			PayloadCount:              10,
-	// 			ExpectedIncludedBlobCount: 1,
-	// 			// Wait a bit more on before requesting the built payload from the client
-	// 			GetPayloadDelay: 2,
-	// 		},
-	// 	},
-	// },
+			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
+			// account A, to client A.
+			SendBlobTransactions{
+				TransactionCount:              5,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  0,
+				ClientIndex:                   0,
+			},
+			// Then send the single-blob transactions from account B, to client
+			// B.
+			SendBlobTransactions{
+				TransactionCount:              5,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  1,
+				ClientIndex:                   1,
+			},
+
+			// All payloads have full blobs
+			NewPayloads{
+				PayloadCount:              10,
+				ExpectedIncludedBlobCount: 1,
+				// Wait a bit more on before requesting the built payload from the client
+				GetPayloadDelay: 2,
+			},
+		},
+	},
 
 	//&CancunBaseSpec{
 	//
