@@ -1,4 +1,4 @@
-name: Daily Run Erigon Withdrawals
+name: Daily Run Erigon Engine Exchange 
 
 on:
   schedule:
