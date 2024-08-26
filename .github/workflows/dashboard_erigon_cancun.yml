@@ -46,7 +46,6 @@ jobs:
       - name: Run Erigon Cancun tests
         continue-on-error: true
         run: |
-          ./hive --sim ethereum/engine --sim.limit="cancun" --client erigon --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output 
           ./hive --sim ethereum/engine-gnosis-erigon --sim.limit="cancun" --client erigon-old --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output 
 
       - name: Send file over SSH
