@@ -174,24 +174,22 @@ var Tests = []test.Spec{
 			NewPayloads{},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				TransactionCount:    5,
+				BlobsPerTransaction: cancun.MAX_BLOBS_PER_BLOCK - 1,
 
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-
 			},
 			// Then send the single-blob transactions
 			SendBlobTransactions{
-				TransactionCount:              2,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				TransactionCount:    2,
+				BlobsPerTransaction: cancun.MAX_BLOBS_PER_BLOCK - 1,
 
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
-
 			},
 			// First four payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
 				PayloadCount:              1,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK-1,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK - 1,
 			},
 
 			// The rest of the payloads have full blobs
@@ -224,8 +222,8 @@ var Tests = []test.Spec{
 			NewPayloads{},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
 			SendBlobTransactions{
-				TransactionCount:              3,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+				TransactionCount:    3,
+				BlobsPerTransaction: cancun.MAX_BLOBS_PER_BLOCK,
 
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 			},
@@ -233,20 +231,20 @@ var Tests = []test.Spec{
 			// Then send the dual-blob transaction
 			SendBlobTransactions{
 				TransactionCount:              1,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK-1,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 			},
 
 			// First five payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
 				PayloadCount:              3,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK ,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
 			},
 
 			// First five payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
 				PayloadCount:              1,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK-1,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK - 1,
 			},
 		},
 	},
@@ -265,8 +263,8 @@ var Tests = []test.Spec{
 			NewPayloads{},
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
 			SendBlobTransactions{
-				TransactionCount:              2,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
+				TransactionCount:    2,
+				BlobsPerTransaction: cancun.MAX_BLOBS_PER_BLOCK,
 
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 			},
@@ -274,14 +272,14 @@ var Tests = []test.Spec{
 			// Then send the dual-blob transaction
 			SendBlobTransactions{
 				TransactionCount:              1,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK-1,
+				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
 				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE)),
 			},
 
 			//
 			NewPayloads{
 				PayloadCount:              2,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK ,
+				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
 			},
 
 			// TODO:
@@ -291,12 +289,11 @@ var Tests = []test.Spec{
 			},
 
 			NewPayloads{
-				PayloadCount: 1,
+				PayloadCount:              1,
 				ExpectedIncludedBlobCount: 1,
 			},
 		},
 	},
-
 
 	&CancunBaseSpec{
 
@@ -320,16 +317,16 @@ var Tests = []test.Spec{
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
 			// account A.
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           1,
+				TransactionCount:    5,
+				BlobsPerTransaction: 1,
 				// BlobTransactionGasFeeCap:      big.NewInt(1e10),
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  0,
 			},
 			// Then send the single-blob transactions from account B
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           1,
+				TransactionCount:    5,
+				BlobsPerTransaction: 1,
 				// BlobTransactionGasFeeCap:      big.NewInt(1e10),
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  1,
@@ -350,7 +347,6 @@ var Tests = []test.Spec{
 			},
 		},
 	},
-
 
 	&CancunBaseSpec{
 
@@ -389,8 +385,8 @@ var Tests = []test.Spec{
 			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
 			// account A, to client A.
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				TransactionCount:    5,
+				BlobsPerTransaction: cancun.MAX_BLOBS_PER_BLOCK - 1,
 				// BlobTransactionGasTipCap:      big.NewInt(1e12),
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  0,
@@ -399,14 +395,13 @@ var Tests = []test.Spec{
 			// Then send the single-blob transactions from account B, to client
 			// B.
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				TransactionCount:    5,
+				BlobsPerTransaction: cancun.MAX_BLOBS_PER_BLOCK - 1,
 				// BlobTransactionGasTipCap:      big.NewInt(1e12),
 				BlobTransactionMaxBlobGasCost: X10_BLOB_GAS_PRICE,
 				AccountIndex:                  1,
 				ClientIndex:                   1,
 			},
-
 
 			// All payloads have full blobs
 			NewPayloads{
@@ -423,57 +418,57 @@ var Tests = []test.Spec{
 			},
 		},
 	},
+	// Disabled the test since it was never working and different from upstream
+	// &CancunBaseSpec{
 
-	&CancunBaseSpec{
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "Replace Blob Transactions",
+	// 		About: `
+	// 		Test sending multiple blob transactions with the same nonce, but
+	// 		higher gas tip so the transaction is replaced.
+	// 		`,
+	// 		MainFork: config.Cancun,
+	// 	},
 
-		BaseSpec: test.BaseSpec{
-			Name: "Replace Blob Transactions",
-			About: `
-			Test sending multiple blob transactions with the same nonce, but
-			higher gas tip so the transaction is replaced.
-			`,
-			MainFork: config.Cancun,
-		},
+	// 	TestSequence: TestSequence{
+	// 		NewPayloads{},
+	// 		// Send multiple blob transactions with the same nonce.
+	// 		SendBlobTransactions{ // Blob ID 0
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(1),
+	// 			BlobTransactionGasFeeCap:      big.NewInt(1e9),
+	// 			BlobTransactionGasTipCap:      big.NewInt(1e9),
+	// 		},
+	// 		SendBlobTransactions{ // Blob ID 1
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE)),
+	// 			//BlobTransactionGasFeeCap:      big.NewInt(1e10),
+	// 			//BlobTransactionGasTipCap:      big.NewInt(1e10),
+	// 			ReplaceTransactions:           true,
+	// 		},
+	// 		SendBlobTransactions{ // Blob ID 2
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE*10)),
+	// 			//BlobTransactionGasFeeCap:      big.NewInt(1e11),
+	// 			//BlobTransactionGasTipCap:      big.NewInt(1e11),
+	// 			ReplaceTransactions:           true,
+	// 		},
+	// 		SendBlobTransactions{ // Blob ID 3
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE*100)),
+	// 			//BlobTransactionGasFeeCap:      big.NewInt(1e12),
+	// 			//BlobTransactionGasTipCap:      big.NewInt(1e12),
+	// 			ReplaceTransactions:           true,
+	// 		},
 
-		TestSequence: TestSequence{
-			NewPayloads{},
-			// Send multiple blob transactions with the same nonce.
-			SendBlobTransactions{ // Blob ID 0
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1),
-				BlobTransactionGasFeeCap:      big.NewInt(1e9),
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-			},
-			SendBlobTransactions{ // Blob ID 1
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE)),
-				//BlobTransactionGasFeeCap:      big.NewInt(1e10),
-				//BlobTransactionGasTipCap:      big.NewInt(1e10),
-				ReplaceTransactions:           true,
-			},
-			SendBlobTransactions{ // Blob ID 2
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE*10)),
-				//BlobTransactionGasFeeCap:      big.NewInt(1e11),
-				//BlobTransactionGasTipCap:      big.NewInt(1e11),
-				ReplaceTransactions:           true,
-			},
-			SendBlobTransactions{ // Blob ID 3
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(int64(cancun.MIN_DATA_GASPRICE*100)),
-				//BlobTransactionGasFeeCap:      big.NewInt(1e12),
-				//BlobTransactionGasTipCap:      big.NewInt(1e12),
-				ReplaceTransactions:           true,
-			},
-
-			// We create the first payload, which must contain the blob tx
-			// with the higher tip.
-			NewPayloads{
-				ExpectedIncludedBlobCount: 1,
-				ExpectedBlobs:             []helper.BlobID{1},
-			},
-		},
-	},
+	// 		// We create the first payload, which must contain the blob tx
+	// 		// with the higher tip.
+	// 		NewPayloads{
+	// 			ExpectedIncludedBlobCount: 1,
+	// 			ExpectedBlobs:             []helper.BlobID{1},
+	// 		},
+	// 	},
+	// },
 
 	&CancunBaseSpec{
 
