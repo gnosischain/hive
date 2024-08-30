@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - efactoring-phase-2-erigon 
+      - refactoring-phase-2-erigon 
   pull_request:
     branches:
-      - efactoring-phase-2-erigon 
+      - refactoring-phase-2-erigon 
     types: [ closed ]
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: efactoring-phase-2-erigon
+          ref: refactoring-phase-2-erigon
 
       - name: Download dependencies
         run: go get -v ./...
