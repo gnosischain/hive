@@ -21,10 +21,6 @@ jobs:
         uses: actions/setup-go@v4
         with:
           go-version: stable
-      - name: Set Swap Space
-        uses: pierotofy/set-swap-space@master
-        with:
-          swap-size-gb: 15
           
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -52,7 +48,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 180
         run: |
-          ./hive --sim ethereum/engine-gnosis-erigon --sim.limit="withdrawals" --client erigon-old --results-root=${{ github.workspace }}/runs --loglevel=3 --client.checktimelimit=5m --docker.output --sim.parallelism=8 
+          ./hive --sim ethereum/engine-gnosis-erigon --sim.limit="withdrawals" --client erigon-old --results-root=${{ github.workspace }}/runs --loglevel=3 --client.checktimelimit=5m 
 
       - name: Send file over SSH
         if: always()
