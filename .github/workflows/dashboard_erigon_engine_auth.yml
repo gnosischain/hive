@@ -1,5 +1,4 @@
-
-name: Daily Run Nethermind Engine Auth 
+name: Daily Run Erigon Engine Auth
 
 on:
   schedule:
@@ -7,10 +6,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - reflow 
+      - refactoring-phase-2-erigon	 
   pull_request:
     branches:
-      - reflow 
+      - refactoring-phase-2-erigon 
     types: [ closed ]
 
 jobs:
@@ -36,7 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: reflow
+          ref: refactoring-phase-2-erigon
 
       - name: Download dependencies
         run: go get -v ./...
@@ -44,10 +43,10 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
-      - name: Run Nethermind Engine Auth tests
+      - name: Run Erigon Engine Auth tests
         continue-on-error: true
         run: |
-          ./hive --sim ethereum/gnosis-engine-jq --sim.limit="engine-auth" --client nethermind-gnosis --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output 
+          ./hive --sim ethereum/gnosis-engine-jq --sim.limit="engine-auth" --client erigon-gnosis --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output 
 
       - name: Send file over SSH
         if: always()

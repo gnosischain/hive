@@ -44,7 +44,7 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
-      - name: Run Nethermind Withdrawals tests
+      - name: Run Nethermind Engine Exchange Capabilities tests
         continue-on-error: true
         run: |
           ./hive --sim ethereum/gnosis-engine-jq --sim.limit="engine-exchange-capabilities" --client nethermind-gnosis --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output 
