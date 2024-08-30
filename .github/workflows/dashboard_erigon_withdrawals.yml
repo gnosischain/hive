@@ -52,7 +52,7 @@ jobs:
         continue-on-error: true
         timeout-minutes: 180
         run: |
-          ./hive --sim ethereum/engine-gnosis-erigon --sim.limit="withdrawals" --client erigon-old --results-root=${{ github.workspace }}/runs --loglevel=3 --client.checktimelimit=5m --docker.output 
+          ./hive --sim ethereum/engine-gnosis-erigon --sim.limit="withdrawals" --client erigon-old --results-root=${{ github.workspace }}/runs --loglevel=3 --client.checktimelimit=5m --docker.output --sim.parallelism=8 
 
       - name: Send file over SSH
         if: always()
