@@ -14,8 +14,9 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 
 	suite_auth "github.com/ethereum/hive/simulators/ethereum/engine/suites/auth"
-	//suite_engine "github.com/ethereum/hive/simulators/ethereum/engine/suites/engine"
+	suite_engine "github.com/ethereum/hive/simulators/ethereum/engine/suites/engine"
 	suite_ex_cap "github.com/ethereum/hive/simulators/ethereum/engine/suites/exchange_capabilities"
+
 	//suite_transition "github.com/ethereum/hive/simulators/ethereum/engine/suites/transition"
 	suite_cancun "github.com/ethereum/hive/simulators/ethereum/engine/suites/cancun"
 	suite_withdrawals "github.com/ethereum/hive/simulators/ethereum/engine/suites/withdrawals"
@@ -27,12 +28,12 @@ const SetupTime = time.Minute
 
 func main() {
 	var (
-		//	engine = hivesim.Suite{
-		//		Name: "engine-api",
-		//		Description: `
-		//Test Engine API tests using CL mocker to inject commands into clients after they
-		//have reached the Terminal Total Difficulty.`[1:],
-		//	}
+		engine = hivesim.Suite{
+			Name: "engine-api",
+			Description: `
+		Test Engine API tests using CL mocker to inject commands into clients after they
+		have reached the Terminal Total Difficulty.`[1:],
+		}
 		//	transition = hivesim.Suite{
 		//		Name: "engine-transition",
 		//		Description: `
@@ -67,7 +68,7 @@ func main() {
 	)
 	simulator := hivesim.New()
 
-	//addTestsToSuite(simulator, &engine, specToInterface(suite_engine.Tests), "full")
+	addTestsToSuite(simulator, &engine, suite_engine.Tests, "full")
 	//addTestsToSuite(simulator, &transition, specToInterface(suite_transition.Tests), "full")
 	addTestsToSuite(simulator, &auth, suite_auth.Tests, "full")
 	addTestsToSuite(simulator, &excap, suite_ex_cap.Tests, "full")
