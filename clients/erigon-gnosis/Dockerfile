@@ -1,7 +1,7 @@
 ## Build Erigon Via Pre-Built Image:
 ARG baseimage=thorax/erigon
-ARG tag=latest
-# ARG tag=v2.60.4
+# ARG tag=latest
+ARG tag=v2.60.4
 FROM $baseimage:$tag
 
 # The upstream erigon container uses a non-root user, but we need
