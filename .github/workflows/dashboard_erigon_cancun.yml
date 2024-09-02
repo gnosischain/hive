@@ -49,7 +49,7 @@ jobs:
 
       - name: Install Linux packages
         run: |
-          sudo apt-get update
+          sudo apt-get update -y
           sudo apt-get install libsnappy-dev libc6-dev libc6 build-essential
 
       - name: Set working directory
