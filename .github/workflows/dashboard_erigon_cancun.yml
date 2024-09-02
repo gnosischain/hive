@@ -21,16 +21,18 @@ jobs:
         with:
           ref: refactoring-phase-2-erigon
 
-      - name: Set permissions
+      - name: Set up Go cache directories
         run: |
-          sudo chown -R $USER:$USER $HOME
-          sudo chmod -R 755 $HOME
+          mkdir -p /root/.cache/go-build
+          mkdir -p /root/go
+          chmod -R 755 /root/.cache/go-build
+          chmod -R 755 /root/go
 
       - name: Set Go environment variables
         run: |
-          echo "GOCACHE=$HOME/.cache/go-build" >> $GITHUB_ENV
-          echo "GOPATH=$HOME/go" >> $GITHUB_ENV
-          echo "HOME=$HOME" >> $GITHUB_ENV
+          echo "GOCACHE=/root/.cache/go-build" >> $GITHUB_ENV
+          echo "GOPATH=/root/go" >> $GITHUB_ENV
+          echo "HOME=/root" >> $GITHUB_ENV
 
       - name: Set up Go
         uses: actions/setup-go@v4
