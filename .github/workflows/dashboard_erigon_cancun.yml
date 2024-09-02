@@ -16,10 +16,28 @@ jobs:
   hive-run:
     runs-on: hive
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: refactoring-phase-2-erigon
+
+      - name: Set permissions
+        run: |
+          sudo chown -R $USER:$USER $HOME
+          sudo chmod -R 755 $HOME
+
+      - name: Set Go environment variables
+        run: |
+          echo "GOCACHE=$HOME/.cache/go-build" >> $GITHUB_ENV
+          echo "GOPATH=$HOME/go" >> $GITHUB_ENV
+          echo "HOME=$HOME" >> $GITHUB_ENV
+
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
           go-version: stable
+          cache: true
+          cache-dependency-path: go.sum
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v2
@@ -32,13 +50,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libsnappy-dev libc6-dev libc6 build-essential
 
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: refactoring-phase-2-erigon
+      - name: Set working directory
+        run: |
+          echo "Current directory: $(pwd)"
+          ls -la
 
       - name: Download dependencies
-        run: go get -v ./...
+        run: |
+          go mod download
+          go mod tidy
 
       - name: Build hive
         run: go build -v -o hive hive.go
