@@ -2,11 +2,12 @@ package test
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core"
 	"math/big"
 	"math/rand"
 	"net/http"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core"
 
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
@@ -110,7 +111,8 @@ func Run(testSpec Spec, ttd *big.Int, timeout time.Duration, t *hivesim.T, c *hi
 	}
 
 	// Full test context has a few more seconds to finish up after timeout happens
-	ctx, cancel := context.WithTimeout(context.Background(), timeout+(time.Second*10))
+	// Increased from 10 to 1000 seconds to fix `Re-Org Back into Canonical Chain` tests
+	ctx, cancel := context.WithTimeout(context.Background(), timeout+(time.Second*1000))
 	defer cancel()
 	env.TestContext = ctx
 	clMocker.TestContext = ctx
