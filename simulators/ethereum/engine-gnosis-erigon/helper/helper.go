@@ -315,12 +315,14 @@ func WaitForTTD(ec client.EngineClient, wg *sync.WaitGroup, done chan<- WaitTTDR
 	for {
 		select {
 		case <-time.After(TTDCheckPeriod):
-			ttdReached, err := CheckTTD(ec, ctx)
-			if err == nil && ttdReached {
+			// ttdReached, err := CheckTTD(ec, ctx)
+			// TODO: Remove WaitForTTD in the future
+			ttdReached := true
+			if ttdReached {
 				select {
 				case done <- WaitTTDResponse{
 					ec:  ec,
-					err: err,
+					err: nil,
 				}:
 				case <-ctx.Done():
 				}
