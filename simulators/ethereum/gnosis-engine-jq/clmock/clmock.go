@@ -314,7 +314,7 @@ func (cl *CLMocker) WaitForTTD() {
 	mockTTD := false
 	if ttdEnabled := os.Getenv("HIVE_TTD_ENABLED"); ttdEnabled == "false" {
 		mockTTD = true
-		cl.Fatalf("CLMocker: TTD is disabled, mocking TTD reached")
+		cl.Logf("CLMocker: TTD is disabled, mocking TTD response")
 	}
 	ec, err := helper.WaitAnyClientForTTD(cl.EngineClients, cl.TestContext, mockTTD)
 	if ec == nil || err != nil {
