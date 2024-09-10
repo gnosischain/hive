@@ -6,11 +6,13 @@ import (
 	"encoding/binary"
 	"encoding/json"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core"
 	"math/big"
 	"math/rand"
+	"os"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core"
 
 	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/core/forkid"
@@ -263,7 +265,7 @@ func (cl *CLMocker) GetHeaders(amount uint64, originHash common.Hash, originNumb
 }
 
 // Sets the specified client's chain head as Terminal PoW block by sending the initial forkchoiceUpdated.
-func (cl *CLMocker) SetTTDBlockClient(ec client.EngineClient) {
+func (cl *CLMocker) SetTTDBlockClient(ec client.EngineClient, mockTTD bool) {
 	var err error
 	ctx, cancel := context.WithTimeout(cl.TestContext, globals.RPCTimeout)
 	defer cancel()
@@ -275,20 +277,21 @@ func (cl *CLMocker) SetTTDBlockClient(ec client.EngineClient) {
 	}
 	cl.HeaderHistory[cl.LatestHeader.Number.Uint64()] = &cl.LatestHeader.Header
 
-	ctx, cancel = context.WithTimeout(cl.TestContext, globals.RPCTimeout)
-	defer cancel()
-
-	if td, err := ec.GetTotalDifficulty(ctx); err != nil {
-		cl.Fatalf("CLMocker: Error getting total difficulty from engine client: %v", err)
-		panic(err)
-	} else if td.Cmp(ec.TerminalTotalDifficulty()) < 0 {
-		cl.Fatalf("CLMocker: Attempted to set TTD Block when TTD had not been reached: %d > %d", ec.TerminalTotalDifficulty(), td)
-		panic(err)
-	} else {
-		cl.Logf("CLMocker: TTD has been reached at block %d (%d>=%d)\n", cl.LatestHeader.Number, td, ec.TerminalTotalDifficulty())
-		jsH, _ := json.MarshalIndent(cl.LatestHeader, "", " ")
-		cl.Logf("CLMocker: Client: %s, Block %d: %s\n", ec.ID(), cl.LatestHeader.Number, jsH)
-		cl.ChainTotalDifficulty = td
+	if !mockTTD {
+		ctx, cancel = context.WithTimeout(cl.TestContext, globals.RPCTimeout)
+		defer cancel()
+		if td, err := ec.GetTotalDifficulty(ctx); err != nil {
+			cl.Fatalf("CLMocker: Error getting total difficulty from engine client: %v", err)
+			panic(err)
+		} else if td.Cmp(ec.TerminalTotalDifficulty()) < 0 {
+			cl.Fatalf("CLMocker: Attempted to set TTD Block when TTD had not been reached: %d > %d", ec.TerminalTotalDifficulty(), td)
+			panic(err)
+		} else {
+			cl.Logf("CLMocker: TTD has been reached at block %d (%d>=%d)\n", cl.LatestHeader.Number, td, ec.TerminalTotalDifficulty())
+			jsH, _ := json.MarshalIndent(cl.LatestHeader, "", " ")
+			cl.Logf("CLMocker: Client: %s, Block %d: %s\n", ec.ID(), cl.LatestHeader.Number, jsH)
+			cl.ChainTotalDifficulty = td
+		}
 	}
 
 	cl.TTDReached = true
@@ -307,13 +310,19 @@ func (cl *CLMocker) SetTTDBlockClient(ec client.EngineClient) {
 // This method waits for TTD in at least one of the clients, then sends the
 // initial forkchoiceUpdated with the info obtained from the client.
 func (cl *CLMocker) WaitForTTD() {
-	ec, err := helper.WaitAnyClientForTTD(cl.EngineClients, cl.TestContext)
+	// Check if TTD is enabled via environment variable
+	mockTTD := false
+	if ttdEnabled := os.Getenv("HIVE_TTD_ENABLED"); ttdEnabled == "false" {
+		mockTTD = true
+		cl.Fatalf("CLMocker: TTD is disabled, mocking TTD reached")
+	}
+	ec, err := helper.WaitAnyClientForTTD(cl.EngineClients, cl.TestContext, mockTTD)
 	if ec == nil || err != nil {
 		cl.Fatalf("CLMocker: Error while waiting for TTD: %v", err)
 		panic(err)
 	}
 	// One of the clients has reached TTD, send the initial fcU with this client as head
-	cl.SetTTDBlockClient(ec)
+	cl.SetTTDBlockClient(ec, mockTTD)
 }
 
 // Check whether a block number is a PoS block

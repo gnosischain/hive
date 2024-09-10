@@ -2,9 +2,10 @@ package helper
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core"
 	"sync"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core"
 
 	"bytes"
 	"encoding/json"
@@ -302,17 +303,29 @@ type WaitTTDResponse struct {
 }
 
 // Wait until the TTD is reached by a single client.
-func WaitForTTD(ec client.EngineClient, wg *sync.WaitGroup, done chan<- WaitTTDResponse, ctx context.Context) {
+func WaitForTTD(ec client.EngineClient, wg *sync.WaitGroup, done chan<- WaitTTDResponse, ctx context.Context, mockTTD bool) {
 	defer wg.Done()
 	for {
 		select {
 		case <-time.After(TTDCheckPeriod):
-			ttdReached, err := CheckTTD(ec, ctx)
-			if err == nil && ttdReached {
+			if !mockTTD {
+
+				ttdReached, err := CheckTTD(ec, ctx)
+				if err == nil && ttdReached {
+					select {
+					case done <- WaitTTDResponse{
+						ec:  ec,
+						err: err,
+					}:
+					case <-ctx.Done():
+					}
+					return
+				}
+			} else {
 				select {
 				case done <- WaitTTDResponse{
 					ec:  ec,
-					err: err,
+					err: nil,
 				}:
 				case <-ctx.Done():
 				}
@@ -344,7 +357,7 @@ func WaitForTTDWithTimeout(ec client.EngineClient, ctx context.Context) error {
 }
 
 // Wait until the TTD is reached by any of the engine clients
-func WaitAnyClientForTTD(ecs []client.EngineClient, testCtx context.Context) (client.EngineClient, error) {
+func WaitAnyClientForTTD(ecs []client.EngineClient, testCtx context.Context, mockTDD bool) (client.EngineClient, error) {
 	var wg sync.WaitGroup
 	defer wg.Wait()
 	done := make(chan WaitTTDResponse)
@@ -354,7 +367,7 @@ func WaitAnyClientForTTD(ecs []client.EngineClient, testCtx context.Context) (cl
 		wg.Add(1)
 		ctx, cancel := context.WithCancel(testCtx)
 		defer cancel()
-		go WaitForTTD(ec, &wg, done, ctx)
+		go WaitForTTD(ec, &wg, done, ctx, mockTDD)
 	}
 	select {
 	case r := <-done:
