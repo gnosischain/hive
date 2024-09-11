@@ -50,7 +50,7 @@ FLAGS="$FLAGS --fakepow"
 # Create the data directory.
 mkdir /erigon-hive-datadir
 FLAGS="$FLAGS --datadir /erigon-hive-datadir"
-FLAGS="$FLAGS --db.size.limit 2GB --sync.parallel-state-flushing=false"
+FLAGS="$FLAGS --db.size.limit 2GB"
 
 # If a specific network ID is requested, use that
 if [ "$HIVE_NETWORK_ID" != "" ]; then
@@ -68,8 +68,8 @@ if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.alloc[] | select(.balance == "0x123450000000000000000"))' /genesis.json
 else
-    echo "Supplied genesis state:"
-    cat /genesis.json
+    echo "Supplied genesis state"
+    # cat /genesis.json
 fi
 
 echo "Command flags till now:"
