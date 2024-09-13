@@ -32,7 +32,11 @@ def to_bool:
 . + {
    "auRaSeal": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
   "gasLimit": "0x989680",
-  "difficulty": "0x0000000000000000000000000000000000000000000000000000000000000064",
+  "timestamp": 0,
+  "coinbase": "0x0000000000000000000000000000000000000000",
+  "baseFeePerGas": "0x3b9aca00",
+  "nonce": "0x0000000000000000",
+  "difficulty": "0x64",
     "alloc": ((.alloc|with_entries(.key|="0x"+.)) * {
         "0x59f80ed315477f9f0059D862713A7b082A599217": {
           "balance": "0xc9f2c9cd04674edea40000000"
@@ -263,7 +267,8 @@ def to_bool:
         }
   }),
   "config": {
-    "ethash": (if env.HIVE_CLIQUE_PERIOD then null else {} end),
+    "ChainName": "Gnosis",
+    # "ethash": (if env.HIVE_CLIQUE_PERIOD then null else {} end),
     "clique": (if env.HIVE_CLIQUE_PERIOD == null then null else {
       "period": env.HIVE_CLIQUE_PERIOD|to_int,
     } end),
@@ -286,13 +291,12 @@ def to_bool:
     "arrowGlacierBlock": env.HIVE_FORK_ARROW_GLACIER|to_int,
     "grayGlacierBlock": env.HIVE_FORK_GRAY_GLACIER|to_int,
     "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
-    "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int,
-    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED == null then true else env.HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED|to_bool end),
+    "terminalTotalDifficulty": 0,
+    "terminalTotalDifficultyPassed": true,
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
-    "ChainName": "",
     "eip1559FeeCollectorTransition": 0,
-     "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
+    "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
