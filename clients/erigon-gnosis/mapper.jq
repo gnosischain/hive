@@ -291,7 +291,7 @@ def to_bool:
     "arrowGlacierBlock": env.HIVE_FORK_ARROW_GLACIER|to_int,
     "grayGlacierBlock": env.HIVE_FORK_GRAY_GLACIER|to_int,
     "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
-    "terminalTotalDifficulty": 0,
+    "terminalTotalDifficulty": 100,
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
