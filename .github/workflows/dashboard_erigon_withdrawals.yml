@@ -6,10 +6,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - reflow 
+      - refactoring-phase-2-erigon 
   pull_request:
     branches:
-      - reflow 
+      - refactoring-phase-2-erigon 
     types: [ closed ]
 
 jobs:
@@ -35,7 +35,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: reflow
+          ref: refactoring-phase-2-erigon
 
       - name: Download dependencies
         run: go get -v ./...
@@ -46,7 +46,7 @@ jobs:
       - name: Run Erigon Withdrawals tests
         continue-on-error: true
         run: |
-          ./hive --sim ethereum/engine-gnosis-erigon --sim.limit="withdrawals" --client erigon-old --results-root=${{ github.workspace }}/runs --loglevel=5  --sim.loglevel=5 --client.checktimelimit=10m --sim.parallelism=4 --docker.output 
+          HIVE_TTD_ENABLED=false ./hive --sim ethereum/gnosis-engine-jq --sim.limit="withdrawals" --client erigon-gnosis --results-root=${{ github.workspace }}/runs --loglevel=5  --sim.loglevel=5 --client.checktimelimit=10m --sim.parallelism=4 --docker.output 
 
       - name: Send file over SSH
         if: always()

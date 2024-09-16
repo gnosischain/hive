@@ -47,7 +47,7 @@ jobs:
       - name: Run Nethermind Engine API tests
         continue-on-error: true
         run: |
-          ./hive --sim ethereum/gnosis-engine-jq --sim.limit="engine-api" --client nethermind-gnosis --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=4 
+          ./hive --sim ethereum/gnosis-engine-jq --sim.limit="engine-api" --client nethermind-gnosis --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=8 
 
       - name: Send file over SSH
         if: always()
