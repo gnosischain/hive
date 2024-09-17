@@ -991,24 +991,6 @@ func (ws *WithdrawalsBaseSpec) GetGenesis() *core.Genesis {
 		Balance: common.Big0,
 	}
 
-	// genesis.Alloc[common.HexToAddress("0x0000000000000000000000000000000000001001")] = core.GenesisAccount{
-	// 	Code:    push0Code,
-	// 	Balance: common.Big0,
-	// }
-	// for i := uint64(0); i < 1000; i++ {
-	// 	bs := make([]byte, 8)
-	// 	binary.BigEndian.PutUint64(bs, uint64(i))
-	// 	b := sha256.Sum256(bs)
-	// 	k, err := crypto.ToECDSA(b[:])
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-
-	// 	addr := crypto.PubkeyToAddress(k.PublicKey)
-	// 	acc := client.NewAccount()
-	// 	acc.SetBalance(big.NewInt(0).Mul(big.NewInt(1e18), big.NewInt(10)))
-	// 	genesis.AllocGenesis(addr, acc)
-	// }
 	return genesis
 }
 

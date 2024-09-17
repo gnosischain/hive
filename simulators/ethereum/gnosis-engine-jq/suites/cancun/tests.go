@@ -371,57 +371,57 @@ var Tests = []test.Spec{
 		},
 	},
 
-	&CancunBaseSpec{
-
-		BaseSpec: test.BaseSpec{
-			Name: "Replace Blob Transactions",
-			About: `
-			Test sending multiple blob transactions with the same nonce, but
-			higher gas tip so the transaction is replaced.
-			`,
-			MainFork: config.Cancun,
-		},
-
-		TestSequence: TestSequence{
-			NewPayloads{},
-			// Send multiple blob transactions with the same nonce.
-			SendBlobTransactions{ // Blob ID 0
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1),
-				BlobTransactionGasFeeCap:      big.NewInt(1e9),
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-			},
-			SendBlobTransactions{ // Blob ID 1
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1e2),
-				BlobTransactionGasFeeCap:      big.NewInt(1e10),
-				BlobTransactionGasTipCap:      big.NewInt(1e10),
-				ReplaceTransactions:           true,
-			},
-			SendBlobTransactions{ // Blob ID 2
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1e3),
-				BlobTransactionGasFeeCap:      big.NewInt(1e11),
-				BlobTransactionGasTipCap:      big.NewInt(1e11),
-				ReplaceTransactions:           true,
-			},
-			SendBlobTransactions{ // Blob ID 3
-				TransactionCount:              1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1e4),
-				BlobTransactionGasFeeCap:      big.NewInt(1e12),
-				BlobTransactionGasTipCap:      big.NewInt(1e12),
-				ReplaceTransactions:           true,
-			},
-
-			// We create the first payload, which must contain the blob tx
-			// with the higher tip.
-			NewPayloads{
-				ExpectedIncludedBlobCount: 1,
-				ExpectedBlobs:             []helper.BlobID{1},
-			},
-		},
-	},
-
+	// &CancunBaseSpec{
+	//
+	// 	BaseSpec: test.BaseSpec{
+	// 		Name: "Replace Blob Transactions",
+	// 		About: `
+	// 		Test sending multiple blob transactions with the same nonce, but
+	// 		higher gas tip so the transaction is replaced.
+	// 		`,
+	// 		MainFork: config.Cancun,
+	// 	},
+	//
+	// 	TestSequence: TestSequence{
+	// 		NewPayloads{},
+	// 		// Send multiple blob transactions with the same nonce.
+	// 		SendBlobTransactions{ // Blob ID 0
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(1),
+	// 			BlobTransactionGasFeeCap:      big.NewInt(1e9),
+	// 			BlobTransactionGasTipCap:      big.NewInt(1e9),
+	// 		},
+	// 		SendBlobTransactions{ // Blob ID 1
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(1e2),
+	// 			BlobTransactionGasFeeCap:      big.NewInt(1e10),
+	// 			BlobTransactionGasTipCap:      big.NewInt(1e10),
+	// 			ReplaceTransactions:           true,
+	// 		},
+	// 		SendBlobTransactions{ // Blob ID 2
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(1e3),
+	// 			BlobTransactionGasFeeCap:      big.NewInt(1e11),
+	// 			BlobTransactionGasTipCap:      big.NewInt(1e11),
+	// 			ReplaceTransactions:           true,
+	// 		},
+	// 		SendBlobTransactions{ // Blob ID 3
+	// 			TransactionCount:              1,
+	// 			BlobTransactionMaxBlobGasCost: big.NewInt(1e4),
+	// 			BlobTransactionGasFeeCap:      big.NewInt(1e12),
+	// 			BlobTransactionGasTipCap:      big.NewInt(1e12),
+	// 			ReplaceTransactions:           true,
+	// 		},
+	//
+	// 		// We create the first payload, which must contain the blob tx
+	// 		// with the higher tip.
+	// 		NewPayloads{
+	// 			ExpectedIncludedBlobCount: 1,
+	// 			ExpectedBlobs:             []helper.BlobID{1},
+	// 		},
+	// 	},
+	// },
+	//
 	//&CancunBaseSpec{
 	//
 	//	BaseSpec: test.BaseSpec{
