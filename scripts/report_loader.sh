@@ -1,7 +1,7 @@
 #!/bin/bash
 # Default values
 PORT=8090
-PROXY_PORT=8089
+PROXY_PORT=8088
 EXPERIMENT="01-nethermind-withdrawals-jq"
 HIVEVIEW_PORT=3001
 PROXY_CONTAINER_NAME="recovery_proxy"
@@ -15,6 +15,11 @@ while [[ $# -gt 0 ]]; do
       ;;
     -p|--port)
       PORT="$2"
+      shift # past argument
+      shift # past value
+      ;;
+    -pp|--proxy-port)
+      PROXY_PORT="$2"
       shift # past argument
       shift # past value
       ;;

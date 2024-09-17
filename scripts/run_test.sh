@@ -79,7 +79,7 @@ if [ "$DEBUG" == 1 ]; then
   DOCKER_FILE="Dockerfile.debug"
 fi
 
-HTTP_PROXY="$PROXY" ./hive --sim "$SIMULATOR" --sim.limit "$TEST_NAME" --client "$CLIENT" --loglevel="$CLIENT_LOG_LEVEL" --sim.loglevel="$SIMULATOR_LOG_LEVEL" --docker.output --results-root="scripts/experiments/$EXPERIMENT/runs" --dev.addr="127.0.0.1:3000" --docker.override-dockerfile="$DOCKER_FILE"
+HIVE_TTD_ENABLED=false HTTP_PROXY="$PROXY" ./hive --sim "$SIMULATOR" --sim.limit "$TEST_NAME" --client "$CLIENT" --loglevel="$CLIENT_LOG_LEVEL" --sim.loglevel="$SIMULATOR_LOG_LEVEL" --docker.output --results-root="scripts/experiments/$EXPERIMENT/runs" --dev.addr="127.0.0.1:3000" --docker.override-dockerfile="$DOCKER_FILE" --docker.pull
 
 if [ "$PROXY" == "" ]; then
   echo "No need to stop proxy"
