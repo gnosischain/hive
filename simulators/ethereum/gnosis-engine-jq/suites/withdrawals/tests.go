@@ -990,7 +990,6 @@ func (ws *WithdrawalsBaseSpec) GetGenesis() *core.Genesis {
 		Code:    push0Code,
 		Balance: common.Big0,
 	}
-
 	return genesis
 }
 
