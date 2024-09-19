@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - reflow  
+      - sync-upstream  
   pull_request:
     branches:
-      - reflow  
+      - sync-upstream  
     types: [ closed ]
 
 jobs:
@@ -33,7 +33,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: reflow 
+          ref: sync-upstream 
 
       - name: Download dependencies
         run: go get -v ./...
