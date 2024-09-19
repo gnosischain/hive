@@ -2,13 +2,12 @@ use super::constants::{
     BOOTNODES_ENVIRONMENT_VARIABLE, HIVE_CHECK_LIVE_PORT, TEST_DATA_FILE_PATH,
     TRIN_BRIDGE_CLIENT_TYPE,
 };
+use crate::suites::utils::get_flair;
 use ethportal_api::HistoryContentKey;
 use ethportal_api::HistoryContentValue;
 use ethportal_api::{Discv5ApiClient, HistoryNetworkApiClient};
 use hivesim::types::ClientDefinition;
-use hivesim::types::TestData;
 use hivesim::{dyn_async, Client, NClientTestSpec, Test};
-use portal_spec_test_utils_rs::get_flair;
 use serde_yaml::Value;
 use std::collections::HashMap;
 use tokio::time::Duration;
@@ -61,7 +60,7 @@ dyn_async! {
                     always_run: false,
                     run: test_bridge,
                     environments: None,
-                    test_data: None,
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
@@ -70,7 +69,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_bridge<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_bridge<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {

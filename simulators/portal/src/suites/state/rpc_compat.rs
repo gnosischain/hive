@@ -1,24 +1,25 @@
-use crate::suites::constants::BEACON_STRING;
-use crate::suites::constants::CONSTANT_CONTENT_KEY;
-use crate::suites::constants::CONSTANT_CONTENT_VALUE;
-use crate::suites::constants::HIVE_PORTAL_NETWORKS_SELECTED;
-use crate::suites::constants::TRIN_BRIDGE_CLIENT_TYPE;
-use ethportal_api::types::enr::generate_random_remote_enr;
-use ethportal_api::BeaconContentValue;
-use ethportal_api::Discv5ApiClient;
-use ethportal_api::{BeaconContentKey, BeaconNetworkApiClient};
-use hivesim::types::ClientDefinition;
-use hivesim::types::TestData;
-use hivesim::{dyn_async, Client, NClientTestSpec, Test};
-use serde_json::json;
 use std::collections::HashMap;
 
+use crate::suites::environment::PortalNetwork;
+use crate::suites::state::constants::{
+    CONTENT_KEY, CONTENT_LOOKUP_VALUE, CONTENT_OFFER_VALUE, TRIN_BRIDGE_CLIENT_TYPE,
+};
+use ethportal_api::types::enr::generate_random_remote_enr;
+use ethportal_api::Discv5ApiClient;
+use ethportal_api::{StateContentKey, StateContentValue, StateNetworkApiClient};
+use hivesim::types::ClientDefinition;
+use hivesim::{dyn_async, Client, NClientTestSpec, Test};
+use serde_json::json;
+
 dyn_async! {
-    pub async fn run_rpc_compat_test_suite<'a> (test: &'a mut Test, _client: Option<Client>) {
+    pub async fn run_rpc_compat_state_test_suite<'a> (test: &'a mut Test, _client: Option<Client>) {
         // Get all available portal clients
         let clients = test.sim.client_types().await;
         // todo: remove this once we implement role in hivesim-rs
         let clients: Vec<ClientDefinition> = clients.into_iter().filter(|client| client.name != *TRIN_BRIDGE_CLIENT_TYPE).collect();
+
+        let environment_flag = PortalNetwork::as_environment_flag([PortalNetwork::State, PortalNetwork::History]);
+        let environments = Some(vec![Some(HashMap::from([environment_flag]))]);
 
         // Test single type of client
         for client in &clients {
@@ -28,164 +29,164 @@ dyn_async! {
                     description: "".to_string(),
                     always_run: false,
                     run: test_node_info,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconLocalContent Expect ContentAbsent".to_string(),
+                    name: "portal_stateLocalContent Expect ContentAbsent".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_local_content_expect_content_absent,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconStore".to_string(),
+                    name: "portal_stateStore".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_store,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconLocalContent Expect ContentPresent".to_string(),
+                    name: "portal_stateLocalContent Expect ContentPresent".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_local_content_expect_content_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconAddEnr Expect true".to_string(),
+                    name: "portal_stateAddEnr Expect true".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_add_enr_expect_true,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconGetEnr None Found".to_string(),
+                    name: "portal_stateGetEnr None Found".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_get_enr_non_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconGetEnr ENR Found".to_string(),
+                    name: "portal_stateGetEnr ENR Found".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_get_enr_enr_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconGetEnr Local Enr".to_string(),
+                    name: "portal_stateGetEnr Local Enr".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_get_enr_local_enr,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconDeleteEnr None Found".to_string(),
+                    name: "portal_stateDeleteEnr None Found".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_delete_enr_non_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconDeleteEnr ENR Found".to_string(),
+                    name: "portal_stateDeleteEnr ENR Found".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_delete_enr_enr_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconLookupEnr None Found".to_string(),
+                    name: "portal_stateLookupEnr None Found".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_lookup_enr_non_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconLookupEnr ENR Found".to_string(),
+                    name: "portal_stateLookupEnr ENR Found".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_lookup_enr_enr_present,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconLookupEnr Local Enr".to_string(),
+                    name: "portal_stateLookupEnr Local Enr".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_lookup_enr_local_enr,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
 
             test.run(
                 NClientTestSpec {
-                    name: "portal_beaconRecursiveFindContent Content Absent".to_string(),
+                    name: "portal_stateRecursiveFindContent Content Absent".to_string(),
                     description: "".to_string(),
                     always_run: false,
                     run: test_recursive_find_content_content_absent,
-                    environments: Some(vec![Some(HashMap::from([(HIVE_PORTAL_NETWORKS_SELECTED.to_string(), BEACON_STRING.to_string())]))]),
-                    test_data: None,
+                    environments: environments.clone(),
+                    test_data: (),
                     clients: vec![client.clone()],
                 }
             ).await;
@@ -194,7 +195,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_node_info<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_node_info<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -209,59 +210,59 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_local_content_expect_content_absent<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_local_content_expect_content_absent<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
                 panic!("Unable to get expected amount of clients from NClientTestSpec");
             }
         };
-        let content_key: BeaconContentKey = serde_json::from_value(json!(CONSTANT_CONTENT_KEY)).unwrap();
+        let content_key: StateContentKey = serde_json::from_value(json!(CONTENT_KEY)).unwrap();
 
-        if let Ok(response)  = BeaconNetworkApiClient::local_content(&client.rpc, content_key).await {
+        if let Ok(response) = StateNetworkApiClient::local_content(&client.rpc, content_key).await {
             panic!("Expected to receive an error because content wasn't found {response:?}");
         }
     }
 }
 
 dyn_async! {
-    async fn test_store<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_store<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
                 panic!("Unable to get expected amount of clients from NClientTestSpec");
             }
         };
-        let content_key: BeaconContentKey = serde_json::from_value(json!(CONSTANT_CONTENT_KEY)).unwrap();
-        let content_value: BeaconContentValue = serde_json::from_value(json!(CONSTANT_CONTENT_VALUE)).unwrap();
+        let content_key: StateContentKey = serde_json::from_value(json!(CONTENT_KEY)).unwrap();
+        let content_value: StateContentValue = serde_json::from_value(json!(CONTENT_OFFER_VALUE)).unwrap();
 
-        if let Err(err) = BeaconNetworkApiClient::store(&client.rpc, content_key, content_value).await {
+        if let Err(err) = StateNetworkApiClient::store(&client.rpc, content_key, content_value).await {
             panic!("{}", &err.to_string());
         }
     }
 }
 
 dyn_async! {
-    async fn test_local_content_expect_content_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_local_content_expect_content_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
                 panic!("Unable to get expected amount of clients from NClientTestSpec");
             }
         };
-        let content_key: BeaconContentKey = serde_json::from_value(json!(CONSTANT_CONTENT_KEY)).unwrap();
-        let content_value: BeaconContentValue = serde_json::from_value(json!(CONSTANT_CONTENT_VALUE)).unwrap();
+        let content_key: StateContentKey = serde_json::from_value(json!(CONTENT_KEY)).unwrap();
+        let content_offer_value: StateContentValue = serde_json::from_value(json!(CONTENT_OFFER_VALUE)).unwrap();
+        let content_lookup_value: StateContentValue = serde_json::from_value(json!(CONTENT_LOOKUP_VALUE)).unwrap();
 
-        // seed CONTENT_KEY/content_value onto the local node to test local_content expect content present
-        if let Err(err) = BeaconNetworkApiClient::store(&client.rpc, content_key.clone(), content_value.clone()).await {
+        if let Err(err) = StateNetworkApiClient::store(&client.rpc, content_key.clone(), content_offer_value).await {
             panic!("{}", &err.to_string());
         }
 
         // Here we are calling local_content RPC to test if the content is present
-        match BeaconNetworkApiClient::local_content(&client.rpc, content_key).await {
+        match StateNetworkApiClient::local_content(&client.rpc, content_key).await {
             Ok(possible_content) => {
-                if possible_content != content_value {
-                    panic!("Error receiving content: Expected content: {content_value:?}, Received content: {possible_content:?}");
+                if possible_content != content_lookup_value {
+                    panic!("Error receiving content: Expected content: {content_lookup_value:?}, Received content: {possible_content:?}");
                 }
             }
             Err(err) => {
@@ -272,7 +273,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_add_enr_expect_true<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_add_enr_expect_true<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -280,7 +281,7 @@ dyn_async! {
             }
         };
         let (_, enr) = generate_random_remote_enr();
-        match BeaconNetworkApiClient::add_enr(&client.rpc, enr).await {
+        match StateNetworkApiClient::add_enr(&client.rpc, enr).await {
             Ok(response) => match response {
                 true => (),
                 false => panic!("AddEnr expected to get true and instead got false")
@@ -291,7 +292,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_get_enr_non_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_get_enr_non_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -300,14 +301,14 @@ dyn_async! {
         };
         let (_, enr) = generate_random_remote_enr();
 
-        if (BeaconNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await).is_ok() {
+        if (StateNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await).is_ok() {
             panic!("GetEnr in this case is not supposed to return a value")
         }
     }
 }
 
 dyn_async! {
-    async fn test_get_enr_local_enr<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_get_enr_local_enr<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -323,7 +324,7 @@ dyn_async! {
         };
 
         // check if we can fetch data from routing table
-        match BeaconNetworkApiClient::get_enr(&client.rpc, target_enr.node_id()).await {
+        match StateNetworkApiClient::get_enr(&client.rpc, target_enr.node_id()).await {
             Ok(response) => {
                 if response != target_enr {
                     panic!("Response from GetEnr didn't return expected Enr")
@@ -335,7 +336,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_get_enr_enr_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_get_enr_enr_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -345,7 +346,7 @@ dyn_async! {
         let (_, enr) = generate_random_remote_enr();
 
         // seed enr into routing table
-        match BeaconNetworkApiClient::add_enr(&client.rpc, enr.clone()).await {
+        match StateNetworkApiClient::add_enr(&client.rpc, enr.clone()).await {
             Ok(response) => match response {
                 true => (),
                 false => panic!("AddEnr expected to get true and instead got false")
@@ -354,7 +355,7 @@ dyn_async! {
         }
 
         // check if we can fetch data from routing table
-        match BeaconNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await {
+        match StateNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await {
             Ok(response) => {
                 if response != enr {
                     panic!("Response from GetEnr didn't return expected Enr")
@@ -366,7 +367,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_delete_enr_non_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_delete_enr_non_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -374,7 +375,7 @@ dyn_async! {
             }
         };
         let (_, enr) = generate_random_remote_enr();
-        match BeaconNetworkApiClient::delete_enr(&client.rpc, enr.node_id()).await {
+        match StateNetworkApiClient::delete_enr(&client.rpc, enr.node_id()).await {
             Ok(response) => match response {
                 true => panic!("DeleteEnr expected to get false and instead got true"),
                 false => ()
@@ -385,7 +386,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_delete_enr_enr_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_delete_enr_enr_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -395,7 +396,7 @@ dyn_async! {
         let (_, enr) = generate_random_remote_enr();
 
         // seed enr into routing table
-        match BeaconNetworkApiClient::add_enr(&client.rpc, enr.clone()).await {
+        match StateNetworkApiClient::add_enr(&client.rpc, enr.clone()).await {
             Ok(response) => match response {
                 true => (),
                 false => panic!("AddEnr expected to get true and instead got false")
@@ -404,7 +405,7 @@ dyn_async! {
         }
 
         // check if data was seeded into the table
-        match BeaconNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await {
+        match StateNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await {
             Ok(response) => {
                 if response != enr {
                     panic!("Response from GetEnr didn't return expected Enr")
@@ -414,7 +415,7 @@ dyn_async! {
         }
 
         // delete the data from routing table
-        match BeaconNetworkApiClient::delete_enr(&client.rpc, enr.node_id()).await {
+        match StateNetworkApiClient::delete_enr(&client.rpc, enr.node_id()).await {
             Ok(response) => match response {
                 true => (),
                 false => panic!("DeleteEnr expected to get true and instead got false")
@@ -423,14 +424,14 @@ dyn_async! {
         };
 
         // check if the enr was actually deleted out of the table or not
-        if (BeaconNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await).is_ok() {
+        if (StateNetworkApiClient::get_enr(&client.rpc, enr.node_id()).await).is_ok() {
             panic!("GetEnr in this case is not supposed to return a value")
         }
     }
 }
 
 dyn_async! {
-    async fn test_lookup_enr_non_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_lookup_enr_non_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -439,14 +440,14 @@ dyn_async! {
         };
         let (_, enr) = generate_random_remote_enr();
 
-        if (BeaconNetworkApiClient::lookup_enr(&client.rpc, enr.node_id()).await).is_ok() {
+        if (StateNetworkApiClient::lookup_enr(&client.rpc, enr.node_id()).await).is_ok() {
             panic!("LookupEnr in this case is not supposed to return a value")
         }
     }
 }
 
 dyn_async! {
-    async fn test_lookup_enr_enr_present<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_lookup_enr_enr_present<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -456,7 +457,7 @@ dyn_async! {
         let (_, enr) = generate_random_remote_enr();
 
         // seed enr into routing table
-        match BeaconNetworkApiClient::add_enr(&client.rpc, enr.clone()).await {
+        match StateNetworkApiClient::add_enr(&client.rpc, enr.clone()).await {
             Ok(response) => match response {
                 true => (),
                 false => panic!("AddEnr expected to get true and instead got false")
@@ -465,7 +466,7 @@ dyn_async! {
         }
 
         // check if we can fetch data from routing table
-        match BeaconNetworkApiClient::lookup_enr(&client.rpc, enr.node_id()).await {
+        match StateNetworkApiClient::lookup_enr(&client.rpc, enr.node_id()).await {
             Ok(response) => {
                 if response != enr {
                     panic!("Response from LookupEnr didn't return expected Enr")
@@ -477,7 +478,7 @@ dyn_async! {
 }
 
 dyn_async! {
-    async fn test_lookup_enr_local_enr<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_lookup_enr_local_enr<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
@@ -493,7 +494,7 @@ dyn_async! {
         };
 
         // check if we can fetch data from routing table
-        match BeaconNetworkApiClient::lookup_enr(&client.rpc, target_enr.node_id()).await {
+        match StateNetworkApiClient::lookup_enr(&client.rpc, target_enr.node_id()).await {
             Ok(response) => {
                 if response != target_enr {
                     panic!("Response from LookupEnr didn't return expected Enr")
@@ -506,16 +507,16 @@ dyn_async! {
 
 dyn_async! {
     // test that a node will return a AbsentContent via RecursiveFindContent when the data doesn't exist
-    async fn test_recursive_find_content_content_absent<'a>(clients: Vec<Client>, _: Option<TestData>) {
+    async fn test_recursive_find_content_content_absent<'a>(clients: Vec<Client>, _: ()) {
         let client = match clients.into_iter().next() {
             Some((client)) => client,
             None => {
                 panic!("Unable to get expected amount of clients from NClientTestSpec");
             }
         };
-        let header_with_proof_key: BeaconContentKey = serde_json::from_value(json!(CONSTANT_CONTENT_KEY)).unwrap();
+        let header_with_proof_key: StateContentKey = serde_json::from_value(json!(CONTENT_KEY)).unwrap();
 
-        if let Ok(content) = BeaconNetworkApiClient::recursive_find_content(&client.rpc, header_with_proof_key).await {
+        if let Ok(content) = StateNetworkApiClient::recursive_find_content(&client.rpc, header_with_proof_key).await {
             panic!("Error: Unexpected RecursiveFindContent expected to not get the content and instead get an error: {content:?}");
         }
     }
