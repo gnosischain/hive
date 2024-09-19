@@ -7,10 +7,10 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - refactoring-phase-2-erigon 
+      - reflow 
   pull_request:
     branches:
-      - refactoring-phase-2-erigon 
+      - reflow 
     types: [ closed ]
 
 jobs:
@@ -36,7 +36,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
         with:
-          ref: refactoring-phase-2-erigon
+          ref: reflow
 
       - name: Download dependencies
         run: go get -v ./...
