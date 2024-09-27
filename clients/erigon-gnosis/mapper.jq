@@ -295,6 +295,7 @@ def to_bool:
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
+    "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
     "eip1559FeeCollectorTransition": 0,
     "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
     "minBlobGasPrice": 1000000000,
