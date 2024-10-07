@@ -1,0 +1,93 @@
+name: Daily Run Gnosis
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Run every day at 12:00 UTC
+  workflow_dispatch:
+  push:
+    branches:
+      - reflow 
+  pull_request:
+    branches:
+      - reflow 
+    types: [ closed ]
+
+jobs:
+  hive-run:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - client: nethermind-gnosis
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: erigon-gnosis
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: nethermind-gnosis
+            suite: 'cancun'
+            parallelism: 4
+          - client: erigon-gnosis
+            suite: 'cancun'
+            parallelism: 4
+          - client: nethermind-gnosis
+            suite: 'engine-api'
+            parallelism: 10
+          - client: erigon-gnosis
+            suite: 'engine-api'
+            parallelism: 10
+          - client: nethermind-gnosis
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: erigon-gnosis
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: nethermind-gnosis
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: erigon-gnosis
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Install Linux packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsnappy-dev libc6-dev libc6 build-essential
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: reflow
+
+      - name: Download dependencies
+        run: go get -v ./...
+
+      - name: Build hive
+        run: go build -v -o hive hive.go
+
+      - name: Run Nethermind Withdrawals tests
+        continue-on-error: true
+        run: |
+          HIVE_TTD_ENABLED=false ./hive --sim ethereum/gnosis-engine-jq --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
+
+      - name: Send file over SSH
+        if: always()
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: ${{ github.workspace }}/runs/*
+          target: ${{ secrets.DIR }}/
