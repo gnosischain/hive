@@ -2,47 +2,48 @@ name: Debug Gnosis Tests
 
 on:
   workflow_dispatch:
-    client:
-      description: "Client"
-      required: true
-      default: "nethermind-gnosis"
-      type: choice
-      options:
-        - nethermind-gnosis
-        - erigon-gnosis
-        - nethermind-old
-        - erigon-old
-    suite:
-      description: "Suite to run"
-      required: true
-      default: "withdrawals"
-      type: choice
-      options:
-        - withdrawals
-        - cancun
-        - engine-api
-        - engine-auth
-        - engine-exchange-capabilities
-    branch:
-      description: "Branch to run tests on"
-      required: true
-      default: "reflow"
-    simulator:
-      description: "Hive simulator"
-      required: true
-      default: "ethereum/gnosis-engine-jq"
-    parallelism:
-      description: "Parallelism"
-      required: true
-      default: "1"
-      type: number
-      min: 1
-      max: 10
-    hive_ttd_enabled:
-      description: "Hive TTD Enabled"
-      required: true
-      default: "true"
-      type: boolean
+    inputs:
+      client:
+        description: "Client"
+        required: true
+        default: "nethermind-gnosis"
+        type: choice
+        options:
+          - nethermind-gnosis
+          - erigon-gnosis
+          - nethermind-old
+          - erigon-old
+      suite:
+        description: "Suite to run"
+        required: true
+        default: "withdrawals"
+        type: choice
+        options:
+          - withdrawals
+          - cancun
+          - engine-api
+          - engine-auth
+          - engine-exchange-capabilities
+      branch:
+        description: "Branch to run tests on"
+        required: true
+        default: "reflow"
+      simulator:
+        description: "Hive simulator"
+        required: true
+        default: "ethereum/gnosis-engine-jq"
+      parallelism:
+        description: "Parallelism"
+        required: true
+        default: "1"
+        type: number
+        min: 1
+        max: 10
+      hive_ttd_enabled:
+        description: "Hive TTD Enabled"
+        required: true
+        default: "true"
+        type: boolean
 
 jobs:
   hive-run:
