@@ -19,34 +19,48 @@ jobs:
       matrix:
         include:
           - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
             parallelism: 8
           - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
             parallelism: 8
           - client: nethermind-gnosis
+            simulator: 'ethereum/engine-gnosis-nethermind'
             suite: 'cancun'
             parallelism: 4
           - client: erigon-gnosis
+            simulator: 'ethereum/engine-gnosis-erigon'
             suite: 'cancun'
             parallelism: 4
           - client: nethermind-gnosis
+            simulator: 'ethereum/engine-gnosis-nethermind'
             suite: 'engine-api'
             parallelism: 10
           - client: erigon-gnosis
+            simulator: 'ethereum/engine-gnosis-erigon'
             suite: 'engine-api'
             parallelism: 10
           - client: nethermind-gnosis
+            simulator: 'ethereum/engine-gnosis-nethermind'
             suite: 'engine-auth'
             parallelism: 1
           - client: erigon-gnosis
+            simulator: 'ethereum/engine-gnosis-erigon'
             suite: 'engine-auth'
             parallelism: 1
           - client: nethermind-gnosis
+            simulator: 'ethereum/engine-gnosis-nethermind'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
           - client: erigon-gnosis
+            simulator: 'ethereum/engine-gnosis-erigon'
             suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: nethermind-gnosis
+            simulator: 'smoke'
+            suite: 'network'
             parallelism: 1
     steps:
       - name: Set up Go
@@ -76,10 +90,10 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
-      - name: Run Nethermind Withdrawals tests
+      - name: Run tests
         continue-on-error: true
         run: |
-          HIVE_TTD_ENABLED=false ./hive --sim ethereum/gnosis-engine-jq --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/runs --loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
+          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/runs --loglevel=5 --sim.loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
 
       - name: Send file over SSH
         if: always()
