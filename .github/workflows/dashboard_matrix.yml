@@ -93,10 +93,10 @@ jobs:
       - name: Run tests
         continue-on-error: true
         run: |
-          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/runs/${{ github.run_id }} --loglevel=5 --sim.loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
+          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=5 --sim.loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
       
       - name: Check report
-        run: ls -la ${{ github.workspace }}/runs/${{ github.run_id }}
+        run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
 
       - name: Send file over SSH
         if: always()
@@ -106,5 +106,5 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: ${{ github.workspace }}/runs/${{ github.run_id }}/*
+          source: ${{ github.workspace }}/${{ github.run_id }}/runs/*
           target: ${{ secrets.DIR }}/
