@@ -80,5 +80,5 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: ${{ github.workspace }}/${{ github.run_id }}/runs/*
-          target: /root/logs/github/workspace/runs/
+          source: ${{ github.run_id }}/runs/*
+          target: /root/logs/github/workspace/
