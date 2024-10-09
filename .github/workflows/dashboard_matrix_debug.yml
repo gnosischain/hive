@@ -16,14 +16,10 @@ jobs:
     strategy:
       matrix:
         include:
-          - client: nethermind-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-auth'
-            parallelism: 1
           - client: erigon-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
-            parallelism: 1
+            parallelism: 2
           - client: nethermind-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
@@ -81,5 +77,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: ${{ github.run_id }}/runs/*
-          target: ${{ secrets.DIR }}/
+          target: ${{ secrets.DIR }}/github/workspace/runs/
           strip_components: 2

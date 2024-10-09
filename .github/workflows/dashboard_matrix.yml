@@ -27,35 +27,39 @@ jobs:
             suite: 'withdrawals'
             parallelism: 8
           - client: nethermind-gnosis
-            simulator: 'ethereum/engine-gnosis-nethermind'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
             parallelism: 4
           - client: erigon-gnosis
-            simulator: 'ethereum/engine-gnosis-erigon'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
             parallelism: 4
+          - client: erigon-old
+            simulator: 'ethereum/engine-gnosis-erigon'
+            suite: 'cancun'
+            parallelism: 1
           - client: nethermind-gnosis
-            simulator: 'ethereum/engine-gnosis-nethermind'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
             parallelism: 10
           - client: erigon-gnosis
-            simulator: 'ethereum/engine-gnosis-erigon'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
             parallelism: 10
           - client: nethermind-gnosis
-            simulator: 'ethereum/engine-gnosis-nethermind'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
             parallelism: 1
           - client: erigon-gnosis
-            simulator: 'ethereum/engine-gnosis-erigon'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
             parallelism: 1
           - client: nethermind-gnosis
-            simulator: 'ethereum/engine-gnosis-nethermind'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
           - client: erigon-gnosis
-            simulator: 'ethereum/engine-gnosis-erigon'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
           - client: nethermind-gnosis
@@ -106,5 +110,6 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: ${{ github.workspace }}/${{ github.run_id }}/runs/*
-          target: ${{ secrets.DIR }}/
+          source: ${{ github.run_id }}/runs/*
+          target: ${{ secrets.DIR }}/github/workspace/runs/
+          strip_components: 2
