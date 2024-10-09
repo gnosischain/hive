@@ -29,11 +29,11 @@ jobs:
           - client: nethermind-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
-            parallelism: 4
+            parallelism: 8
           - client: erigon-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
-            parallelism: 4
+            parallelism: 8
           - client: erigon-old
             simulator: 'ethereum/engine-gnosis-erigon'
             suite: 'cancun'
@@ -45,7 +45,7 @@ jobs:
           - client: erigon-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
-            parallelism: 10
+            parallelism: 12
           - client: nethermind-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
