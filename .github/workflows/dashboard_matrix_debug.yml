@@ -1,4 +1,4 @@
-name: Daily Run Gnosis
+name: Debug Gnosis Matrix
 
 on:
   workflow_dispatch:
@@ -81,4 +81,5 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           source: ${{ github.run_id }}/runs/*
-          target: /root/logs/github/workspace/
+          target: /root/logs/github/workspace/runs/
+          strip_components: 2
