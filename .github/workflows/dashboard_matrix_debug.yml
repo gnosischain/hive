@@ -17,19 +17,19 @@ jobs:
       matrix:
         include:
           - client: nethermind-gnosis
-            simulator: 'ethereum/engine-gnosis-nethermind'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
             parallelism: 1
           - client: erigon-gnosis
-            simulator: 'ethereum/engine-gnosis-erigon'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
             parallelism: 1
           - client: nethermind-gnosis
-            simulator: 'ethereum/engine-gnosis-nethermind'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
           - client: erigon-gnosis
-            simulator: 'ethereum/engine-gnosis-erigon'
+            simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
           - client: nethermind-gnosis
