@@ -339,8 +339,7 @@ func (n *NethermindChainSpec) GasLimit() uint64 {
 }
 
 func (n *NethermindChainSpec) SetGasLimit(limit uint64) {
-	//TODO implement me
-	panic("implement me")
+	n.Genesis.GasLimit = fmt.Sprintf("0x%x", limit)
 }
 
 func (n *NethermindChainSpec) Difficulty() *big.Int {
@@ -567,8 +566,7 @@ func (v *ErigonGenesis) GasLimit() uint64 {
 }
 
 func (v *ErigonGenesis) SetGasLimit(limit uint64) {
-	//TODO implement me
-	panic("implement me")
+	v.ErigonGasLimit = fmt.Sprintf("0x%x", limit)
 }
 
 func (v *ErigonGenesis) Difficulty() *big.Int {

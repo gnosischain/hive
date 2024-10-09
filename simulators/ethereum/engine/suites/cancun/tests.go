@@ -95,7 +95,7 @@ var Tests = []test.Spec{
 			},
 		},
 	},
-	//
+
 	&CancunBaseSpec{
 
 		BaseSpec: test.BaseSpec{
@@ -192,12 +192,14 @@ var Tests = []test.Spec{
 			NewPayloads{
 				PayloadCount:              1,
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK-1,
+				GetPayloadDelay: 5,
 			},
 
 			// The rest of the payloads have full blobs
 			NewPayloads{
 				PayloadCount:              3,
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
+				GetPayloadDelay: 5,
 			},
 		},
 	},
