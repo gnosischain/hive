@@ -94,6 +94,9 @@ jobs:
         continue-on-error: true
         run: |
           HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/runs/${{ github.run_id }} --loglevel=5 --sim.loglevel=5 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
+      
+      - name: Check report
+        run: ls -la ${{ github.workspace }}/runs/${{ github.run_id }}
 
       - name: Send file over SSH
         if: always()
