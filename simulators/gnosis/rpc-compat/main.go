@@ -21,12 +21,8 @@ import (
 
 var (
 	files = map[string]string{
-		//"genesis.json":         "./tests/genesis.json",
-		//"./tests/genesis.json": "/chainspec/genesis.json",
-		// "/genesis.json": "./tests/genesis.json",
 		"/genesis.json": "./init/genesis.json",
-		//"/chainspec/test.json": "./init/genesis.json",
-		"chain.rlp": "./tests/chain.rlp",
+		"chain.rlp":     "./tests/chain.rlp",
 	}
 )
 
