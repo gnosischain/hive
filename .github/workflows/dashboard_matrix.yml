@@ -21,6 +21,7 @@ jobs:
   hive-run:
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         include:
           - client: nethermind-gnosis
