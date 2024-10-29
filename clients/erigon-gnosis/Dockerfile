@@ -1,6 +1,6 @@
 ## Build Erigon Via Pre-Built Image:
 ARG baseimage=erigontech/erigon
-ARG tag=latest
+ARG tag=main-latest
 
 FROM $baseimage:$tag
 
