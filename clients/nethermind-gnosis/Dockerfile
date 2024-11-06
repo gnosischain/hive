@@ -1,6 +1,6 @@
 ## Build Nethermind Via Pre-Built Image:
 ARG baseimage=nethermindeth/nethermind
-ARG tag=master-0fdb10a
+ARG tag=hotfix-state-override
 FROM $baseimage:$tag
 
 RUN apt-get update && apt-get install -y jq && \
