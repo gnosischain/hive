@@ -203,11 +203,15 @@
     "berlinBlock": 0,
     "londonBlock": 0,
     "eip1559FeeCollectorTransition": 0,
-    "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
+    "burntContract": {
+      "0": "0x1559000000000000000000000000000000000000"
+    },
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": 1684934220,
     "cancunTime": 1696272200,
+    "pragueTime": 1730411200,
+    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
@@ -221,7 +225,7 @@
         "multi": {
           "0": {
             "list": [
-              "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"
+              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
             ]
           }
         }
@@ -236,10 +240,17 @@
         "0": "0x4000000000000000000000000000000000000001"
       },
       "registrar": "0x6000000000000000000000000000000000000000",
-      "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003"
+      "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
+      "twoThirdsMajorityTransition": 0
     }
   },
-  "difficulty": "0x0000000000000000000000000000000000000000000000000000000000000064",
+  "baseFeePerGas": "0x3b9aca00",
+  "difficulty": "0x01",
   "gasLimit": "0x989680",
-  "auRaSeal": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+  "seal": {
+    "authorityRound": {
+      "step": "0x0",
+      "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    }
+  }
 }
