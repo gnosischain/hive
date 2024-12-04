@@ -1,6 +1,6 @@
 ## Build Nethermind Via Pre-Built Image:
 ARG baseimage=nethermindeth/nethermind
-ARG tag=master
+ARG tag=1.30.0-rc
 FROM $baseimage:$tag
 
 RUN apt-get update && apt-get install -y jq && \
