@@ -4,7 +4,8 @@ ARG baseimage=nethermindeth/nethermind
 # master-6adf106 - success
 # master-3ce3ec6 - success
 # master-7485fa2 - success
-ARG tag=master-1d42b4a
+# master-1d42b4a - fail
+ARG tag=master-710b254
 FROM $baseimage:$tag
 
 RUN apt-get update && apt-get install -y jq && \
