@@ -1,5 +1,5 @@
 ## Build Nethermind Via Pre-Built Image:
-ARG baseimage=nethermindeth/nethermind
+ARG baseimage=nethermind/nethermind
 ARG tag=1.30.0-rc
 FROM $baseimage:$tag
 
