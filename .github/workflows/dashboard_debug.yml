@@ -13,6 +13,7 @@ on:
           - erigon-gnosis
           - nethermind-old
           - erigon-old
+          - reth-gnosis
       suite:
         description: "Suite to run"
         required: true
