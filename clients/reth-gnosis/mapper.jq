@@ -243,6 +243,8 @@ def to_bool:
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
+    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "blockRewardsContract": "0x2000000000000000000000000000000000000001",
     "eip1559FeeCollectorTransition": 0,
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
@@ -278,6 +280,7 @@ def to_bool:
       "registrar": "0x6000000000000000000000000000000000000000",
       "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
       "twoThirdsMajorityTransition": 0
-    }
+    },
+    "eip1559collector": "0x6BBe78ee9e474842Dbd4AB4987b3CeFE88426A92"
   }|remove_empty
 }

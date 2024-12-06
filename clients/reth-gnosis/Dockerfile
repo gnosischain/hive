@@ -1,5 +1,5 @@
-ARG baseimage=ghcr.io/paradigmxyz/reth
-ARG tag=latest
+ARG baseimage=ghcr.io/gnosischain/reth_gnosis
+ARG tag=ci-test
 
 FROM $baseimage:$tag as builder
 
