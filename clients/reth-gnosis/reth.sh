@@ -158,7 +158,7 @@ fi
 
 # Configure NAT
 FLAGS="$FLAGS --nat none"
-
+jq '(.alloc | with_entries(.key |= if (length == 40) then "0x" + . else . end)) as $new_alloc | .alloc = $new_alloc' /genesis.json > /genesis-temp.json && mv /genesis-temp.json /genesis.json
 # Launch the main client.
 echo "Running reth with flags: $FLAGS"
 RUST_LOG=info $reth node $FLAGS
