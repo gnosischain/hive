@@ -96,6 +96,9 @@ jobs:
       - name: Download dependencies
         run: go get -v ./...
 
+      - name: Build hive
+        run: go build -v -o hive hive.go
+
       - name: Patch Hive Dockerfile
         run: |
           tag=${{ github.event.inputs.tag }}
