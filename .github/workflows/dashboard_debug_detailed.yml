@@ -25,7 +25,7 @@ on:
           - erigon-old
           - reth-gnosis
       suite:
-        description: "Suite to run. Could be any of the following: withdrawals cancun engine-api engine-auth engine-exchange-capabilities network. To run a single test, use the test name started from "/" (e.g. /Withdrawals Fork on Canonical Block 8 / Side Block 7 - 10 Block Re-Org Sync)"
+        description: "Suite to run. Could be any of the following: withdrawals cancun engine-api engine-auth engine-exchange-capabilities network. To run a single test, use the test name started from '/' (e.g. '/Withdrawals Fork on Canonical Block 8 / Side Block 7 - 10 Block Re-Org Sync')"
         required: true
         default: "withdrawals"
         type: string
