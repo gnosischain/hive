@@ -1,4 +1,4 @@
-- client: nethermind
+- client: custom_tag
   build_args:
-    baseimage: nethermindeth/nethermind
-    tag: master
+    baseimage: custom_image
+    tag: custom_tag

@@ -101,6 +101,7 @@ jobs:
           tag=${{ github.event.inputs.tag }}
           client=${{ github.event.inputs.client }}
           baseimage=${{ github.event.inputs.baseimage }}
+          ls -la
           sed -i \
             -e "s|client: custom_client|client: $client|" \
             -e "s|baseimage: custom_image|baseimage: $baseimage|" \
