@@ -1,5 +1,5 @@
 ARG baseimage=ghcr.io/gnosischain/reth_gnosis
-ARG tag=ci-test
+ARG tag=master
 
 FROM $baseimage:$tag as builder
 

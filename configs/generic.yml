@@ -1,0 +1,4 @@
+- client: custom_client
+  build_args:
+    baseimage: custom_image
+    tag: custom_tag
