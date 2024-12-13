@@ -67,10 +67,6 @@ on:
         type: number
         min: 1
         max: 5
-      client_check_time_limit:
-        description: "Single test timeout"
-        default: "10m"
-        type: string
 
 jobs:
   hive-run:
@@ -115,7 +111,7 @@ jobs:
       - name: Run tests
         continue-on-error: true
         run: |
-          HIVE_TTD_ENABLED=${{ github.event.inputs.hive_ttd_enabled }} ./hive --sim "${{ github.event.inputs.simulator }}" --sim.limit="${{ github.event.inputs.suite }}" --client-file configs/generic.yml --results-root=${{ github.workspace }}/runs --sim.loglevel=${{ github.event.inputs.sim_log_level }} --loglevel=${{ github.event.inputs.log_level }} --client.checktimelimit=${{ github.event.inputs.client_check_time_limit }} --docker.output --sim.parallelism=${{ github.event.inputs.parallelism }} 
+          HIVE_TTD_ENABLED=${{ github.event.inputs.hive_ttd_enabled }} ./hive --sim "${{ github.event.inputs.simulator }}" --sim.limit="${{ github.event.inputs.suite }}" --client-file configs/generic.yml --results-root=${{ github.workspace }}/runs --sim.loglevel=${{ github.event.inputs.sim_log_level }} --loglevel=${{ github.event.inputs.log_level }} --client.checktimelimit=20m --docker.output --sim.parallelism=${{ github.event.inputs.parallelism }} 
 
       - name: Send file over SSH
         if: always()
