@@ -105,8 +105,8 @@ jobs:
             -e "s|client: custom_client|client: $client|" \
             -e "s|baseimage: custom_image|baseimage: $baseimage|" \
             -e "s|tag: custom_tag|tag: $tag|" \
-            hive/configs/generic.yml
-          cat hive/configs/generic.yml
+            configs/generic.yml
+          cat configs/generic.yml
 
       - name: Run tests
         continue-on-error: true
