@@ -1,0 +1,4 @@
+- client: nethermind
+  build_args:
+    baseimage: nethermindeth/nethermind
+    tag: master
