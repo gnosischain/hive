@@ -30,13 +30,18 @@ def to_bool:
 
 # Replace config in input.
 . + {
-   "auRaSeal": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
+   "seal": {
+    "authorityRound": {
+      "step": "0x0",
+      "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
   "gasLimit": "0x989680",
   "timestamp": 0,
-  "coinbase": "0x0000000000000000000000000000000000000000",
+  # "coinbase": "0x0000000000000000000000000000000000000000",
   "baseFeePerGas": "0x3b9aca00",
-  "nonce": "0x0000000000000000",
-  "difficulty": "0x64",
+  # "nonce": "0x0000000000000000",
+  "difficulty": "0x01",
     "alloc": ((.alloc|with_entries(.key|="0x"+.)) * {
         "0x59f80ed315477f9f0059D862713A7b082A599217": {
           "balance": "0xc9f2c9cd04674edea40000000"
@@ -291,12 +296,16 @@ def to_bool:
     "arrowGlacierBlock": env.HIVE_FORK_ARROW_GLACIER|to_int,
     "grayGlacierBlock": env.HIVE_FORK_GRAY_GLACIER|to_int,
     "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
-    "terminalTotalDifficulty": 100,
+    "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
+    "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
     "eip1559FeeCollectorTransition": 0,
-    "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
+    "burntContract": {
+      "0": "0x1559000000000000000000000000000000000000"
+    },
+    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
@@ -325,7 +334,8 @@ def to_bool:
         "0": "0x4000000000000000000000000000000000000001"
       },
       "registrar": "0x6000000000000000000000000000000000000000",
-      "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003"
+      "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
+      "twoThirdsMajorityTransition": 0
     }
   }|remove_empty
 }
