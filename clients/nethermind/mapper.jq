@@ -159,10 +159,18 @@ def clique_engine:
     "eip7251TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7685TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
+    "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
     # Other chain parameters
     "networkID": env.HIVE_NETWORK_ID|to_hex,
     "chainID": env.HIVE_CHAIN_ID|to_hex,
+
+    "blobSchedule": {
+      "prague": {
+        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x6" end),
+        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x9" end)
+      }
+    },
   },
   "genesis": {
     "seal": {
