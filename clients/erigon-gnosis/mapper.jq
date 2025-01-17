@@ -301,6 +301,12 @@ def to_bool:
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
+    "blobSchedule": {
+      "prague": {
+        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_int else 2 end),
+        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_int else 2 end)
+      }
+    },
     "eip1559FeeCollectorTransition": 0,
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
