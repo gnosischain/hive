@@ -204,7 +204,14 @@ def clique_engine:
     "networkID": env.HIVE_NETWORK_ID|to_int,
     # "chainID": env.HIVE_CHAIN_ID|to_hex,
 
-    # Gnosis fork
+    "blobSchedule": {
+      "prague": {
+        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x1" end),
+        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x2" end)
+      }
+    },
+
+    # Gnosis
     "eip1706Transition": "0x0",
     "gasLimitBoundDivisor": "0x400",
     "eip4844BlobGasPriceUpdateFraction": "0x10fafa",
