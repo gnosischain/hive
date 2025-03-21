@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
-	"github.com/ethereum/go-ethereum/core"
 	"math/big"
+
+	"github.com/ethereum/go-ethereum/core"
 
 	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/hive/hivesim"
@@ -106,10 +107,6 @@ type EngineClient interface {
 	GetLastAccountNonce(testCtx context.Context, account common.Address, head *types.Header) (uint64, error)
 	GetNextAccountNonce(testCtx context.Context, account common.Address, head *types.Header) (uint64, error)
 	UpdateNonce(testCtx context.Context, account common.Address, newNonce uint64) error
-
-	// TTD Methods
-	TerminalTotalDifficulty() *big.Int
-	GetTotalDifficulty(context.Context) (*big.Int, error)
 
 	// Test Methods
 	PostRunVerifications() error

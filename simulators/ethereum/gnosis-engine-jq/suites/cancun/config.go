@@ -121,7 +121,6 @@ func (cs *CancunBaseSpec) waitForSetup(t *test.Env) {
 // Base test case execution procedure for blobs tests.
 func (cs *CancunBaseSpec) Execute(t *test.Env) {
 
-	t.CLMock.WaitForTTD()
 	cs.waitForSetup(t)
 
 	blobTestCtx := &TestContext{

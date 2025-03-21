@@ -67,6 +67,7 @@ func ConfigTestAccounts(genesis *core.Genesis) error {
 		if _, ok := genesis.Alloc[address]; ok {
 			panic(fmt.Errorf("reused address %s during genesis configuration for cancun", address.Hex()))
 		}
+		// TODO: change to genesis.Alloc[address] = types.Account after updating geth
 		genesis.Alloc[address] = core.GenesisAccount{
 			Code:    datahashCode,
 			Balance: common.Big0,

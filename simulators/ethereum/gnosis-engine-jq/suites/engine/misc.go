@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 )
 
+// TODO: remove this file after updating geth
 // Runs a sanity test on a post Merge fork where a previous fork's (London) number is not zero
 type NonZeroPreMergeFork struct {
 	test.BaseSpec
@@ -42,7 +43,7 @@ func (s NonZeroPreMergeFork) GetForkConfig() *config.ForkConfig {
 
 func (b NonZeroPreMergeFork) Execute(t *test.Env) {
 	// Wait until TTD is reached by this client
-	t.CLMock.WaitForTTD()
+	// t.CLMock.WaitForTTD()
 
 	// Simply produce a couple of blocks without transactions (if London is not active at genesis
 	// we can't send type-2 transactions) and check that the chain progresses without issues

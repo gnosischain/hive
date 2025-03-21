@@ -22,7 +22,6 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	"github.com/ethereum/hive/simulators/ethereum/engine/libgno"
-	suite_engine "github.com/ethereum/hive/simulators/ethereum/engine/suites/engine"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
 )
@@ -728,12 +727,12 @@ var Tests = []test.Spec{
 	},
 
 	// TODO: Remove since this will be automatically inherited when this test suite is refactored
-	suite_engine.NonZeroPreMergeFork{
-		BaseSpec: test.BaseSpec{
-			MainFork:   config.Shanghai,
-			ForkHeight: 1,
-		},
-	},
+	// suite_engine.NonZeroPreMergeFork{
+	// 	BaseSpec: test.BaseSpec{
+	// 		MainFork:   config.Shanghai,
+	// 		ForkHeight: 1,
+	// 	},
+	// },
 }
 
 // Helper types to convert gwei into wei more easily
@@ -1142,8 +1141,6 @@ func (ws *WithdrawalsBaseSpec) Execute(t *test.Env) {
 	shangaiTime := *t.Genesis.Config.ShanghaiTime
 	t.CLMock.ShanghaiTimestamp = big.NewInt(0).SetUint64(shangaiTime)
 
-	// Wait ttd
-	t.CLMock.WaitForTTD()
 	ws.waitForSetup(t)
 	r := t.TestEngine.TestBlockByNumber(nil)
 	r.ExpectationDescription = `
@@ -1425,8 +1422,7 @@ func (ws *WithdrawalsSyncSpec) Execute(t *test.Env) {
 	ws.WithdrawalsBaseSpec.Execute(t)
 
 	// Spawn a secondary client which will need to sync to the primary client
-	secondaryEngine, err := hive_rpc.HiveRPCEngineStarter{TerminalTotalDifficulty: t.Genesis.Difficulty}.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
-	//secondaryEngine, err := hive_rpc.HiveRPCEngineStarter{}.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
+	secondaryEngine, err := hive_rpc.HiveRPCEngineStarter{}.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
 	if err != nil {
 		t.Fatalf("FAIL (%s): Unable to spawn a secondary client: %v", t.TestName, err)
 	}
@@ -1537,7 +1533,7 @@ func (ws *WithdrawalsReorgSpec) Execute(t *test.Env) {
 	shangaiTime := *t.Genesis.Config.ShanghaiTime
 	t.CLMock.ShanghaiTimestamp = big.NewInt(0).SetUint64(shangaiTime)
 
-	t.CLMock.WaitForTTD()
+	// t.CLMock.WaitForTTD()
 
 	// Spawn a secondary client which will produce the sidechain
 	secondaryEngine, err := hive_rpc.HiveRPCEngineStarter{}.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
@@ -1913,7 +1909,7 @@ func (ws *WithdrawalsExecutionLayerSpec) Execute(t *test.Env) {
 	t.CLMock.ShanghaiTimestamp = big.NewInt(0).SetUint64(shangaiTime)
 
 	// Wait ttd
-	t.CLMock.WaitForTTD()
+	// t.CLMock.WaitForTTD()
 
 	r := t.TestEngine.TestBlockByNumber(nil)
 	r.ExpectationDescription = `
