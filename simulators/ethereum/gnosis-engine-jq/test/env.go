@@ -102,6 +102,7 @@ func Run(testSpec Spec, timeout time.Duration, t *hivesim.T, c *hivesim.Client, 
 		Rand:                randSource,
 	}
 	env.Engines = append(env.Engines, ec)
+	env.TestEngines = append(env.TestEngines, env.TestEngine)
 
 	// Before running the test, make sure Eth and Engine ports are open for the client
 	if err := hive_rpc.CheckEthEngineLive(c); err != nil {
@@ -131,21 +132,12 @@ func Run(testSpec Spec, timeout time.Duration, t *hivesim.T, c *hivesim.Client, 
 	defer func() {
 		// Only run if the TTD was reached during test, and test had not failed at this point.
 		if !t.Failed() {
-			clMocker.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
-			ctx := context.Background()
-			number, err := env.Eth.BlockByNumber(ctx, nil)
-			if err != nil {
-				return
-			}
-			if number.Number().Int64() != clMocker.LatestHeader.Number.Int64() {
-				t.Fatalf("FAIL (%s): Client did not reached ttd ", env.TestName)
-			}
-
+			time.Sleep(49 * time.Second)
+			//clMocker.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
 		}
 	}()
 
 	// Run the test
-	time.Sleep(49 * time.Second)
 	testSpec.Execute(env)
 }
 

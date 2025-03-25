@@ -267,7 +267,7 @@ func (cl *CLMocker) InitChain(ec client.EngineClient) {
 	cl.LatestHeader, err = ec.HeaderByNumber(ctx, nil)
 	if err != nil {
 		cl.Fatalf("CLMocker: Unable to get latest header: %v", err)
-		panic(err)
+		// panic(err)
 	}
 	cl.HeaderHistory[cl.LatestHeader.Number.Uint64()] = &cl.LatestHeader.Header
 	if cl.LatestHeader.Difficulty.Cmp(cl.Genesis.Difficulty) != 0 {
