@@ -210,8 +210,8 @@ func (blobId BlobID) GenerateBlob() (*typ.Blob, *typ.KZGCommitment, error) {
 		return nil, nil, errors.Wrap(err, "GenerateBlob (1)")
 	}
 	ctx_4844 := CryptoCtx()
-
-	kzgCommitment, err := ctx_4844.BlobToKZGCommitment(gokzg4844.Blob(blob), 0)
+	blobConverted := gokzg4844.Blob(blob)
+	kzgCommitment, err := ctx_4844.BlobToKZGCommitment(&blobConverted, 0)
 	if err != nil {
 		return nil, nil, errors.Wrap(err, "GenerateBlob (2)")
 	}

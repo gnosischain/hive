@@ -186,12 +186,9 @@ func restart(startConfig GethNodeTestConfiguration, bootnodes []string, datadir 
 		DatabaseCache:   256,
 		DatabaseHandles: 256,
 		// StateScheme:      rawdb.PathScheme,
-		TxPool:           ethconfig.Defaults.TxPool,
-		GPO:              ethconfig.Defaults.GPO,
-		Miner:            ethconfig.Defaults.Miner,
-		LightServ:        100,
-		LightPeers:       int(startConfig.MaxPeers.Int64()) - 1,
-		LightNoSyncServe: true,
+		TxPool: ethconfig.Defaults.TxPool,
+		GPO:    ethconfig.Defaults.GPO,
+		Miner:  ethconfig.Defaults.Miner,
 	}
 	ethBackend, err := eth.New(stack, econfig)
 	if err != nil {
@@ -325,14 +322,14 @@ type validator struct{}
 func (v *validator) ValidateBody(block *types.Block) error {
 	return nil
 }
-func (v *validator) ValidateState(block *types.Block, state *state.StateDB, receipts types.Receipts, usedGas uint64) error {
+func (v *validator) ValidateState(block *types.Block, state *state.StateDB, result *core.ProcessResult, stateless bool) error {
 	return nil
 }
 
 type processor struct{}
 
-func (p *processor) Process(block *types.Block, statedb *state.StateDB, cfg vm.Config) (types.Receipts, []*types.Log, uint64, error) {
-	return types.Receipts{}, []*types.Log{}, 21000, nil
+func (p *processor) Process(block *types.Block, statedb *state.StateDB, cfg vm.Config) (*core.ProcessResult, error) {
+	return &core.ProcessResult{GasUsed: 21000}, nil
 }
 
 var headerPrefix = []byte("h") // headerPrefix + num (uint64 big endian) + hash -> header
@@ -348,6 +345,7 @@ func encodeBlockNumber(number uint64) []byte {
 
 func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot common.Hash) error {
 	parentTd := n.eth.BlockChain().GetTd(block.ParentHash(), block.NumberU64()-1)
+	db := n.eth.ChainDb()
 	rawdb.WriteTd(n.eth.ChainDb(), block.Hash(), block.NumberU64(), parentTd.Add(parentTd, block.Difficulty()))
 	rawdb.WriteBlock(n.eth.ChainDb(), block)
 
@@ -365,17 +363,19 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 	bc := n.eth.BlockChain()
 	bc.SetBlockValidatorAndProcessorForTesting(new(validator), n.eth.BlockChain().Processor())
 
-	statedb, err := state.New(parentRoot, bc.StateCache(), bc.Snapshots())
+	statedb, err := state.New(parentRoot, bc.StateCache())
 	if err != nil {
 		return err
 	}
-	statedb.StartPrefetcher("chain")
+	statedb.StartPrefetcher("chain", nil)
 	var failedProcessing bool
-	receipts, _, _, err := n.eth.BlockChain().Processor().Process(block, statedb, *n.eth.BlockChain().GetVMConfig())
-	if err != nil {
+	result, err := n.eth.BlockChain().Processor().Process(block, statedb, *n.eth.BlockChain().GetVMConfig())
+	if err != nil || result == nil {
 		failedProcessing = true
+	} else {
+		rawdb.WriteReceipts(db, block.Hash(), block.NumberU64(), result.Receipts)
 	}
-	rawdb.WriteReceipts(n.eth.ChainDb(), block.Hash(), block.NumberU64(), receipts)
+
 	root, err := statedb.Commit(block.NumberU64(), false)
 	if err != nil {
 		return err
@@ -698,7 +698,7 @@ func (n *GethNode) getStateDB(ctx context.Context, blockNumber *big.Int) (*state
 	if err != nil {
 		return nil, err
 	}
-	return state.New(b.Root(), n.eth.BlockChain().StateCache(), n.eth.BlockChain().Snapshots())
+	return state.New(b.Root(), n.eth.BlockChain().StateCache())
 }
 
 func (n *GethNode) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
@@ -706,7 +706,7 @@ func (n *GethNode) BalanceAt(ctx context.Context, account common.Address, blockN
 	if err != nil {
 		return nil, err
 	}
-	return stateDB.GetBalance(account), nil
+	return stateDB.GetBalance(account).ToBig(), nil
 }
 
 func (n *GethNode) StorageAt(ctx context.Context, account common.Address, key common.Hash, blockNumber *big.Int) ([]byte, error) {

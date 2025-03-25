@@ -214,24 +214,14 @@ func FromBeaconExecutableData(ed *geth_beacon.ExecutableData) (ExecutableData, e
 	}, nil
 }
 
-func ExecutableDataToBlock(ed ExecutableData, versionedHashes []common.Hash, beaconRoot *common.Hash) (*types.Block, error) {
-	//if beaconRoot != nil {
-	//	return nil, fmt.Errorf("parent geth_beacon block root is not nil is unsupported")
-	//}
-	//gethEd, err := ToBeaconExecutableData(&ed)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//return geth_beacon.ExecutableDataToBlock(gethEd, versionedHashes, beaconRoot)
-	return nil, nil
-}
-
-func BlockToExecutableData(block *types.Block, fees *big.Int) ExecutableData {
-	// TODO (DEVNET 8): Add blobs
-	gethEnvelope := geth_beacon.BlockToExecutableData(block, fees, nil)
-	ed, err := FromBeaconExecutableData(gethEnvelope.ExecutionPayload)
+func ExecutableDataToBlock(ed ExecutableData) (*types.Block, error) {
+	gethEd, err := ToBeaconExecutableData(&ed)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
-	return ed
+	var versionedHashes []common.Hash
+	if ed.VersionedHashes != nil {
+		versionedHashes = *ed.VersionedHashes
+	}
+	return geth_beacon.ExecutableDataToBlock(gethEd, versionedHashes, ed.ParentBeaconBlockRoot, nil)
 }

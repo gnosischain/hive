@@ -330,7 +330,7 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 			altChainPayloads = append(altChainPayloads, sidePayload)
 
 			// TODO: This could be useful to try to produce an invalid block that has some invalid field not included in the ExecutableData
-			sideBlock, err := typ.ExecutableDataToBlock(*sidePayload, nil, nil)
+			sideBlock, err := typ.ExecutableDataToBlock(*sidePayload)
 			if err != nil {
 				t.Fatalf("FAIL (%s): Error converting payload to block: %v", t.TestName, err)
 			}
@@ -339,7 +339,7 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 				if tc.InvalidField == helper.InvalidOmmers {
 					if unclePayload, ok := t.CLMock.ExecutedPayloadHistory[sideBlock.NumberU64()-1]; ok && unclePayload != nil {
 						// Uncle is a PoS payload
-						uncle, err = typ.ExecutableDataToBlock(*unclePayload, nil, nil)
+						uncle, err = typ.ExecutableDataToBlock(*unclePayload)
 						if err != nil {
 							t.Fatalf("FAIL (%s): Unable to get uncle block: %v", t.TestName, err)
 						}
@@ -392,7 +392,7 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 					s.ExpectAnyPayloadStatus(test.Valid, test.Syncing)
 
 				} else {
-					invalidBlock, err := typ.ExecutableDataToBlock(*altChainPayloads[i], nil, nil)
+					invalidBlock, err := typ.ExecutableDataToBlock(*altChainPayloads[i])
 					if err != nil {
 						t.Fatalf("FAIL (%s): TEST ISSUE - Failed to create block from payload: %v", t.TestName, err)
 					}
