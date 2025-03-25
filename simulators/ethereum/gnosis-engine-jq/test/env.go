@@ -133,7 +133,8 @@ func Run(testSpec Spec, timeout time.Duration, t *hivesim.T, c *hivesim.Client, 
 		// Only run if the TTD was reached during test, and test had not failed at this point.
 		if !t.Failed() {
 			time.Sleep(49 * time.Second)
-			//clMocker.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
+			// leave this in case we need produce blocks for specific tests
+			// clMocker.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
 		}
 	}()
 

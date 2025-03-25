@@ -68,11 +68,6 @@ func (s GethNodeEngineStarter) StartClient(T *hivesim.T, testContext context.Con
 func (s GethNodeEngineStarter) StartGethNode(T *hivesim.T, testContext context.Context, genesis *core.Genesis, ClientParams hivesim.Params, ClientFiles hivesim.Params, bootClients ...client.EngineClient) (*GethNode, error) {
 	var err error
 
-	// Not sure if this hack works
-	// genesisCopy := *genesis
-	// configCopy := *genesisCopy.Config
-	// genesisCopy.Config = &configCopy
-
 	var enodes []string
 	if bootClients != nil && len(bootClients) > 0 {
 		enodes = make([]string, len(bootClients))
@@ -161,8 +156,7 @@ func restart(startConfig GethNodeTestConfiguration, bootnodes []string, datadir 
 		startConfig.Name = "Modified Geth Module"
 	}
 	config := &node.Config{
-		Name: startConfig.Name,
-		// Version: params.Version,
+		Name:    startConfig.Name,
 		DataDir: datadir,
 		P2P: p2p.Config{
 			ListenAddr:  "0.0.0.0:0",
@@ -185,10 +179,10 @@ func restart(startConfig GethNodeTestConfiguration, bootnodes []string, datadir 
 		SyncMode:        downloader.FullSync,
 		DatabaseCache:   256,
 		DatabaseHandles: 256,
-		// StateScheme:      rawdb.PathScheme,
-		TxPool: ethconfig.Defaults.TxPool,
-		GPO:    ethconfig.Defaults.GPO,
-		Miner:  ethconfig.Defaults.Miner,
+		StateScheme:     rawdb.PathScheme,
+		TxPool:          ethconfig.Defaults.TxPool,
+		GPO:             ethconfig.Defaults.GPO,
+		Miner:           ethconfig.Defaults.Miner,
 	}
 	ethBackend, err := eth.New(stack, econfig)
 	if err != nil {

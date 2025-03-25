@@ -725,14 +725,6 @@ var Tests = []test.Spec{
 		},
 		ClaimBlocksCount: 4,
 	},
-
-	// TODO: Remove since this will be automatically inherited when this test suite is refactored
-	// suite_engine.NonZeroPreMergeFork{
-	// 	BaseSpec: test.BaseSpec{
-	// 		MainFork:   config.Shanghai,
-	// 		ForkHeight: 1,
-	// 	},
-	// },
 }
 
 // Helper types to convert gwei into wei more easily
@@ -1533,8 +1525,6 @@ func (ws *WithdrawalsReorgSpec) Execute(t *test.Env) {
 	shangaiTime := *t.Genesis.Config.ShanghaiTime
 	t.CLMock.ShanghaiTimestamp = big.NewInt(0).SetUint64(shangaiTime)
 
-	// t.CLMock.WaitForTTD()
-
 	// Spawn a secondary client which will produce the sidechain
 	secondaryEngine, err := hive_rpc.HiveRPCEngineStarter{}.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
 	if err != nil {
@@ -1907,9 +1897,6 @@ func (ws *WithdrawalsExecutionLayerSpec) Execute(t *test.Env) {
 	ws.WithdrawalsHistory = make(WithdrawalsHistory)
 	shangaiTime := *t.Genesis.Config.ShanghaiTime
 	t.CLMock.ShanghaiTimestamp = big.NewInt(0).SetUint64(shangaiTime)
-
-	// Wait ttd
-	// t.CLMock.WaitForTTD()
 
 	r := t.TestEngine.TestBlockByNumber(nil)
 	r.ExpectationDescription = `
