@@ -30,12 +30,11 @@ import (
 
 type HiveRPCEngineStarter struct {
 	// Client parameters used to launch the default client
-	ClientType              string
-	ChainFile               string
-	TerminalTotalDifficulty *big.Int
-	EnginePort              int
-	EthPort                 int
-	JWTSecret               []byte
+	ClientType string
+	ChainFile  string
+	EnginePort int
+	EthPort    int
+	JWTSecret  []byte
 }
 
 //var _ client.EngineStarter = (*HiveRPCEngineStarter)(nil)
@@ -46,7 +45,6 @@ func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Cont
 		enginePort = s.EnginePort
 		ethPort    = s.EthPort
 		jwtSecret  = s.JWTSecret
-		ttd        = s.TerminalTotalDifficulty
 	)
 	cs, err := T.Sim.ClientTypes()
 	if clientType == "" {
@@ -69,20 +67,6 @@ func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Cont
 	}
 	if s.ChainFile != "" {
 		ClientFiles = ClientFiles.Set("/chain.rlp", "./chains/"+s.ChainFile)
-	}
-	if ttd == nil {
-		if ttdStr, ok := ClientParams["HIVE_TERMINAL_TOTAL_DIFFICULTY"]; ok {
-			// Retrieve TTD from parameters
-			ttd, ok = new(big.Int).SetString(ttdStr, 10)
-			if !ok {
-				return nil, fmt.Errorf("unable to parse TTD from parameters")
-			}
-		}
-	} else {
-		// Real TTD must be calculated adding the genesis difficulty
-		ttdInt := helper.CalculateRealTTD(genesis, ttd.Int64())
-		ClientParams = ClientParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", ttdInt))
-		ttd = big.NewInt(ttdInt)
 	}
 	if len(bootClients) > 0 {
 		var (
@@ -109,7 +93,7 @@ func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Cont
 	if err := CheckEthEngineLive(c); err != nil {
 		return nil, fmt.Errorf("Engine/Eth ports were never open for client: %v", err)
 	}
-	ec := NewHiveRPCEngineClient(c, enginePort, ethPort, jwtSecret, ttd, &helper.LoggingRoundTrip{
+	ec := NewHiveRPCEngineClient(c, enginePort, ethPort, jwtSecret, &helper.LoggingRoundTrip{
 		Logger: T,
 		ID:     c.Container,
 		Inner:  http.DefaultTransport,
@@ -163,7 +147,6 @@ type HiveRPCEngineClient struct {
 	h              *hivesim.Client
 	c              *rpc.Client
 	cEth           *rpc.Client
-	ttd            *big.Int
 	JWTSecretBytes []byte
 
 	// Engine updates info
@@ -243,19 +226,17 @@ func (ec *HiveRPCEngineClient) BlockByHash(ctx context.Context, hash common.Hash
 }
 
 // NewClient creates a engine client that uses the given RPC client.
-func NewHiveRPCEngineClient(h *hivesim.Client, enginePort int, ethPort int, jwtSecretBytes []byte, ttd *big.Int, transport http.RoundTripper) *HiveRPCEngineClient {
+func NewHiveRPCEngineClient(h *hivesim.Client, enginePort int, ethPort int, jwtSecretBytes []byte, transport http.RoundTripper) *HiveRPCEngineClient {
 	// Prepare HTTP Client
 	httpClient := rpc.WithHTTPClient(&http.Client{Transport: transport})
 
 	engineRpcClient, err := rpc.DialOptions(context.Background(), fmt.Sprintf("http://%s:%d/", h.IP, enginePort), httpClient)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("Unable to connect to engine RPC endpoint: %v", err))
 	}
-
-	// Prepare ETH Client
 	ethRpcClient, err := rpc.DialOptions(context.Background(), fmt.Sprintf("http://%s:%d/", h.IP, ethPort), httpClient)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("Unable to connect to ETH RPC endpoint: %v", err))
 	}
 	eth := ethclient.NewClient(ethRpcClient)
 	return &HiveRPCEngineClient{
@@ -263,7 +244,6 @@ func NewHiveRPCEngineClient(h *hivesim.Client, enginePort int, ethPort int, jwtS
 		c:              engineRpcClient,
 		Client:         eth,
 		cEth:           ethRpcClient,
-		ttd:            ttd,
 		JWTSecretBytes: jwtSecretBytes,
 		accTxInfoMap:   make(map[common.Address]*AccountTransactionInfo),
 	}
@@ -279,10 +259,6 @@ func (ec *HiveRPCEngineClient) EnodeURL() (string, error) {
 
 func (ec *HiveRPCEngineClient) Url() (string, error) {
 	return fmt.Sprintf("http://%v:8545", ec.h.IP), nil
-}
-
-func (ec *HiveRPCEngineClient) TerminalTotalDifficulty() *big.Int {
-	return ec.ttd
 }
 
 var (
@@ -358,34 +334,6 @@ func (ec *HiveRPCEngineClient) HeaderByNumber(ctx context.Context, number *big.I
 	}
 	header := client.NewBlockHeader(byNumber.Header(), common.HexToHash(blockHash))
 	return header, nil
-}
-
-// Helper structs to fetch the TotalDifficulty
-type TD struct {
-	TotalDifficulty *hexutil.Big `json:"totalDifficulty"`
-}
-type TotalDifficultyHeader struct {
-	types.Header
-	TD
-}
-
-func (tdh *TotalDifficultyHeader) UnmarshalJSON(data []byte) error {
-	if err := json.Unmarshal(data, &tdh.Header); err != nil {
-		return err
-	}
-	if err := json.Unmarshal(data, &tdh.TD); err != nil {
-		return err
-	}
-	return nil
-}
-
-func (ec *HiveRPCEngineClient) GetTotalDifficulty(ctx context.Context) (*big.Int, error) {
-	var td *TotalDifficultyHeader
-	if err := ec.cEth.CallContext(ctx, &td, "eth_getBlockByNumber", "latest", false); err == nil {
-		return td.TotalDifficulty.ToInt(), nil
-	} else {
-		return nil, err
-	}
 }
 
 func (ec *HiveRPCEngineClient) Close() error {

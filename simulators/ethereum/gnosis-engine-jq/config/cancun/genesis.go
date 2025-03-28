@@ -6,6 +6,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
+	"github.com/ethereum/go-ethereum/core/types"
 )
 
 // ConfigGenesis configures the genesis block for the Cancun fork.
@@ -27,7 +28,7 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 	}
 
 	// Add bytecode pre deploy to the EIP-4788 address.
-	genesis.Alloc[BEACON_ROOTS_ADDRESS] = core.GenesisAccount{
+	genesis.Alloc[BEACON_ROOTS_ADDRESS] = types.Account{
 		Balance: common.Big0,
 		// Nonce:   1,
 		Code: common.Hex2Bytes("3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500"),
@@ -67,7 +68,7 @@ func ConfigTestAccounts(genesis *core.Genesis) error {
 		if _, ok := genesis.Alloc[address]; ok {
 			panic(fmt.Errorf("reused address %s during genesis configuration for cancun", address.Hex()))
 		}
-		genesis.Alloc[address] = core.GenesisAccount{
+		genesis.Alloc[address] = types.Account{
 			Code:    datahashCode,
 			Balance: common.Big0,
 		}

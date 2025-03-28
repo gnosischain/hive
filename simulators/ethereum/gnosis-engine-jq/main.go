@@ -195,23 +195,15 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 				panic("unable to inject genmsis")
 			}
 
-			// Calculate and set the TTD for this test
-			ttd := genesis.Config.TerminalTotalDifficulty
-
 			// Configure Forks
-			newParams := globals.DefaultClientEnv.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", ttd))
-			if forkConfig.LondonNumber != nil {
-				newParams = newParams.Set("HIVE_FORK_LONDON", fmt.Sprintf("%d", forkConfig.LondonNumber))
-			}
-			if forkConfig.ParisNumber != nil {
-				newParams = newParams.Set("HIVE_MERGE_BLOCK_ID", fmt.Sprintf("%d", forkConfig.ParisNumber))
-			}
+			newParams := globals.DefaultClientEnv
+			newParams = newParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED", "1")
+			newParams = newParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", genesis.Difficulty))
+			newParams = newParams.Set("HIVE_MERGE_BLOCK_ID", "0")
+
 			if forkConfig.ShanghaiTimestamp != nil {
 				newParams = newParams.Set("HIVE_SHANGHAI_TIMESTAMP", fmt.Sprintf("%d", forkConfig.ShanghaiTimestamp))
-				// Ensure merge transition is activated before shanghai if not already
-				if forkConfig.ParisNumber == nil {
-					newParams = newParams.Set("HIVE_MERGE_BLOCK_ID", "0")
-				}
+
 				if forkConfig.CancunTimestamp != nil {
 					newParams = newParams.Set("HIVE_CANCUN_TIMESTAMP", fmt.Sprintf("%d", forkConfig.CancunTimestamp))
 				}
@@ -219,28 +211,6 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 
 			if nodeType != "" {
 				newParams = newParams.Set("HIVE_NODETYPE", nodeType)
-			}
-
-			testFiles := hivesim.Params{}
-			if genesis.Difficulty.Cmp(ttd) < 0 {
-				if currentTest.GetChainFile() != "" {
-					// We are using a Proof of Work chain file, remove all clique-related settings
-					// TODO: Nethermind still requires HIVE_MINER for the Engine API
-					// delete(newParams, "HIVE_MINER")
-					delete(newParams, "HIVE_CLIQUE_PRIVATEKEY")
-					delete(newParams, "HIVE_CLIQUE_PERIOD")
-					// Add the new file to be loaded as chain.rlp
-					testFiles = testFiles.Set("/chain.rlp", "./chains/"+currentTest.GetChainFile())
-				}
-				if currentTest.IsMiningDisabled() {
-					delete(newParams, "HIVE_MINER")
-				}
-			} else {
-				// This is a post-merge test
-				delete(newParams, "HIVE_CLIQUE_PRIVATEKEY")
-				delete(newParams, "HIVE_CLIQUE_PERIOD")
-				delete(newParams, "HIVE_MINER")
-				newParams = newParams.Set("HIVE_POST_MERGE_GENESIS", "true")
 			}
 
 			if clientTypes, err := t.Sim.ClientTypes(); err == nil {
@@ -254,7 +224,6 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 								clientType.Name,
 								newParams,
 								genesisStartOption,
-								hivesim.WithStaticFiles(testFiles),
 							)
 							t.Logf("Start test (%s): %s", c.Type, currentTestName)
 							defer func() {
@@ -268,14 +237,13 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 							// Run the test case
 							test.Run(
 								currentTest,
-								new(big.Int).Set(ttd),
 								timeout,
 								t,
 								c,
 								genesis,
 								rand.New(rand.NewSource(random_seed)),
 								newParams,
-								testFiles,
+								hivesim.Params{},
 							)
 						},
 					}

@@ -3,10 +3,11 @@ package test
 import (
 	"errors"
 	"fmt"
-	"github.com/ethereum/go-ethereum/core"
-	_ "github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"math/big"
 	"time"
+
+	"github.com/ethereum/go-ethereum/core"
+	_ "github.com/ethereum/hive/simulators/ethereum/engine/client"
 
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
@@ -39,7 +40,6 @@ type Spec interface {
 	GetTestTransactionType() helper.TestTransactionType
 	// Get the maximum execution time until a timeout is raised
 	GetTimeout() int
-	GetTTD() int64
 	GetPreShapellaBlockCount() int
 	GetBlockTimeIncrements() uint64
 	// Get whether mining is disabled for this test
@@ -58,11 +58,6 @@ type BaseSpec struct {
 
 	// Test procedure to execute the test
 	Run func(*Env)
-
-	// TerminalTotalDifficulty delta value.
-	// Actual TTD is genesis.Difficulty + this value
-	// Default: 0
-	TTD int64
 
 	// CL Mocker configuration for time increments
 	BlockTimestampIncrement uint64
@@ -102,11 +97,6 @@ type BaseSpec struct {
 	ForkTime         uint64
 	ForkHeight       uint64
 	PreviousForkTime uint64
-}
-
-func (s BaseSpec) GetTTD() int64 {
-	//TODO implement me
-	panic("implement me")
 }
 
 func (s BaseSpec) Execute(env *Env) {
@@ -237,12 +227,6 @@ func (s BaseSpec) GetGenesis() *core.Genesis {
 		genesisPath = fmt.Sprintf("./init/%s", s.GenesisFile)
 	}
 	genesis := helper.LoadGenesis(genesisPath)
-
-	// Set the terminal total difficulty
-	genesis.Config.TerminalTotalDifficulty = big.NewInt(genesis.Difficulty.Int64() + s.TTD)
-	if genesis.Difficulty.Cmp(genesis.Config.TerminalTotalDifficulty) <= 0 {
-		genesis.Config.TerminalTotalDifficultyPassed = true
-	}
 
 	// Set the genesis timestamp if provided
 	if s.GenesisTimestamp != nil {

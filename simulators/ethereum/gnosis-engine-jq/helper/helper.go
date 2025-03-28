@@ -2,7 +2,6 @@ package helper
 
 import (
 	"context"
-	"sync"
 	"time"
 
 	"github.com/ethereum/go-ethereum/core"
@@ -281,101 +280,6 @@ func CalculateRealTTD(g *core.Genesis, ttdValue int64) int64 {
 	return g.Difficulty.Int64() + ttdValue
 }
 
-var (
-	// Time between checks of a client reaching Terminal Total Difficulty
-	TTDCheckPeriod = time.Second * 1
-)
-
-// TTD Check Methods
-func CheckTTD(ec client.EngineClient, ctx context.Context) (bool, error) {
-	ctx, cancel := context.WithTimeout(ctx, globals.RPCTimeout)
-	defer cancel()
-	td, err := ec.GetTotalDifficulty(ctx)
-	if err == nil {
-		return td.Cmp(ec.TerminalTotalDifficulty()) >= 0, nil
-	}
-	return false, err
-}
-
-type WaitTTDResponse struct {
-	ec  client.EngineClient
-	err error
-}
-
-// Wait until the TTD is reached by a single client.
-func WaitForTTD(ec client.EngineClient, wg *sync.WaitGroup, done chan<- WaitTTDResponse, ctx context.Context, mockTTD bool) {
-	defer wg.Done()
-	for {
-		select {
-		case <-time.After(TTDCheckPeriod):
-			if !mockTTD {
-
-				ttdReached, err := CheckTTD(ec, ctx)
-				if err == nil && ttdReached {
-					select {
-					case done <- WaitTTDResponse{
-						ec:  ec,
-						err: err,
-					}:
-					case <-ctx.Done():
-					}
-					return
-				}
-			} else {
-				select {
-				case done <- WaitTTDResponse{
-					ec:  ec,
-					err: nil,
-				}:
-				case <-ctx.Done():
-				}
-				return
-			}
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
-// Wait until the TTD is reached by a single client with a timeout.
-// Returns true if the TTD has been reached, false when timeout occurred.
-func WaitForTTDWithTimeout(ec client.EngineClient, ctx context.Context) error {
-	for {
-		select {
-		case <-time.After(TTDCheckPeriod):
-			ttdReached, err := CheckTTD(ec, ctx)
-			if err != nil {
-				return err
-			}
-			if ttdReached {
-				return nil
-			}
-		case <-ctx.Done():
-			return fmt.Errorf("timeout reached")
-		}
-	}
-}
-
-// Wait until the TTD is reached by any of the engine clients
-func WaitAnyClientForTTD(ecs []client.EngineClient, testCtx context.Context, mockTDD bool) (client.EngineClient, error) {
-	var wg sync.WaitGroup
-	defer wg.Wait()
-	done := make(chan WaitTTDResponse)
-	cancel := make(chan interface{})
-	defer close(cancel)
-	for _, ec := range ecs {
-		wg.Add(1)
-		ctx, cancel := context.WithCancel(testCtx)
-		defer cancel()
-		go WaitForTTD(ec, &wg, done, ctx, mockTDD)
-	}
-	select {
-	case r := <-done:
-		return r.ec, r.err
-	case <-testCtx.Done():
-		return nil, testCtx.Err()
-	}
-}
 func SendNextTransactionWithAccount(testCtx context.Context, node client.EngineClient, txCreator TransactionCreator, sender *globals.TestAccount) (typ.Transaction, error) {
 	nonce, err := node.GetNextAccountNonce(testCtx, sender.GetAddress(), nil)
 	if err != nil {

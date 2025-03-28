@@ -26,11 +26,11 @@ import (
 	"github.com/ethereum/go-ethereum/node"
 	"github.com/ethereum/go-ethereum/p2p"
 	"github.com/ethereum/go-ethereum/p2p/enode"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/hive/hivesim"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
+
 	//"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
 )
@@ -51,8 +51,7 @@ type GethNodeTestConfiguration struct {
 }
 type GethNodeEngineStarter struct {
 	// Client parameters used to launch the default client
-	ChainFile               string
-	TerminalTotalDifficulty *big.Int
+	ChainFile string
 
 	// Test specific configuration
 	Config GethNodeTestConfiguration
@@ -67,29 +66,7 @@ func (s GethNodeEngineStarter) StartClient(T *hivesim.T, testContext context.Con
 }
 
 func (s GethNodeEngineStarter) StartGethNode(T *hivesim.T, testContext context.Context, genesis *core.Genesis, ClientParams hivesim.Params, ClientFiles hivesim.Params, bootClients ...client.EngineClient) (*GethNode, error) {
-	var (
-		ttd = s.TerminalTotalDifficulty
-		err error
-	)
-
-	if ttd == nil {
-		if ttdStr, ok := ClientParams["HIVE_TERMINAL_TOTAL_DIFFICULTY"]; ok {
-			// Retrieve TTD from parameters
-			ttd, ok = new(big.Int).SetString(ttdStr, 10)
-			if !ok {
-				return nil, fmt.Errorf("Unable to parse TTD from parameters")
-			}
-		}
-	} else {
-		//ttd = big.NewInt(helper.CalculateRealTTD(genesis, ttd.Int64()))
-		ClientParams = ClientParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", ttd))
-	}
-
-	// Not sure if this hack works
-	genesisCopy := *genesis
-	configCopy := *genesisCopy.Config
-	configCopy.TerminalTotalDifficulty = ttd
-	genesisCopy.Config = &configCopy
+	var err error
 
 	var enodes []string
 	if bootClients != nil && len(bootClients) > 0 {
@@ -114,7 +91,7 @@ func (s GethNodeEngineStarter) StartGethNode(T *hivesim.T, testContext context.C
 		}
 	}
 
-	g, err := newNode(s.Config, enodes, &genesisCopy)
+	g, err := newNode(s.Config, enodes, genesis)
 	if err != nil {
 		return nil, err
 	}
@@ -144,7 +121,6 @@ type GethNode struct {
 
 	datadir    string
 	genesis    *core.Genesis
-	ttd        *big.Int
 	api        *ethcatalyst.ConsensusAPI
 	running    context.Context
 	closing    context.CancelFunc
@@ -181,7 +157,6 @@ func restart(startConfig GethNodeTestConfiguration, bootnodes []string, datadir 
 	}
 	config := &node.Config{
 		Name:    startConfig.Name,
-		Version: params.Version,
 		DataDir: datadir,
 		P2P: p2p.Config{
 			ListenAddr:  "0.0.0.0:0",
@@ -198,21 +173,16 @@ func restart(startConfig GethNodeTestConfiguration, bootnodes []string, datadir 
 	if genesis == nil || genesis.Config == nil {
 		return nil, fmt.Errorf("genesis configuration is nil")
 	}
-	if genesis.Config.TerminalTotalDifficultyPassed == false {
-		return nil, fmt.Errorf("genesis configuration is has not passed terminal total difficulty")
-	}
 	econfig := &ethconfig.Config{
-		Genesis:          genesis,
-		NetworkId:        genesis.Config.ChainID.Uint64(),
-		SyncMode:         downloader.FullSync,
-		DatabaseCache:    256,
-		DatabaseHandles:  256,
-		TxPool:           ethconfig.Defaults.TxPool,
-		GPO:              ethconfig.Defaults.GPO,
-		Miner:            ethconfig.Defaults.Miner,
-		LightServ:        100,
-		LightPeers:       int(startConfig.MaxPeers.Int64()) - 1,
-		LightNoSyncServe: true,
+		Genesis:         genesis,
+		NetworkId:       genesis.Config.ChainID.Uint64(),
+		SyncMode:        downloader.FullSync,
+		DatabaseCache:   256,
+		DatabaseHandles: 256,
+		StateScheme:     rawdb.PathScheme,
+		TxPool:          ethconfig.Defaults.TxPool,
+		GPO:             ethconfig.Defaults.GPO,
+		Miner:           ethconfig.Defaults.Miner,
 	}
 	ethBackend, err := eth.New(stack, econfig)
 	if err != nil {
@@ -245,7 +215,6 @@ func restart(startConfig GethNodeTestConfiguration, bootnodes []string, datadir 
 		eth:          ethBackend,
 		datadir:      datadir,
 		genesis:      genesis,
-		ttd:          genesis.Config.TerminalTotalDifficulty,
 		api:          ethcatalyst.NewConsensusAPI(ethBackend),
 		accTxInfoMap: make(map[common.Address]*AccountTransactionInfo),
 		// Test related configuration
@@ -347,14 +316,14 @@ type validator struct{}
 func (v *validator) ValidateBody(block *types.Block) error {
 	return nil
 }
-func (v *validator) ValidateState(block *types.Block, state *state.StateDB, receipts types.Receipts, usedGas uint64) error {
+func (v *validator) ValidateState(block *types.Block, state *state.StateDB, result *core.ProcessResult, stateless bool) error {
 	return nil
 }
 
 type processor struct{}
 
-func (p *processor) Process(block *types.Block, statedb *state.StateDB, cfg vm.Config) (types.Receipts, []*types.Log, uint64, error) {
-	return types.Receipts{}, []*types.Log{}, 21000, nil
+func (p *processor) Process(block *types.Block, statedb *state.StateDB, cfg vm.Config) (*core.ProcessResult, error) {
+	return &core.ProcessResult{GasUsed: 21000}, nil
 }
 
 var headerPrefix = []byte("h") // headerPrefix + num (uint64 big endian) + hash -> header
@@ -370,6 +339,7 @@ func encodeBlockNumber(number uint64) []byte {
 
 func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot common.Hash) error {
 	parentTd := n.eth.BlockChain().GetTd(block.ParentHash(), block.NumberU64()-1)
+	db := n.eth.ChainDb()
 	rawdb.WriteTd(n.eth.ChainDb(), block.Hash(), block.NumberU64(), parentTd.Add(parentTd, block.Difficulty()))
 	rawdb.WriteBlock(n.eth.ChainDb(), block)
 
@@ -387,17 +357,19 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 	bc := n.eth.BlockChain()
 	bc.SetBlockValidatorAndProcessorForTesting(new(validator), n.eth.BlockChain().Processor())
 
-	statedb, err := state.New(parentRoot, bc.StateCache(), bc.Snapshots())
+	statedb, err := state.New(parentRoot, bc.StateCache())
 	if err != nil {
 		return err
 	}
-	statedb.StartPrefetcher("chain")
+	statedb.StartPrefetcher("chain", nil)
 	var failedProcessing bool
-	receipts, _, _, err := n.eth.BlockChain().Processor().Process(block, statedb, *n.eth.BlockChain().GetVMConfig())
-	if err != nil {
+	result, err := n.eth.BlockChain().Processor().Process(block, statedb, *n.eth.BlockChain().GetVMConfig())
+	if err != nil || result == nil {
 		failedProcessing = true
+	} else {
+		rawdb.WriteReceipts(db, block.Hash(), block.NumberU64(), result.Receipts)
 	}
-	rawdb.WriteReceipts(n.eth.ChainDb(), block.Hash(), block.NumberU64(), receipts)
+
 	root, err := statedb.Commit(block.NumberU64(), false)
 	if err != nil {
 		return err
@@ -720,7 +692,7 @@ func (n *GethNode) getStateDB(ctx context.Context, blockNumber *big.Int) (*state
 	if err != nil {
 		return nil, err
 	}
-	return state.New(b.Root(), n.eth.BlockChain().StateCache(), n.eth.BlockChain().Snapshots())
+	return state.New(b.Root(), n.eth.BlockChain().StateCache())
 }
 
 func (n *GethNode) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
@@ -728,7 +700,7 @@ func (n *GethNode) BalanceAt(ctx context.Context, account common.Address, blockN
 	if err != nil {
 		return nil, err
 	}
-	return stateDB.GetBalance(account), nil
+	return stateDB.GetBalance(account).ToBig(), nil
 }
 
 func (n *GethNode) StorageAt(ctx context.Context, account common.Address, key common.Hash, blockNumber *big.Int) ([]byte, error) {
@@ -761,28 +733,6 @@ func (n *GethNode) TransactionByHash(ctx context.Context, hash common.Hash) (tx 
 
 func (n *GethNode) PendingTransactionCount(ctx context.Context) (uint, error) {
 	panic("NOT IMPLEMENTED")
-}
-
-func (n *GethNode) GetBlockTotalDifficulty(ctx context.Context, hash common.Hash) (*big.Int, error) {
-	block := n.eth.BlockChain().GetBlockByHash(hash)
-	if block == nil {
-		return big.NewInt(0), nil
-	}
-	return n.eth.BlockChain().GetTd(hash, block.NumberU64()), nil
-}
-
-func (n *GethNode) GetTotalDifficulty(ctx context.Context) (*big.Int, error) {
-	if n.mustHeadBlock != nil {
-		return n.GetBlockTotalDifficulty(ctx, n.mustHeadBlock.Hash())
-	}
-	return n.GetBlockTotalDifficulty(ctx, n.eth.BlockChain().CurrentHeader().Hash())
-}
-
-func (n *GethNode) TerminalTotalDifficulty() *big.Int {
-	if n.ttd != nil {
-		return n.ttd
-	}
-	return n.genesis.Config.TerminalTotalDifficulty
 }
 
 func (n *GethNode) EnodeURL() (string, error) {
