@@ -73,9 +73,6 @@ func (tc InvalidPayloadTestCase) Execute(t *test.Env) {
 		t.CLMock.AddEngineClient(secondaryClient)
 	}
 
-	// Wait until TTD is reached by all clients
-	t.CLMock.WaitForTTD()
-
 	txFunc := func() {
 		if !tc.EmptyTransactions {
 			// Function to send at least one transaction each block produced
@@ -334,9 +331,6 @@ func (tc PayloadBuildAfterInvalidPayloadTest) Execute(t *test.Env) {
 	secondaryEngineTest := test.NewTestEngineClient(t, secondaryEngine)
 	t.CLMock.AddEngineClient(secondaryEngine)
 
-	// Wait until TTD is reached by this client
-	t.CLMock.WaitForTTD()
-
 	// Produce blocks before starting the test
 	t.CLMock.ProduceBlocks(5, clmock.BlockProcessCallbacks{})
 
@@ -415,9 +409,6 @@ func (s InvalidTxChainIDTest) GetName() string {
 // Attempt to produce a payload after a transaction with an invalid Chain ID was sent to the client
 // using `eth_sendRawTransaction`.
 func (spec InvalidTxChainIDTest) Execute(t *test.Env) {
-	// Wait until TTD is reached by this client
-	t.CLMock.WaitForTTD()
-
 	// Produce blocks before starting the test
 	t.CLMock.ProduceBlocks(5, clmock.BlockProcessCallbacks{})
 

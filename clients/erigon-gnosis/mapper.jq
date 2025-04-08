@@ -41,7 +41,7 @@ def to_bool:
   # "coinbase": "0x0000000000000000000000000000000000000000",
   "baseFeePerGas": "0x3b9aca00",
   # "nonce": "0x0000000000000000",
-  "difficulty": "0x01",
+  "difficulty": "0x64",
     "alloc": ((.alloc|with_entries(.key|="0x"+.)) * {
         "0x59f80ed315477f9f0059D862713A7b082A599217": {
           "balance": "0xc9f2c9cd04674edea40000000"
@@ -301,6 +301,17 @@ def to_bool:
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
+    "blobSchedule": {
+         "cancun": {
+        "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 3338477 end)
+      },
+      "prague": {
+        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_int else 2 end)
+      }
+    },
     "eip1559FeeCollectorTransition": 0,
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"

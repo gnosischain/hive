@@ -26,5 +26,6 @@ RUN chmod +x /nethermind.sh /hive-bin/enode.sh
 EXPOSE 8545 8551 30303 30303/udp
 
 ENV NETHERMIND_HIVE_ENABLED true
+ENV NETHERMIND_HIVECONFIG_ENABLED true
 
 ENTRYPOINT ["/nethermind.sh"]

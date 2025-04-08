@@ -132,13 +132,13 @@ func (msg NewBlock) Code() int     { return 23 }
 func (msg NewBlock) ReqID() uint64 { return 0 }
 
 // NewPooledTransactionHashes66 is the network packet for the tx hash propagation message.
-type NewPooledTransactionHashes66 eth.NewPooledTransactionHashesPacket67
+type NewPooledTransactionHashes66 eth.NewPooledTransactionHashesPacket
 
 func (msg NewPooledTransactionHashes66) Code() int     { return 24 }
 func (msg NewPooledTransactionHashes66) ReqID() uint64 { return 0 }
 
 // NewPooledTransactionHashes is the network packet for the tx hash propagation message.
-type NewPooledTransactionHashes eth.NewPooledTransactionHashesPacket68
+type NewPooledTransactionHashes eth.NewPooledTransactionHashesPacket
 
 func (msg NewPooledTransactionHashes) Code() int     { return 24 }
 func (msg NewPooledTransactionHashes) ReqID() uint64 { return 0 }
@@ -360,9 +360,6 @@ loop:
 			if have, want := msg.Head, c.consensusEngine.LatestHeader.Hash(); have != want {
 				return nil, fmt.Errorf("wrong head block in status, want:  %#x (block %d) have %#x",
 					want, c.consensusEngine.LatestHeader.Number.Uint64(), have)
-			}
-			if have, want := msg.TD.Cmp(c.consensusEngine.ChainTotalDifficulty), 0; have != want {
-				return nil, fmt.Errorf("wrong TD in status: have %d want %d", have, want)
 			}
 			if have, want := msg.ForkID, localForkID; !reflect.DeepEqual(have, want) {
 				return nil, fmt.Errorf("wrong fork ID in status: have (hash=%#x, next=%d), want (hash=%#x, next=%d)", have.Hash, have.Next, want.Hash, want.Next)
