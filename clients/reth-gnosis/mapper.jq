@@ -41,8 +41,8 @@ def to_bool:
   # "coinbase": "0x0000000000000000000000000000000000000000",
   "baseFeePerGas": "0x3b9aca00",
   # "nonce": "0x0000000000000000",
-  "difficulty": "0x01",
-  "alloc": ((.alloc|with_entries(.key|="0x"+.)) * {
+  "difficulty": "0x64",
+  "alloc": ((.alloc|with_entries(.key|=""+.)) * {
         "0x59f80ed315477f9f0059D862713A7b082A599217": {
             "balance": "0xc9f2c9cd04674edea40000000",
             "code": ""
@@ -254,6 +254,18 @@ def to_bool:
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
     "blobGasPriceUpdateFraction": 1112826,
+    "blobSchedule": {
+      "cancun": {
+        "target": 1,
+        "max": 2,
+        "baseFeeUpdateFraction": 1112826
+      },
+      "prague": {
+        "target": 1,
+        "max": 2,
+        "baseFeeUpdateFraction": 1112826
+      }
+    },
     "aura": {
       "stepDuration": 5,
       "blockReward": 0,
@@ -263,7 +275,18 @@ def to_bool:
         "multi": {
           "0": {
             "list": [
-              "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"
+              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
+            ]
+          },
+          "67334": {
+            "list": [
+              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484",
+              "0x56D421c0AC39976E89fa400d34ca6579417B84cA",
+              "0x5CD99ac2F0F8C25a1e670F6BaB19D52Aad69D875",
+              "0x60F1CF46B42Df059b98Acf67C1dD7771b100e124",
+              "0x655e97bA0f63A56c2b56EB3e84f7bf42b20Bae14",
+              "0x755B6259938D140626301c0B6026c1C00C9eD5d9",
+              "0xa8010da9Cb0AC018C86A06301963853CC371a18c"
             ]
           }
         }
@@ -281,6 +304,6 @@ def to_bool:
       "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
       "twoThirdsMajorityTransition": 0
     },
-    "eip1559collector": "0x6BBe78ee9e474842Dbd4AB4987b3CeFE88426A92"
+    "eip1559collector": "0x1559000000000000000000000000000000000000"
   }|remove_empty
 }
