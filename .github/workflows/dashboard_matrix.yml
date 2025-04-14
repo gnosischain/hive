@@ -32,11 +32,19 @@ jobs:
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
             parallelism: 8
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
           - client: nethermind-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
             parallelism: 8
           - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
             parallelism: 8
@@ -48,11 +56,19 @@ jobs:
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
             parallelism: 12
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 12
           - client: nethermind-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
             parallelism: 1
           - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-auth'
             parallelism: 1
@@ -64,7 +80,15 @@ jobs:
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
           - client: nethermind-gnosis
+            simulator: 'smoke'
+            suite: 'network'
+            parallelism: 1
+          - client: reth-gnosis
             simulator: 'smoke'
             suite: 'network'
             parallelism: 1
