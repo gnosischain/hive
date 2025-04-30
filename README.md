@@ -145,6 +145,16 @@ The process is the following:
 6. Run the tests against `sync-upstream` branch using `Daily run Gnosis` workflow
 7. If tests pass, merge the PR
 
+## Run tests on CI
+
+There are 3 Github actions [available](https://github.com/gnosischain/hive/actions) to run tests on CI:
+
+- `Daily run Gnosis` (`dashboard_matrix.yml`) - runs all tests every day at 00:00 UTC
+- `Debug Gnosis Tests` (`dashboard_debug.yml`) - specify client, simulator, suite and branch to run
+- `Debug Gnosis Tests (detailed)` (`dashboard_debug_detailed.yml`) - the same as above but the user can specify an exact client version (docker image and tag) and test to run
+
+After test run, the results are published on the [Gnosis dashboard](https://hive-gno.nethermind.io/).
+
 ### Trophies
 
 If you find a bug in your client implementation due to this project, please be so kind as
