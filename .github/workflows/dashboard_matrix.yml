@@ -1,0 +1,149 @@
+name: Daily Run Gnosis
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run every day at 00:00 UTC
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run tests on"
+        required: true
+        default: "master"
+  push:
+    branches:
+      - master 
+  pull_request:
+    branches:
+      - master 
+    types: [ closed ]
+
+jobs:
+  hive-run:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 10
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 12
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 12
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 12
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: nethermind-gnosis
+            simulator: 'smoke'
+            suite: 'network'
+            parallelism: 1
+          - client: reth-gnosis
+            simulator: 'smoke'
+            suite: 'network'
+            parallelism: 1
+    steps:
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: stable
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Linux packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install libsnappy-dev libc6-dev libc6 build-essential
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch || 'master' }}
+
+      - name: Download dependencies
+        run: go get -v ./...
+
+      - name: Build hive
+        run: go build -v -o hive hive.go
+
+      - name: Run tests
+        continue-on-error: true
+        run: |
+          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
+      
+      - name: Check report
+        run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
+
+      - name: Send file over SSH
+        if: always()
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          source: ${{ github.run_id }}/runs/*
+          target: ${{ secrets.DIR }}/github/workspace/runs/
+          strip_components: 2
