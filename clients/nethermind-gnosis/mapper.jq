@@ -197,6 +197,10 @@ def clique_engine:
     "eip7685TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
+    # Osaka
+    "eip7594TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
+    "eip7823TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
+    "eip7883TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
 
     # Other chain parameters
     # "networkID": env.HIVE_NETWORK_ID|to_hex,
@@ -204,18 +208,27 @@ def clique_engine:
     "networkID": env.HIVE_NETWORK_ID|to_int,
     # "chainID": env.HIVE_CHAIN_ID|to_hex,
 
- "blobSchedule": {
-      "cancun": {
-        "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_hex else "0x1" end),
-        "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_hex else "0x2" end),
-        "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x32f0ed" end)
-      },
-      "prague": {
-        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x1" end),
-        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x2" end),
-        "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x4c6964" end)
-      }
-    },
+
+    "blobSchedule": [
+      if env.HIVE_CANCUN_TIMESTAMP then {
+          "timestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
+          "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_hex else "0x1" end),
+          "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_hex else "0x2" end),
+          "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x32f0ed" end)
+      } else null end,
+      if env.HIVE_PRAGUE_TIMESTAMP then {
+          "timestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
+          "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x1" end),
+          "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x2" end),
+          "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x4c6964" end)
+      } else null end,
+      if env.HIVE_OSAKA_TIMESTAMP then {
+          "timestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
+          "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_hex else "0x1" end),
+          "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_hex else "0x2" end),
+          "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x4c6964" end)
+      } else null end
+    ] | map(select(. != null)),
 
     "depositContractAddress": "0x00000000219ab540356cBB839Cbe05303d7705Fa",
 
