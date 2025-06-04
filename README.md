@@ -19,7 +19,7 @@ Supported clients:
 - Nethermind (`nethermind-gnosis`)
 - Erigon (`erigon-gnosis`)
 - Geth (`geth-gnosis`)
-- Reth (`rethink-gnosis`)
+- Reth (`reth-gnosis`)
 
 Supported simulators:
 
