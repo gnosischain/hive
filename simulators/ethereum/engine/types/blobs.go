@@ -111,6 +111,31 @@ type KZGProofs []KZGProof
 
 type Blobs []Blob
 
+// Return KZG commitments, versioned hashes and the proofs that correspond to these blobs
+func (blobs Blobs) ComputeCommitmentsAndProofs(cryptoCtx gokzg4844.Context) (commitments []KZGCommitment, versionedHashes []common.Hash, proofs []KZGProof, err error) {
+	commitments = make([]KZGCommitment, len(blobs))
+	proofs = make([]KZGProof, len(blobs))
+	versionedHashes = make([]common.Hash, len(blobs))
+
+	for i, blob := range blobs {
+		blobConverted := gokzg4844.Blob(blob)
+		commitment, err := cryptoCtx.BlobToKZGCommitment(&blobConverted, 1)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("could not convert blob to commitment: %v", err)
+		}
+
+		proof, err := cryptoCtx.ComputeBlobKZGProof(&blobConverted, commitment, 1)
+		if err != nil {
+			return nil, nil, nil, fmt.Errorf("could not compute proof for blob: %v", err)
+		}
+		commitments[i] = KZGCommitment(commitment)
+		proofs[i] = KZGProof(proof)
+		versionedHashes[i] = common.Hash(KZGToVersionedHash(gokzg4844.KZGCommitment(commitment)))
+	}
+
+	return commitments, versionedHashes, proofs, nil
+}
+
 type BlobTxWrapData struct {
 	Blobs       Blobs
 	Commitments BlobKzgs

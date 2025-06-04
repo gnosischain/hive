@@ -83,7 +83,7 @@ func GetBlobListByIndex(startIndex BlobID, endIndex BlobID) BlobIDs {
 		}
 	} else {
 		for i := uint64(0); i < count; i++ {
-			blobList[i] = startIndex - BlobID(i)
+			blobList[i] = endIndex - BlobID(i)
 		}
 	}
 
@@ -103,8 +103,6 @@ type BlobTransactionCreator struct {
 	Data       []byte
 }
 
-var uint256BlsModulus = new(uint256.Int).SetBytes32(gokzg4844.BlsModulus[:])
-
 func (blobId BlobID) VerifyBlob(blob *typ.Blob) (bool, error) {
 	if blob == nil {
 		return false, errors.New("nil blob")
@@ -121,24 +119,42 @@ func (blobId BlobID) VerifyBlob(blob *typ.Blob) (bool, error) {
 	}
 
 	// Check the blob against the deterministic data
-	// First 32 bytes are the sha256 hash of the blob ID
-	var currentU256 *uint256.Int
-	{
-		blobIdBytes := make([]byte, 8)
-		binary.BigEndian.PutUint64(blobIdBytes, uint64(blobId))
-		currentHashedBuffer := sha256.Sum256(blobIdBytes)
-		currentU256 = new(uint256.Int).SetBytes(currentHashedBuffer[:])
-	}
+	blobIdBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(blobIdBytes, uint64(blobId))
 
-	// Calculate modulus before starting
-	currentU256.Mod(currentU256, uint256BlsModulus)
+	// First 32 bytes are the hash of the blob ID
+	currentHashed := sha256.Sum256(blobIdBytes)
+
 	for chunkIdx := 0; chunkIdx < typ.FieldElementsPerBlob; chunkIdx++ {
-		currentBlobFieldElem := new(uint256.Int).SetBytes32(blob[chunkIdx*32 : (chunkIdx+1)*32])
-		if currentBlobFieldElem.Cmp(currentU256) != 0 {
+		var expectedFieldElem [32]byte
+		copy(expectedFieldElem[:], currentHashed[:])
+
+		// Check that no 32 bytes chunks are greater than the BLS modulus
+		for i := 0; i < 32; i++ {
+			// blobByteIdx := 32 - i - 1
+			blobByteIdx := i
+			if expectedFieldElem[blobByteIdx] < gokzg4844.BlsModulus[i] {
+				// done with this field element
+				break
+			} else if expectedFieldElem[blobByteIdx] >= gokzg4844.BlsModulus[i] {
+				if gokzg4844.BlsModulus[i] > 0 {
+					// This chunk is greater than the modulus, and we can reduce it in this byte position
+					expectedFieldElem[blobByteIdx] = gokzg4844.BlsModulus[i] - 1
+					// done with this field element
+					break
+				} else {
+					// This chunk is greater than the modulus, but we can't reduce it in this byte position, so we will try in the next byte position
+					expectedFieldElem[blobByteIdx] = gokzg4844.BlsModulus[i]
+				}
+			}
+		}
+
+		if !bytes.Equal(blob[chunkIdx*32:(chunkIdx+1)*32], expectedFieldElem[:]) {
 			return false, nil
 		}
-		// Add the current hash
-		currentU256.AddMod(currentU256, currentU256, uint256BlsModulus)
+
+		// Hash the current hash
+		currentHashed = sha256.Sum256(currentHashed[:])
 	}
 	return true, nil
 }
@@ -152,100 +168,61 @@ func (blobId BlobID) FillBlob(blob *typ.Blob) error {
 		return nil
 	}
 	// Fill the blob with deterministic data
-	// First 32 bytes are the sha256 hash of the blob ID
-	var currentU256 *uint256.Int
-	{
-		blobIdBytes := make([]byte, 8)
-		binary.BigEndian.PutUint64(blobIdBytes, uint64(blobId))
-		currentHashedBuffer := sha256.Sum256(blobIdBytes)
-		currentU256 = new(uint256.Int).SetBytes(currentHashedBuffer[:])
-	}
+	blobIdBytes := make([]byte, 8)
+	binary.BigEndian.PutUint64(blobIdBytes, uint64(blobId))
 
-	// Calculate modulus before starting
-	currentU256.Mod(currentU256, uint256BlsModulus)
+	// First 32 bytes are the hash of the blob ID
+	currentHashed := sha256.Sum256(blobIdBytes)
+
 	for chunkIdx := 0; chunkIdx < typ.FieldElementsPerBlob; chunkIdx++ {
-		bytes32 := currentU256.Bytes32()
-		copy(blob[chunkIdx*32:(chunkIdx+1)*32], bytes32[:])
-		// Add the current hash
-		currentU256.AddMod(currentU256, currentU256, uint256BlsModulus)
+		copy(blob[chunkIdx*32:(chunkIdx+1)*32], currentHashed[:])
+
+		// Check that no 32 bytes chunks are greater than the BLS modulus
+		for i := 0; i < 32; i++ {
+			//blobByteIdx := ((chunkIdx + 1) * 32) - i - 1
+			blobByteIdx := (chunkIdx * 32) + i
+			if blob[blobByteIdx] < gokzg4844.BlsModulus[i] {
+				// go to next chunk
+				break
+			} else if blob[blobByteIdx] >= gokzg4844.BlsModulus[i] {
+				if gokzg4844.BlsModulus[i] > 0 {
+					// This chunk is greater than the modulus, and we can reduce it in this byte position
+					blob[blobByteIdx] = gokzg4844.BlsModulus[i] - 1
+					// go to next chunk
+					break
+				} else {
+					// This chunk is greater than the modulus, but we can't reduce it in this byte position, so we will try in the next byte position
+					blob[blobByteIdx] = gokzg4844.BlsModulus[i]
+				}
+			}
+		}
+
+		// Hash the current hash
+		currentHashed = sha256.Sum256(currentHashed[:])
 	}
 
 	return nil
 }
 
-func (blobId BlobID) GenerateBlobNoKZGCache() (*typ.Blob, *typ.KZGCommitment, *typ.KZGProof, error) {
+func (blobId BlobID) GenerateBlob() (*typ.Blob, *typ.KZGCommitment, error) {
 	blob := typ.Blob{}
 	if err := blobId.FillBlob(&blob); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "GenerateBlob: Filling Blob")
+		return nil, nil, errors.Wrap(err, "GenerateBlob (1)")
 	}
 	ctx_4844 := CryptoCtx()
-
-	kzgCommitment, err := ctx_4844.BlobToKZGCommitment((*gokzg4844.Blob)(&blob), 0)
+	blobConverted := gokzg4844.Blob(blob)
+	kzgCommitment, err := ctx_4844.BlobToKZGCommitment(&blobConverted, 0)
 	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "GenerateBlob: Generating commitment")
+		return nil, nil, errors.Wrap(err, "GenerateBlob (2)")
 	}
+
 	typesKzgCommitment := typ.KZGCommitment(kzgCommitment)
 
-	proof, err := ctx_4844.ComputeBlobKZGProof((*gokzg4844.Blob)(&blob), kzgCommitment, 1)
-	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "GenerateBlob: Generating proof")
-	}
-	typesKzgProof := typ.KZGProof(proof)
-
-	return &blob, &typesKzgCommitment, &typesKzgProof, nil
-}
-
-//go:embed kzg_commitments.bin
-var kzgCommitments []byte
-
-//go:embed kzg_proofs.bin
-var kzgProofs []byte
-
-func GetPrecomputedKZG(blobId BlobID) (*typ.KZGCommitment, *typ.KZGProof) {
-	if int(blobId) >= len(kzgCommitments)/48 || int(blobId) >= len(kzgProofs)/48 {
-		return nil, nil
-	}
-	var (
-		commitment typ.KZGCommitment
-		proof      typ.KZGProof
-	)
-	copy(commitment[:], kzgCommitments[int(blobId)*48:(int(blobId)+1)*48])
-	copy(proof[:], kzgProofs[int(blobId)*48:(int(blobId)+1)*48])
-	return &commitment, &proof
-
-}
-
-//go:generate go run github.com/ethereum/hive/simulators/ethereum/engine/helper/kzg_precomputer 10000
-func (blobId BlobID) GenerateBlob() (*typ.Blob, *typ.KZGCommitment, *typ.KZGProof, error) {
-	blob := typ.Blob{}
-	if err := blobId.FillBlob(&blob); err != nil {
-		return nil, nil, nil, errors.Wrap(err, "GenerateBlob: Filling Blob")
-	}
-	// Use precomputed KZG commitments and proofs if available
-	if preComputedKZGCommitment, preComputedProof := GetPrecomputedKZG(blobId); preComputedKZGCommitment != nil && preComputedProof != nil {
-		return &blob, preComputedKZGCommitment, preComputedProof, nil
-	} else {
-		fmt.Printf("INFO: No precomputed KZG for blob %d\n", blobId)
-	}
-	ctx_4844 := CryptoCtx()
-
-	kzgCommitment, err := ctx_4844.BlobToKZGCommitment((*gokzg4844.Blob)(&blob), 0)
-	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "GenerateBlob: Generating commitment")
-	}
-	typesKzgCommitment := typ.KZGCommitment(kzgCommitment)
-
-	proof, err := ctx_4844.ComputeBlobKZGProof((*gokzg4844.Blob)(&blob), kzgCommitment, 1)
-	if err != nil {
-		return nil, nil, nil, errors.Wrap(err, "GenerateBlob: Generating proof")
-	}
-	typesKzgProof := typ.KZGProof(proof)
-
-	return &blob, &typesKzgCommitment, &typesKzgProof, nil
+	return &blob, &typesKzgCommitment, nil
 }
 
 func (blobId BlobID) GetVersionedHash(commitmentVersion byte) (common.Hash, error) {
-	_, kzgCommitment, _, err := blobId.GenerateBlob()
+	_, kzgCommitment, err := blobId.GenerateBlob()
 	if err != nil {
 		return common.Hash{}, errors.Wrap(err, "GetVersionedHash")
 	}
@@ -261,21 +238,25 @@ func BlobDataGenerator(startBlobId BlobID, blobCount uint64) ([]common.Hash, *ty
 	blobData := typ.BlobTxWrapData{
 		Blobs:       make(typ.Blobs, blobCount),
 		Commitments: make([]typ.KZGCommitment, blobCount),
-		Proofs:      make(typ.KZGProofs, blobCount),
 	}
 	for i := uint64(0); i < blobCount; i++ {
-		if blob, kzgCommitment, kzgProof, err := (startBlobId + BlobID(i)).GenerateBlob(); err != nil {
+		if blob, kzgCommitment, err := (startBlobId + BlobID(i)).GenerateBlob(); err != nil {
 			return nil, nil, err
 		} else {
 			blobData.Blobs[i] = *blob
 			blobData.Commitments[i] = *kzgCommitment
-			blobData.Proofs[i] = *kzgProof
 		}
 	}
+
 	var hashes []common.Hash
 	for i := 0; i < len(blobData.Commitments); i++ {
 		hashes = append(hashes, blobData.Commitments[i].ComputeVersionedHash())
 	}
+	_, _, proofs, err := blobData.Blobs.ComputeCommitmentsAndProofs(CryptoCtx())
+	if err != nil {
+		return nil, nil, err
+	}
+	blobData.Proofs = proofs
 	return hashes, &blobData, nil
 }
 
@@ -290,15 +271,17 @@ func (tc *BlobTransactionCreator) MakeTransaction(sender SenderAccount, nonce ui
 		return nil, errors.New("nil to address")
 	}
 
+	chain := 10202
 	// Collect fields for transaction
 	var (
-		address    = *tc.To
-		chainID    = uint256.MustFromBig(globals.ChainID)
+		address = *tc.To
+		//chainID    *uint256.Int
 		gasFeeCap  *uint256.Int
 		gasTipCap  *uint256.Int
 		value      *uint256.Int
 		blobGasFee *uint256.Int
 	)
+	chainID := uint256.NewInt(uint64(chain))
 	if tc.GasFee != nil {
 		gasFeeCap = uint256.MustFromBig(tc.GasFee)
 	} else {
@@ -332,7 +315,7 @@ func (tc *BlobTransactionCreator) MakeTransaction(sender SenderAccount, nonce ui
 
 	key := sender.GetKey()
 
-	signedTx, err := types.SignNewTx(key, types.NewCancunSigner(globals.ChainID), sbtx)
+	signedTx, err := types.SignNewTx(key, types.NewCancunSigner(big.NewInt(int64(chain))), sbtx)
 	if err != nil {
 		return nil, err
 	}

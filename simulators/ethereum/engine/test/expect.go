@@ -804,10 +804,14 @@ func (tec *TestEngineClient) TestHeaderByNumber(number *big.Int) *HeaderResponse
 	ctx, cancel := context.WithTimeout(tec.TestContext, globals.RPCTimeout)
 	defer cancel()
 	header, err := tec.Engine.HeaderByNumber(ctx, number)
+	var blockHeader *types.Header = nil
+	if header != nil {
+		blockHeader = &header.Header
+	}
 	ret := &HeaderResponseExpectObject{
 		ExpectEnv: &ExpectEnv{Env: tec.Env},
 		Call:      "HeaderByNumber",
-		Header:    header,
+		Header:    blockHeader,
 		Error:     err,
 	}
 	if err, ok := err.(rpc.Error); ok {
@@ -884,7 +888,7 @@ func (tec *TestEngineClient) TestBlockByNumber(number *big.Int) *BlockResponseEx
 	ret := &BlockResponseExpectObject{
 		ExpectEnv: &ExpectEnv{Env: tec.Env},
 		Call:      "BlockByNumber",
-		Block:     block,
+		Block:     &block.Block,
 		Error:     err,
 	}
 	if err, ok := err.(rpc.Error); ok {
@@ -900,7 +904,7 @@ func (tec *TestEngineClient) TestBlockByHash(hash common.Hash) *BlockResponseExp
 	ret := &BlockResponseExpectObject{
 		ExpectEnv: &ExpectEnv{Env: tec.Env},
 		Call:      "BlockByHash",
-		Block:     block,
+		Block:     &block.Block,
 		Error:     err,
 	}
 	if err, ok := err.(rpc.Error); ok {
@@ -992,6 +996,20 @@ func (tec *TestEngineClient) TestBalanceAt(account common.Address, number *big.I
 	if err, ok := err.(rpc.Error); ok {
 		ret.ErrorCode = err.ErrorCode()
 	}
+	if err != nil {
+		return ret
+	}
+	if number == nil {
+		n, err := tec.Engine.BlockNumber(ctx)
+		if err != nil {
+			ret.Error = err
+			if err, ok := err.(rpc.Error); ok {
+				ret.ErrorCode = err.ErrorCode()
+			}
+			return ret
+		}
+		ret.Block = big.NewInt(int64(n))
+	}
 	return ret
 }
 
@@ -1002,7 +1020,7 @@ func (exp *BalanceResponseExpectObject) ExpectNoError() {
 }
 
 func (exp *BalanceResponseExpectObject) ExpectBalanceEqual(expBalance *big.Int) {
-	exp.Logf("INFO (%s): Testing balance for account %s on block %d: actual=%d, expected=%d",
+	exp.Logf("INFO (%s): Testing balance for account %s on block %s: actual=%d, expected=%d",
 		exp.TestName,
 		exp.Account,
 		exp.Block,
@@ -1012,7 +1030,7 @@ func (exp *BalanceResponseExpectObject) ExpectBalanceEqual(expBalance *big.Int) 
 	exp.ExpectNoError()
 	if ((expBalance == nil || exp.Balance == nil) && expBalance != exp.Balance) ||
 		(expBalance != nil && exp.Balance != nil && expBalance.Cmp(exp.Balance) != 0) {
-		exp.Fatalf("FAIL (%s): Unexpected balance on %s, for account %s at block %v: %v, expected=%v", exp.TestName, exp.Call, exp.Account, exp.Block, exp.Balance, expBalance)
+		exp.Fatalf("FAIL (%s): Unexpected balance on %s, for account %s at block %v: %v, expected=%v", exp.TestName, exp.Call, exp.Account, exp.Block.Int64(), exp.Balance, expBalance)
 	}
 }
 

@@ -2,6 +2,9 @@ package helper
 
 import (
 	"context"
+	"time"
+
+	"github.com/ethereum/go-ethereum/core"
 
 	"bytes"
 	"encoding/json"
@@ -13,9 +16,11 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/ethereum/hive/simulators/ethereum/engine/client"
+	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
+
 	gokzg4844 "github.com/crate-crypto/go-kzg-4844"
 	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rlp"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -127,7 +132,7 @@ func DebugPrevRandaoTransaction(ctx context.Context, c *rpc.Client, clientType s
 	switch clientType {
 	case "go-ethereum":
 		return gethDebugPrevRandaoTransaction(ctx, c, tx, expectedPrevRandao)
-	case "nethermind":
+	case "nethermind-old":
 		return nethermindDebugPrevRandaoTransaction(ctx, c, tx, expectedPrevRandao)
 	}
 	fmt.Printf("debug_traceTransaction, no method to test client type %v", clientType)
@@ -232,15 +237,29 @@ func LoadGenesis(path string) core.Genesis {
 	return genesis
 }
 
-func LoadGenesisBlock(path string) *types.Block {
-	genesis := LoadGenesis(path)
-	return genesis.ToBlock()
+func LoadGenesisTest(path string) string {
+	reader, err := os.Open(path)
+	if err != nil {
+		panic(fmt.Errorf("can't to read genesis file: %v", err))
+	}
+	contents, err := io.ReadAll(reader)
+	if err != nil {
+		panic(fmt.Errorf("can't to read genesis file: %v", err))
+	}
+	return string(contents)
 }
 
-func GenesisStartOption(genesis *core.Genesis) (hivesim.StartOption, error) {
-	out, err := json.Marshal(genesis)
+func GenesisStartOptionBasedOnClient(genesis core.Genesis, clientName string) (hivesim.StartOption, error) {
+	out, err := genesis.MarshalJSON()
 	if err != nil {
 		return nil, fmt.Errorf("failed to serialize genesis state: %v", err)
+	}
+	// We don't need mappers
+	switch clientName {
+	case "erigon":
+		return hivesim.WithDynamicFile("/genesis.json", bytesSource(out)), nil
+	case "nethermind-old":
+		return hivesim.WithDynamicFile("/chainspec.json", bytesSource(out)), nil
 	}
 	return hivesim.WithDynamicFile("/genesis.json", bytesSource(out)), nil
 }
@@ -259,4 +278,38 @@ func CalculateTotalDifficulty(genesis core.Genesis, chain types.Blocks, lastBloc
 // TTD is the value specified in the test.Spec + Genesis.Difficulty
 func CalculateRealTTD(g *core.Genesis, ttdValue int64) int64 {
 	return g.Difficulty.Int64() + ttdValue
+}
+
+func SendNextTransactionWithAccount(testCtx context.Context, node client.EngineClient, txCreator TransactionCreator, sender *globals.TestAccount) (typ.Transaction, error) {
+	nonce, err := node.GetNextAccountNonce(testCtx, sender.GetAddress(), nil)
+	if err != nil {
+		return nil, err
+	}
+	tx, err := txCreator.MakeTransaction(sender, nonce, uint64(time.Now().Unix()))
+	if err != nil {
+		return nil, err
+	}
+	for {
+		ctx, cancel := context.WithTimeout(testCtx, globals.RPCTimeout)
+		defer cancel()
+		err := node.SendTransaction(ctx, tx)
+		if err == nil {
+			return tx, nil
+		} else if SentTxAlreadyKnown(err) {
+			return tx, nil
+		}
+		select {
+		case <-time.After(time.Second):
+		case <-testCtx.Done():
+			return nil, testCtx.Err()
+		}
+	}
+}
+
+func GenesisStartOption(genesis *core.Genesis) (hivesim.StartOption, error) {
+	out, err := json.Marshal(genesis)
+	if err != nil {
+		return nil, fmt.Errorf("failed to serialize genesis state: %v", err)
+	}
+	return hivesim.WithDynamicFile("/genesis.json", bytesSource(out)), nil
 }

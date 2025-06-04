@@ -14,6 +14,7 @@ func (f *ForkConfig) ConfigGenesis(genesis *core.Genesis) error {
 	if f.ShanghaiTimestamp != nil {
 		shanghaiTime := f.ShanghaiTimestamp.Uint64()
 		genesis.Config.ShanghaiTime = &shanghaiTime
+
 	}
 	if f.CancunTimestamp != nil {
 		if err := cancun.ConfigGenesis(genesis, f.CancunTimestamp.Uint64()); err != nil {

@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ethereum/go-ethereum/core"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
@@ -13,7 +15,6 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/hive/hivesim"
 )
 
@@ -112,7 +113,8 @@ func Run(testSpec Spec, timeout time.Duration, t *hivesim.T, c *hivesim.Client, 
 	clMocker.InitChain(ec)
 
 	// Full test context has a few more seconds to finish up after timeout happens
-	ctx, cancel := context.WithTimeout(context.Background(), timeout+(time.Second*10))
+	// Increased from 10 to 1000 seconds to fix `Re-Org Back into Canonical Chain` tests
+	ctx, cancel := context.WithTimeout(context.Background(), timeout+(time.Second*1000))
 	defer cancel()
 	env.TestContext = ctx
 	clMocker.TestContext = ctx
@@ -130,7 +132,9 @@ func Run(testSpec Spec, timeout time.Duration, t *hivesim.T, c *hivesim.Client, 
 	defer func() {
 		// Only run if the TTD was reached during test, and test had not failed at this point.
 		if !t.Failed() {
-			clMocker.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
+			time.Sleep(49 * time.Second)
+			// leave this in case we need produce blocks for specific tests
+			// clMocker.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
 		}
 	}()
 

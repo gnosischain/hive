@@ -7,6 +7,8 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/core"
+	_ "github.com/ethereum/hive/simulators/ethereum/engine/client"
+
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
@@ -31,11 +33,15 @@ type Spec interface {
 	// Get the fork config for this test
 	GetForkConfig() *config.ForkConfig
 	// Get the genesis file to initialize the clients
+	//GetGenesis(string) *core.Genesis
 	GetGenesis() *core.Genesis
+	//GetGenesisTest(string) string
 	// Get the test transaction type to use throughout the test
 	GetTestTransactionType() helper.TestTransactionType
 	// Get the maximum execution time until a timeout is raised
 	GetTimeout() int
+	GetPreShapellaBlockCount() int
+	GetBlockTimeIncrements() uint64
 	// Get whether mining is disabled for this test
 	IsMiningDisabled() bool
 }
@@ -189,6 +195,31 @@ func (s BaseSpec) GetForkConfig() *config.ForkConfig {
 	return &forkConfig
 }
 
+//func GenesisFactory(clientName string) core.Genesis {
+//	switch clientName {
+//	case "erigon_":
+//		return &client.ErigonGenesis{}
+//	case "nethermind-old_":
+//		return &client.NethermindChainSpec{}
+//	default:
+//		panic("unsupported client provided")
+//	}
+//}
+
+//func (s BaseSpec) GetGenesis(base string) client.Genesis {
+//	// Load the default test genesis file
+//	if len(base) != 0 {
+//		base += "_"
+//	}
+//	gen := GenesisFactory(base)
+//	genesisPath := "./init/" + base + "genesis.json"
+//	if s.GenesisFile != "" {
+//		genesisPath = fmt.Sprintf("./init/%s", s.GenesisFile)
+//	}
+//	genesis := helper.LoadGenesis(genesisPath, gen)
+//	return genesis
+//}
+
 func (s BaseSpec) GetGenesis() *core.Genesis {
 	// Load the default test genesis file
 	genesisPath := "./init/genesis.json"
@@ -216,6 +247,39 @@ func (s BaseSpec) GetGenesis() *core.Genesis {
 	return &genesis
 }
 
+//func (s BaseSpec) GetGenesisTest(base string) string {
+//	if len(base) != 0 {
+//		base += "_"
+//	}
+//	genesisPath := "./init/" + base + "genesis.json"
+//	if s.GenesisFile != "" {
+//		genesisPath = fmt.Sprintf("./init/%s", s.GenesisFile)
+//	}
+//	genesis := helper.LoadGenesis(genesisPath)
+//	//genesis.Config.TerminalTotalDifficulty = big.NewInt(genesis.Difficulty.Int64() + s.TTD)
+//	//if genesis.Difficulty.Cmp(genesis.Config.TerminalTotalDifficulty) <= 0 {
+//	//	genesis.Config.TerminalTotalDifficultyPassed = true
+//	//}
+//
+//	// Set the genesis timestamp if provided
+//	if s.GenesisTimestamp != nil {
+//		genesis = *s.GenesisTimestamp
+//	}
+//
+//	// Add balance to all the test accounts
+//	//for _, testAcc := range globals.TestAccounts {
+//	//	balance, ok := new(big.Int).SetString("123450000000000000000", 16)
+//	//	if !ok {
+//	//		panic(errors.New("failed to parse balance"))
+//	//	}
+//	//genesis.Alloc[testAcc.GetAddress()] = core.GenesisAccount{
+//	//	Balance: balance,
+//	//}
+//	//}
+//
+//	return genesis
+//}
+
 func (s BaseSpec) GetName() string {
 	return s.Name
 }
@@ -231,6 +295,14 @@ func (s BaseSpec) GetTimeout() int {
 func (s BaseSpec) IsMiningDisabled() bool {
 	return s.DisableMining
 }
+
+func (s BaseSpec) GetPreShapellaBlockCount() int {
+	return 0
+}
+
+// func (s BaseSpec) GetBlockTimeIncrements() uint64 {
+// 	return 0
+// }
 
 var LatestFork = config.ForkConfig{
 	ShanghaiTimestamp: big.NewInt(0),

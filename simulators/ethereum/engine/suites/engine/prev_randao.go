@@ -29,6 +29,7 @@ func (t PrevRandaoTransactionTest) GetName() string {
 }
 
 func (tc PrevRandaoTransactionTest) Execute(t *test.Env) {
+
 	// Create a single block to not having to build on top of genesis
 	t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{})
 

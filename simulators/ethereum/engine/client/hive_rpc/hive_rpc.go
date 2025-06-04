@@ -2,6 +2,7 @@ package hive_rpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"net"
@@ -10,11 +11,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/core"
+
 	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
-	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/go-ethereum/rpc"
@@ -36,7 +37,7 @@ type HiveRPCEngineStarter struct {
 	JWTSecret  []byte
 }
 
-var _ client.EngineStarter = (*HiveRPCEngineStarter)(nil)
+//var _ client.EngineStarter = (*HiveRPCEngineStarter)(nil)
 
 func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Context, genesis *core.Genesis, ClientParams hivesim.Params, ClientFiles hivesim.Params, bootClients ...client.EngineClient) (client.EngineClient, error) {
 	var (
@@ -45,8 +46,8 @@ func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Cont
 		ethPort    = s.EthPort
 		jwtSecret  = s.JWTSecret
 	)
+	cs, err := T.Sim.ClientTypes()
 	if clientType == "" {
-		cs, err := T.Sim.ClientTypes()
 		if err != nil {
 			return nil, fmt.Errorf("client type was not supplied and simulator returned error on trying to get all client types: %v", err)
 		}
@@ -83,6 +84,7 @@ func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Cont
 	}
 
 	// Start the client and create the engine client object
+	// clientName := strings.Split(cs[0].Name, "_")[0]
 	genesisStart, err := helper.GenesisStartOption(genesis)
 	if err != nil {
 		return nil, err
@@ -99,8 +101,16 @@ func (s HiveRPCEngineStarter) StartClient(T *hivesim.T, testContext context.Cont
 	return ec, nil
 }
 
+// getEnodeForClient prepare the enode return string to be in the form [ enode1, enode2, ... ]
+func getEnodeForClient(enodeString string) string {
+	if enodeString[len(enodeString)-1] == ',' {
+		enodeString = enodeString[:len(enodeString)-1]
+	}
+	return "[" + enodeString + "]"
+}
+
 func CheckEthEngineLive(c *hivesim.Client) error {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*10)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 	var (
 		ticker = time.NewTicker(100 * time.Millisecond)
@@ -154,6 +164,67 @@ type HiveRPCEngineClient struct {
 
 var _ client.EngineClient = (*HiveRPCEngineClient)(nil)
 
+func (ec *HiveRPCEngineClient) BlockByNumber(ctx context.Context, number *big.Int) (*client.Block, error) {
+	url, _ := ec.Url()
+	var requestBody string
+	if number == nil {
+
+		requestBody = fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["%v",true],"id":1}`, "latest")
+	} else {
+
+		requestBody = fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["%v",true],"id":1}`, number.Int64())
+	}
+
+	blockHash, err := getBlockHash(url, requestBody)
+	if err != nil {
+		return nil, err
+	}
+	byNumber, err := ec.Client.BlockByNumber(ctx, number)
+	if err != nil {
+		return nil, err
+	}
+	header := client.NewBlockHeader(byNumber.Header(), common.HexToHash(blockHash))
+	return client.NewBlock(byNumber, header), nil
+}
+
+func getBlockHash(url string, requestBody string) (string, error) {
+	response, err := http.Post(url, "application/json", strings.NewReader(requestBody))
+	if err != nil {
+		fmt.Println("Failed to send request:", err)
+		return "", err
+	}
+	defer response.Body.Close()
+
+	// Parse the response JSON into a Go map
+	var responseData map[string]interface{}
+	err = json.NewDecoder(response.Body).Decode(&responseData)
+	if err != nil {
+		fmt.Println("Failed to parse response:", err)
+		return "", err
+	}
+
+	// Extract the block hash from the response data
+	blockData := responseData["result"].(map[string]interface{})
+	blockHash := blockData["hash"].(string)
+	return blockHash, nil
+}
+
+func (ec *HiveRPCEngineClient) BlockByHash(ctx context.Context, hash common.Hash) (*client.Block, error) {
+	url, _ := ec.Url()
+	requestBody := fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByHash","params":["%s",true],"id":1}`, hash.Hex())
+
+	blockHash, err := getBlockHash(url, requestBody)
+	if err != nil {
+		return nil, err
+	}
+	byHash, err := ec.Client.BlockByHash(ctx, hash)
+	if err != nil {
+		return nil, err
+	}
+	header := client.NewBlockHeader(byHash.Header(), common.HexToHash(blockHash))
+	return client.NewBlock(byHash, header), nil
+}
+
 // NewClient creates a engine client that uses the given RPC client.
 func NewHiveRPCEngineClient(h *hivesim.Client, enginePort int, ethPort int, jwtSecretBytes []byte, transport http.RoundTripper) *HiveRPCEngineClient {
 	// Prepare HTTP Client
@@ -161,13 +232,11 @@ func NewHiveRPCEngineClient(h *hivesim.Client, enginePort int, ethPort int, jwtS
 
 	engineRpcClient, err := rpc.DialOptions(context.Background(), fmt.Sprintf("http://%s:%d/", h.IP, enginePort), httpClient)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("Unable to connect to engine RPC endpoint: %v", err))
 	}
-
-	// Prepare ETH Client
 	ethRpcClient, err := rpc.DialOptions(context.Background(), fmt.Sprintf("http://%s:%d/", h.IP, ethPort), httpClient)
 	if err != nil {
-		panic(err)
+		panic(fmt.Errorf("Unable to connect to ETH RPC endpoint: %v", err))
 	}
 	eth := ethclient.NewClient(ethRpcClient)
 	return &HiveRPCEngineClient{
@@ -186,6 +255,10 @@ func (ec *HiveRPCEngineClient) ID() string {
 
 func (ec *HiveRPCEngineClient) EnodeURL() (string, error) {
 	return ec.h.EnodeURL()
+}
+
+func (ec *HiveRPCEngineClient) Url() (string, error) {
+	return fmt.Sprintf("http://%v:8545", ec.h.IP), nil
 }
 
 var (
@@ -243,13 +316,24 @@ func (ec *HiveRPCEngineClient) StorageAtKeys(ctx context.Context, account common
 	return results, nil
 }
 
-func (ec *HiveRPCEngineClient) HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error) {
-	var header *types.Header
-	err := ec.cEth.CallContext(ctx, &header, "eth_getBlockByNumber", toBlockNumArg(number), false)
-	if err == nil && header == nil {
-		err = ethereum.NotFound
+func (ec *HiveRPCEngineClient) HeaderByNumber(ctx context.Context, number *big.Int) (*client.BlockHeader, error) {
+
+	url, _ := ec.Url()
+	var requestBody string
+	var blockNum = toBlockNumArg(number)
+
+	requestBody = fmt.Sprintf(`{"jsonrpc":"2.0","method":"eth_getBlockByNumber","params":["%v",true],"id":1}`, blockNum)
+
+	byNumber, err := ec.Client.BlockByNumber(ctx, number)
+	if err != nil {
+		return nil, err
 	}
-	return header, err
+	blockHash, err := getBlockHash(url, requestBody)
+	if err != nil {
+		return nil, err
+	}
+	header := client.NewBlockHeader(byNumber.Header(), common.HexToHash(blockHash))
+	return header, nil
 }
 
 func (ec *HiveRPCEngineClient) Close() error {
@@ -455,7 +539,8 @@ func (ec *HiveRPCEngineClient) GetLastAccountNonce(testCtx context.Context, acco
 		ctx, cancel := context.WithTimeout(testCtx, globals.RPCTimeout)
 		defer cancel()
 		var err error
-		head, err = ec.HeaderByNumber(ctx, nil)
+		headCopy, err := ec.HeaderByNumber(ctx, nil)
+		head = &headCopy.Header
 		if err != nil {
 			return 0, err
 		}
@@ -477,7 +562,8 @@ func (ec *HiveRPCEngineClient) GetNextAccountNonce(testCtx context.Context, acco
 		ctx, cancel := context.WithTimeout(testCtx, globals.RPCTimeout)
 		defer cancel()
 		var err error
-		head, err = ec.HeaderByNumber(ctx, nil)
+		headCopy, err := ec.HeaderByNumber(ctx, nil)
+		head = &headCopy.Header
 		if err != nil {
 			return 0, err
 		}

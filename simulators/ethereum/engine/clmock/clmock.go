@@ -10,8 +10,9 @@ import (
 	"sync"
 	"time"
 
-	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/core"
+
+	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/core/forkid"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
@@ -65,7 +66,6 @@ func (h ExecutableDataHistory) LatestWithdrawalsIndex() uint64 {
 // Consensus Layer Client Mock used to sync the Execution Clients once the TTD has been reached
 type CLMocker struct {
 	*hivesim.T
-
 	// List of Engine Clients being served by the CL Mocker
 	EngineClients []client.EngineClient
 	// Lock required so no client is offboarded during block production.
@@ -99,7 +99,7 @@ type CLMocker struct {
 
 	// Latest broadcasted data using the PoS Engine API
 	LatestHeadNumber            *big.Int
-	LatestHeader                *types.Header
+	LatestHeader                *client.BlockHeader
 	LatestPayloadBuilt          typ.ExecutableData
 	LatestBlockValue            *big.Int
 	LatestBlobBundle            *typ.BlobsBundle
@@ -176,7 +176,6 @@ func (cl *CLMocker) GenesisBlock() *types.Block {
 func (cl *CLMocker) AddEngineClient(ec client.EngineClient) {
 	cl.EngineClientsLock.Lock()
 	defer cl.EngineClientsLock.Unlock()
-
 	cl.Logf("CLMocker: Adding engine client %v", ec.ID())
 	cl.EngineClients = append(cl.EngineClients, ec)
 }
@@ -220,7 +219,8 @@ func (cl *CLMocker) IsOptimisticallySyncing() bool {
 
 // Chain State Information
 func (cl *CLMocker) ForkID() forkid.ID {
-	return forkid.NewID(cl.Genesis.Config, cl.GenesisBlock(), cl.LatestHeader.Number.Uint64(), cl.LatestHeader.Time)
+	//return forkid.NewID(cl.Genesis.Config, cl.GenesisBlock(), cl.LatestHeader.Number.Uint64(), cl.LatestHeader.Time)
+	return forkid.ID{} //forkid.NewID(cl.Genesis.Config, , cl.LatestHeader.Number.Uint64(), cl.LatestHeader.Time)
 }
 
 func (cl *CLMocker) GetHeaders(amount uint64, originHash common.Hash, originNumber uint64, reverse bool, skip uint64) ([]*types.Header, error) {
@@ -268,8 +268,7 @@ func (cl *CLMocker) InitChain(ec client.EngineClient) {
 	if err != nil {
 		cl.Fatalf("CLMocker: Unable to get latest header: %v", err)
 	}
-	cl.HeaderHistory[cl.LatestHeader.Number.Uint64()] = cl.LatestHeader
-
+	cl.HeaderHistory[cl.LatestHeader.Number.Uint64()] = &cl.LatestHeader.Header
 	if cl.LatestHeader.Difficulty.Cmp(cl.Genesis.Difficulty) != 0 {
 		cl.Fatalf("CLMocker: invalid difficulty %d on latest header, expected", cl.LatestHeader.Difficulty, cl.Genesis.Difficulty)
 	}
@@ -282,6 +281,7 @@ func (cl *CLMocker) InitChain(ec client.EngineClient) {
 	// Prepare initial forkchoice, to be sent to the transition payload producer
 	cl.LatestForkchoice = api.ForkchoiceStateV1{}
 	cl.LatestForkchoice.HeadBlockHash = cl.LatestHeader.Hash()
+
 }
 
 // Return the per-block timestamp value increment
@@ -303,6 +303,10 @@ func (cl *CLMocker) GetNextBlockTimestamp() uint64 {
 func (cl *CLMocker) pickNextPayloadProducer() {
 	if len(cl.EngineClients) == 0 {
 		cl.Fatalf("CLMocker: No clients left for block production")
+	}
+	if len(cl.EngineClients) == 1 {
+		cl.NextBlockProducer = cl.EngineClients[0]
+		return
 	}
 
 	for i := 0; i < len(cl.EngineClients); i++ {
@@ -486,6 +490,7 @@ func (cl *CLMocker) GetNextPayload() {
 }
 
 func (cl *CLMocker) broadcastNextNewPayload() {
+
 	// Broadcast the executePayload to all clients
 	version := cl.ForkConfig.NewPayloadVersion(cl.LatestPayloadBuilt.Timestamp)
 	validations := 0
@@ -563,6 +568,7 @@ type BlockProcessCallbacks struct {
 }
 
 func (cl *CLMocker) ProduceSingleBlock(callbacks BlockProcessCallbacks) {
+
 	// Lock needed to ensure EngineClients is not modified mid block production
 	cl.EngineClientsLock.Lock()
 	defer cl.EngineClientsLock.Unlock()
@@ -581,6 +587,7 @@ func (cl *CLMocker) ProduceSingleBlock(callbacks BlockProcessCallbacks) {
 		callbacks.OnPayloadProducerSelected()
 	}
 
+	time.Sleep(10 * time.Second)
 	cl.GeneratePayloadAttributes()
 
 	if callbacks.OnPayloadAttributesGenerated != nil {
@@ -663,29 +670,34 @@ func (cl *CLMocker) ProduceSingleBlock(callbacks BlockProcessCallbacks) {
 		// ommersHash == 0x1dcc4de8dec75d7aab85b567b6ccd41ad312451b948a7413f0a142fd40d49347
 		if newHeader.UncleHash != types.EmptyUncleHash {
 			cl.Fatalf("CLMocker: Client %v produced a new header with incorrect ommersHash: %v", ec.ID(), newHeader.UncleHash)
+			panic(err)
 		}
 		// difficulty == 0
 		if newHeader.Difficulty.Cmp(common.Big0) != 0 {
 			cl.Fatalf("CLMocker: Client %v produced a new header with incorrect difficulty: %v", ec.ID(), newHeader.Difficulty)
+			panic(err)
 		}
 		// mixHash == prevRandao
 		if newHeader.MixDigest != cl.PrevRandaoHistory[cl.LatestHeadNumber.Uint64()] {
 			cl.Fatalf("CLMocker: Client %v produced a new header with incorrect mixHash: %v != %v", ec.ID(), newHeader.MixDigest, cl.PrevRandaoHistory[cl.LatestHeadNumber.Uint64()])
+			panic(err)
 		}
 		// nonce == 0x0000000000000000
 		if newHeader.Nonce != (types.BlockNonce{}) {
 			cl.Fatalf("CLMocker: Client %v produced a new header with incorrect nonce: %v", ec.ID(), newHeader.Nonce)
+			panic(err)
 		}
 		if len(newHeader.Extra) > 32 {
 			cl.Fatalf("CLMocker: Client %v produced a new header with incorrect extraData (len > 32): %v", ec.ID(), newHeader.Extra)
+			panic(err)
 		}
 		cl.LatestHeader = newHeader
 	}
 	if cl.LatestHeader == nil {
 		cl.Fatalf("CLMocker: None of the clients accepted the newly constructed payload")
+		panic("None of the clients accepted the newly constructed payload")
 	}
-	cl.HeaderHistory[cl.LatestHeadNumber.Uint64()] = cl.LatestHeader
-	cl.Logf("CLMocker: New block produced: number=%d, hash=%x", cl.LatestHeader.Number, cl.LatestHeader.Hash())
+	cl.HeaderHistory[cl.LatestHeadNumber.Uint64()] = &cl.LatestHeader.Header
 }
 
 // Loop produce PoS blocks by using the Engine API

@@ -42,6 +42,7 @@ func (tc UniquePayloadIDTest) GetName() string {
 // Check that the payload id returned on a forkchoiceUpdated call is different
 // when the attributes change
 func (tc UniquePayloadIDTest) Execute(t *test.Env) {
+
 	t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{
 		OnPayloadAttributesGenerated: func() {
 			payloadAttributes := t.CLMock.LatestPayloadAttributes

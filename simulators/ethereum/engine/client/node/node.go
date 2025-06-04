@@ -15,7 +15,6 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/state"
-	"github.com/ethereum/go-ethereum/core/stateless"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/core/vm"
 	"github.com/ethereum/go-ethereum/eth"
@@ -31,8 +30,9 @@ import (
 	"github.com/ethereum/go-ethereum/rpc"
 	"github.com/ethereum/hive/hivesim"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client"
+
+	//"github.com/ethereum/hive/simulators/ethereum/engine/helper"
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
-	"github.com/pkg/errors"
 )
 
 type GethNodeTestConfiguration struct {
@@ -113,7 +113,6 @@ type AccountTransactionInfo struct {
 	PreviousBlock common.Hash
 	PreviousNonce uint64
 }
-
 type GethNode struct {
 	node *node.Node
 	eth  *eth.Ethereum
@@ -312,17 +311,12 @@ func (n *GethNode) Close() error {
 	return nil
 }
 
-// Dummy validator that always returns success, used to set invalid blocks at the head of the chain, which then can be
-// served to other clients.
 type validator struct{}
 
 func (v *validator) ValidateBody(block *types.Block) error {
 	return nil
 }
 func (v *validator) ValidateState(block *types.Block, state *state.StateDB, result *core.ProcessResult, stateless bool) error {
-	return nil
-}
-func (v *validator) ValidateWitness(witness *stateless.Witness, receiptRoot common.Hash, stateRoot common.Hash) error {
 	return nil
 }
 
@@ -346,8 +340,8 @@ func encodeBlockNumber(number uint64) []byte {
 func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot common.Hash) error {
 	parentTd := n.eth.BlockChain().GetTd(block.ParentHash(), block.NumberU64()-1)
 	db := n.eth.ChainDb()
-	rawdb.WriteTd(db, block.Hash(), block.NumberU64(), parentTd.Add(parentTd, block.Difficulty()))
-	rawdb.WriteBlock(db, block)
+	rawdb.WriteTd(n.eth.ChainDb(), block.Hash(), block.NumberU64(), parentTd.Add(parentTd, block.Difficulty()))
+	rawdb.WriteBlock(n.eth.ChainDb(), block)
 
 	// write real info (fixes fake number test)
 	data, err := rlp.EncodeToBytes(block.Header())
@@ -355,17 +349,17 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 		log.Crit("Failed to RLP encode header", "err", err)
 	}
 	key := headerKey(parentNumber+1, block.Hash())
-	if err := db.Put(key, data); err != nil {
+	if err := n.eth.ChainDb().Put(key, data); err != nil {
 		log.Crit("Failed to store header", "err", err)
 	}
 
-	rawdb.WriteHeaderNumber(db, block.Hash(), block.NumberU64())
+	rawdb.WriteHeaderNumber(n.eth.ChainDb(), block.Hash(), block.NumberU64())
 	bc := n.eth.BlockChain()
 	bc.SetBlockValidatorAndProcessorForTesting(new(validator), n.eth.BlockChain().Processor())
 
 	statedb, err := state.New(parentRoot, bc.StateCache())
 	if err != nil {
-		return errors.Wrap(err, "failed to create state db")
+		return err
 	}
 	statedb.StartPrefetcher("chain", nil)
 	var failedProcessing bool
@@ -375,27 +369,25 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 	} else {
 		rawdb.WriteReceipts(db, block.Hash(), block.NumberU64(), result.Receipts)
 	}
+
 	root, err := statedb.Commit(block.NumberU64(), false)
 	if err != nil {
-		return errors.Wrap(err, "failed to commit state")
+		return err
 	}
 
-	// If node is running in path mode, skip explicit gc operation
-	// which is unnecessary in this mode.
-	if triedb := bc.StateCache().TrieDB(); triedb.Scheme() != rawdb.PathScheme {
-		if err := triedb.Commit(block.Root(), true); err != nil {
-			return errors.Wrapf(err, "failed to commit block trie, pathScheme=%v", triedb.Scheme())
-		}
-		if err := triedb.Commit(root, true); err != nil {
-			return errors.Wrapf(err, "failed to commit root trie, pathScheme=%v", triedb.Scheme())
-		}
+	triedb := bc.StateCache().TrieDB()
+	if err := triedb.Commit(block.Root(), true); err != nil {
+		return err
+	}
+	if err := triedb.Commit(root, true); err != nil {
+		return err
 	}
 
-	rawdb.WriteHeadHeaderHash(db, block.Hash())
-	rawdb.WriteHeadFastBlockHash(db, block.Hash())
-	rawdb.WriteCanonicalHash(db, block.Hash(), block.NumberU64())
-	rawdb.WriteTxLookupEntriesByBlock(db, block)
-	rawdb.WriteHeadBlockHash(db, block.Hash())
+	rawdb.WriteHeadHeaderHash(n.eth.ChainDb(), block.Hash())
+	rawdb.WriteHeadFastBlockHash(n.eth.ChainDb(), block.Hash())
+	rawdb.WriteCanonicalHash(n.eth.ChainDb(), block.Hash(), block.NumberU64())
+	rawdb.WriteTxLookupEntriesByBlock(n.eth.ChainDb(), block)
+	rawdb.WriteHeadBlockHash(n.eth.ChainDb(), block.Hash())
 	oldProcessor := bc.Processor()
 	if failedProcessing {
 		bc.SetBlockValidatorAndProcessorForTesting(new(validator), new(processor))
@@ -577,14 +569,61 @@ func parseBlockNumber(number *big.Int) rpc.BlockNumber {
 	return rpc.BlockNumber(number.Int64())
 }
 
-func (n *GethNode) BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error) {
+func (n *GethNode) BlockByNumber(ctx context.Context, number *big.Int) (*client.Block, error) {
 	if number == nil && n.mustHeadBlock != nil {
 		mustHeadHash := n.mustHeadBlock.Hash()
 		block := n.eth.BlockChain().GetBlock(mustHeadHash, n.mustHeadBlock.Number.Uint64())
-		return block, nil
+		return client.NewBlock(block, client.NewBlockHeader(block.Header(), block.Hash())), nil
 	}
-	return n.eth.APIBackend.BlockByNumber(ctx, parseBlockNumber(number))
+	block, err := n.eth.APIBackend.BlockByNumber(ctx, parseBlockNumber(number))
+	return client.NewBlock(block, client.NewBlockHeader(block.Header(), block.Hash())), err
 }
+
+//	type LocalBlock struct {
+//		header       *LocalHeader
+//		uncles       []*types.Header
+//		transactions types.Transactions
+//		withdrawals  types.Withdrawals
+//
+//		hash common.Hash `json:"hash"`
+//	}
+//
+//	type LocalHeader struct {
+//		*types.Header
+//		hash common.Hash `json:"hash"`
+//	}
+//
+//	func (n *LocalBlock) Hash() common.Hash {
+//		return n.hash
+//	}
+//func BlockByNumber(b *eth.EthAPIBackend, n *GethNode, ctx context.Context, number rpc.BlockNumber) (*types.Block, error) {
+//// Pending block is only known by the miner
+//if number == rpc.PendingBlockNumber {
+//	block := b.eth.miner.PendingBlock()
+//	return block, nil
+//}
+//n.
+//// Otherwise resolve and return the block
+//if number == rpc.LatestBlockNumber {
+//	header := n.eth.APIBackend.CurrentBlock()
+//	return b.eth.blockchain.GetBlock(header.Hash(), header.Number.Uint64()), nil
+//}
+//if number == rpc.FinalizedBlockNumber {
+//	if !b.eth.Merger().TDDReached() {
+//		return nil, errors.New("'finalized' tag not supported on pre-merge network")
+//	}
+//	header := b.eth.blockchain.CurrentFinalBlock()
+//	return b.eth.blockchain.GetBlock(header.Hash(), header.Number.Uint64()), nil
+//}
+//if number == rpc.SafeBlockNumber {
+//	if !b.eth.Merger().TDDReached() {
+//		return nil, errors.New("'safe' tag not supported on pre-merge network")
+//	}
+//	header := b.eth.blockchain.CurrentSafeBlock()
+//	return b.eth.blockchain.GetBlock(header.Hash(), header.Number.Uint64()), nil
+//}
+//return b.eth.blockchain.GetBlockByNumber(uint64(number)), nil
+//}
 
 func (n *GethNode) BlockNumber(ctx context.Context) (uint64, error) {
 	if n.mustHeadBlock != nil {
@@ -593,13 +632,17 @@ func (n *GethNode) BlockNumber(ctx context.Context) (uint64, error) {
 	return n.eth.APIBackend.CurrentBlock().Number.Uint64(), nil
 }
 
-func (n *GethNode) BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, error) {
-	return n.eth.APIBackend.BlockByHash(ctx, hash)
+func (n *GethNode) BlockByHash(ctx context.Context, hash common.Hash) (*client.Block, error) {
+	block, err := n.eth.APIBackend.BlockByHash(ctx, hash)
+	if err != nil {
+		return nil, err
+	}
+	return client.NewBlock(block, client.NewBlockHeader(block.Header(), block.Hash())), nil
 }
 
-func (n *GethNode) HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error) {
+func (n *GethNode) HeaderByNumber(ctx context.Context, number *big.Int) (*client.BlockHeader, error) {
 	if number == nil && n.mustHeadBlock != nil {
-		return n.mustHeadBlock, nil
+		return nil, nil
 	}
 	b, err := n.eth.APIBackend.BlockByNumber(ctx, parseBlockNumber(number))
 	if err != nil {
@@ -608,7 +651,7 @@ func (n *GethNode) HeaderByNumber(ctx context.Context, number *big.Int) (*types.
 	if b == nil {
 		return nil, fmt.Errorf("Block not found (%v)", number)
 	}
-	return b.Header(), err
+	return client.NewBlockHeader(b.Header(), b.Hash()), err
 }
 
 func (n *GethNode) HeaderByHash(ctx context.Context, hash common.Hash) (*types.Header, error) {
@@ -694,6 +737,10 @@ func (n *GethNode) PendingTransactionCount(ctx context.Context) (uint, error) {
 
 func (n *GethNode) EnodeURL() (string, error) {
 	return n.node.Server().NodeInfo().Enode, nil
+}
+
+func (n *GethNode) Url() (string, error) {
+	return fmt.Sprintf("http://%v:%v", n.node.Server().NodeInfo().IP, n.node.Server().NodeInfo().Ports.Listener), nil
 }
 
 func (n *GethNode) ID() string {

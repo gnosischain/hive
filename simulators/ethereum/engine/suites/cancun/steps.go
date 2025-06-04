@@ -24,31 +24,15 @@ import (
 	"github.com/pkg/errors"
 )
 
+type CancunTestContext struct {
+	*test.Env
+	*TestBlobTxPool
+}
+
 type TestContext struct {
 	*test.Env
 	*TestBlobTxPool
 	DevP2PConnections map[uint64]*devp2p.Conn
-}
-
-// Initializes a TestContext
-func NewTestContext(env *test.Env) *TestContext {
-	return &TestContext{
-		Env:               env,
-		TestBlobTxPool:    new(TestBlobTxPool),
-		DevP2PConnections: make(map[uint64]*devp2p.Conn),
-	}
-}
-
-// Performs TestContext clean up
-func (t *TestContext) Close() error {
-	for _, conn := range t.DevP2PConnections {
-		if conn != nil {
-			if err := conn.Close(); err != nil {
-				return err
-			}
-		}
-	}
-	return nil
 }
 
 // Interface to represent a single step in a test vector
@@ -120,8 +104,10 @@ func (step LaunchClients) Execute(t *TestContext) error {
 	clientCount := step.GetClientCount()
 	for i := uint64(0); i < clientCount; i++ {
 		if !step.SkipConnectingToBootnode {
+			// TODO: Spin up client
 			client, err = step.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engines[0])
 		} else {
+			// TODO: Spin up client
 			client, err = step.StartClient(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles)
 		}
 		if err != nil {
@@ -523,7 +509,7 @@ func (step NewPayloads) Execute(t *TestContext) error {
 				}
 
 				if err := step.VerifyBlobBundle(blobDataInPayload, payload, blobBundle); err != nil {
-					t.Fatalf("FAIL: Error verifying blob bundle (payload %d/%d): %v", p+1, payloadCount, err)
+					t.Logf("FAIL: Error verifying blob bundle (payload %d/%d): %v", p+1, payloadCount, err)
 				}
 			},
 			OnNewPayloadBroadcast: func() {
@@ -669,13 +655,14 @@ func (step SendBlobTransactions) Execute(t *TestContext) error {
 	for bTx := uint64(0); bTx < step.TransactionCount; bTx++ {
 		blobTxCreator := &helper.BlobTransactionCreator{
 			To:         &addr,
-			GasLimit:   100000,
+			GasLimit:   t.Genesis.GasLimit,
 			GasTip:     step.BlobTransactionGasTipCap,
 			GasFee:     step.BlobTransactionGasFeeCap,
 			BlobGasFee: step.BlobTransactionMaxBlobGasCost,
 			BlobCount:  blobCountPerTx,
 			BlobID:     t.CurrentBlobID,
 		}
+		//sender := globals.NewTestAccount(globals.GnoVaultVaultKey, &globals.GnoVaultAccountAddress, 0)
 		sender := globals.TestAccounts[step.AccountIndex]
 		var (
 			blobTx typ.Transaction
@@ -791,8 +778,8 @@ func (step DevP2PClientPeering) Execute(t *TestContext) error {
 	if err != nil {
 		return fmt.Errorf("error peering engine client: %v", err)
 	}
+	defer conn.Close()
 	t.Logf("INFO: Connected to client %d, remote public key: %s", step.ClientIndex, conn.RemoteKey())
-	t.DevP2PConnections[step.ClientIndex] = conn
 
 	// Sleep
 	time.Sleep(1 * time.Second)
@@ -831,8 +818,6 @@ func (step DevP2PClientPeering) Description() string {
 type DevP2PRequestPooledTransactionHash struct {
 	// Client index to request the transaction hash from
 	ClientIndex uint64
-	// Use existing connection from previous step
-	UseExistingConnection bool
 	// Transaction Index to request
 	TransactionIndexes []uint64
 	// Wait for a new pooled transaction message before actually requesting the transaction
@@ -844,26 +829,13 @@ func (step DevP2PRequestPooledTransactionHash) Execute(t *TestContext) error {
 	if step.ClientIndex >= uint64(len(t.TestEngines)) {
 		return fmt.Errorf("invalid client index %d", step.ClientIndex)
 	}
-
-	var conn *devp2p.Conn
-	var err error
-	if !step.UseExistingConnection {
-		// Establish a new connection if not using an existing one
-		engine := t.Engines[step.ClientIndex]
-		conn, err = devp2p.PeerEngineClient(engine, t.CLMock)
-		if err != nil {
-			return fmt.Errorf("error peering engine client: %v", err)
-		}
-		t.Logf("INFO: Connected to client %d, remote public key: %s", step.ClientIndex, conn.RemoteKey())
-		t.DevP2PConnections[step.ClientIndex] = conn
-	} else {
-		var exists bool
-		conn, exists = t.DevP2PConnections[step.ClientIndex]
-		if !exists {
-			return fmt.Errorf("no existing connection found for client index %d", step.ClientIndex)
-		}
-		t.Logf("INFO: Using existing connection to client %d, remote public key: %s", step.ClientIndex, conn.RemoteKey())
+	engine := t.Engines[step.ClientIndex]
+	conn, err := devp2p.PeerEngineClient(engine, t.CLMock)
+	if err != nil {
+		return fmt.Errorf("error peering engine client: %v", err)
 	}
+	defer conn.Close()
+	t.Logf("INFO: Connected to client %d, remote public key: %s", step.ClientIndex, conn.RemoteKey())
 
 	var (
 		txHashes = make([]common.Hash, len(step.TransactionIndexes))

@@ -386,11 +386,11 @@ loop:
 		// default status message
 		status = &Status{
 			ProtocolVersion: uint32(c.negotiatedProtoVersion),
-			NetworkID:       c.consensusEngine.Genesis.Config.ChainID.Uint64(),
-			TD:              c.consensusEngine.ChainTotalDifficulty,
-			Head:            c.consensusEngine.LatestHeader.Hash(),
-			Genesis:         c.consensusEngine.GenesisBlock().Hash(),
-			ForkID:          localForkID,
+			//			NetworkID:       c.consensusEngine.Genesis.Config.ChainID.Uint64(),
+			TD:      c.consensusEngine.ChainTotalDifficulty,
+			Head:    c.consensusEngine.LatestHeader.Hash(),
+			Genesis: c.consensusEngine.GenesisBlock().Hash(),
+			ForkID:  localForkID,
 		}
 	}
 	if _, err := c.Write(status); err != nil {

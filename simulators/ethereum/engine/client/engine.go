@@ -4,8 +4,9 @@ import (
 	"context"
 	"math/big"
 
-	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/core"
+
+	api "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/hive/hivesim"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -13,12 +14,46 @@ import (
 	typ "github.com/ethereum/hive/simulators/ethereum/engine/types"
 )
 
+type BlockHeader struct {
+	types.Header
+
+	hash common.Hash
+}
+
+func (h *BlockHeader) Hash() common.Hash {
+	return h.hash
+}
+
+func NewBlockHeader(header *types.Header, hash common.Hash) *BlockHeader {
+	h := &BlockHeader{}
+	h.hash = hash
+	h.Header = *header
+	return h
+}
+
+type Block struct {
+	types.Block
+	Header BlockHeader
+	//Hash common.Hash
+}
+
+func NewBlock(block *types.Block, header *BlockHeader) *Block {
+	b := &Block{}
+	b.Header = *header
+	b.Block = *block
+	return b
+}
+
+func (b *Block) Hash() common.Hash {
+	return b.Header.Hash()
+}
+
 type Eth interface {
 	BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error)
-	BlockByNumber(ctx context.Context, number *big.Int) (*types.Block, error)
+	BlockByNumber(ctx context.Context, number *big.Int) (*Block, error)
 	BlockNumber(ctx context.Context) (uint64, error)
-	BlockByHash(ctx context.Context, hash common.Hash) (*types.Block, error)
-	HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error)
+	BlockByHash(ctx context.Context, hash common.Hash) (*Block, error)
+	HeaderByNumber(ctx context.Context, number *big.Int) (*BlockHeader, error)
 	HeaderByHash(ctx context.Context, hash common.Hash) (*types.Header, error)
 	SendTransaction(ctx context.Context, tx typ.Transaction) error
 	SendTransactions(ctx context.Context, txs ...typ.Transaction) []error
@@ -66,6 +101,7 @@ type EngineClient interface {
 	ID() string
 	Close() error
 	EnodeURL() (string, error)
+	Url() (string, error)
 
 	// Local Test Account Management
 	GetLastAccountNonce(testCtx context.Context, account common.Address, head *types.Header) (uint64, error)

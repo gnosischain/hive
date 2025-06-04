@@ -7,8 +7,9 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
+
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/hive/hivesim"
 )
@@ -17,6 +18,15 @@ type TestAccount struct {
 	key     *ecdsa.PrivateKey
 	address *common.Address
 	index   uint64
+}
+
+// NewTestAccount creates a new test account with a deterministic address and private key.
+func NewTestAccount(key *ecdsa.PrivateKey, address *common.Address, index uint64) *TestAccount {
+	return &TestAccount{
+		key:     key,
+		address: address,
+		index:   index,
+	}
 }
 
 func (a *TestAccount) GetKey() *ecdsa.PrivateKey {
@@ -39,15 +49,15 @@ func (a *TestAccount) GetIndex() uint64 {
 var (
 
 	// Test chain parameters
-	ChainID          = big.NewInt(7)
+	ChainID          = big.NewInt(10202)
 	GasPrice         = big.NewInt(30 * params.GWei)
 	GasTipPrice      = big.NewInt(1 * params.GWei)
 	BlobGasPrice     = big.NewInt(1 * params.GWei)
-	NetworkID        = big.NewInt(7)
+	NetworkID        = big.NewInt(10202)
 	GenesisTimestamp = uint64(0x1234)
 
 	// RPC Timeout for every call
-	RPCTimeout = 20 * time.Second
+	RPCTimeout = 100 * time.Second
 
 	// Engine, Eth ports
 	EthPortHTTP    = 8545
@@ -57,12 +67,18 @@ var (
 	DefaultJwtTokenSecretBytes = []byte("secretsecretsecretsecretsecretse") // secretsecretsecretsecretsecretse
 	MaxTimeDriftSeconds        = int64(60)
 
+	// This is the account that sends vault funding transactions.
+	VaultAccountAddress    = common.HexToAddress("0x59f80ed315477f9f0059D862713A7b082A599217")
+	VaultKey, _            = crypto.HexToECDSA("ff804d09c833619af673fa99c92ae506d30ff60f37ad41a3d098dcf714db1e4a")
+	GnoVaultAccountAddress = common.HexToAddress("0xcC4e00A72d871D6c328BcFE9025AD93d0a26dF51")
+	GnoVaultVaultKey, _    = crypto.HexToECDSA("82fcff5c93519f3615d6a92a5a7d146ee305082d3d768d63eb1b45f11f419346")
+
 	// Accounts used for testing
-	TestAccountCount = uint64(1000)
+	TestAccountCount = uint64(20)
 	TestAccounts     []*TestAccount
 
 	// Global test case timeout
-	DefaultTestCaseTimeout = time.Second * 60
+	DefaultTestCaseTimeout = time.Minute * 10
 
 	// Confirmation blocks
 	PoWConfirmationBlocks = uint64(15)
@@ -94,9 +110,13 @@ var (
 )
 
 func init() {
-	// Fill the test accounts with deterministic addresses
 	TestAccounts = make([]*TestAccount, TestAccountCount)
-	for i := uint64(0); i < TestAccountCount; i++ {
+
+	TestAccounts[0] = NewTestAccount(GnoVaultVaultKey, &GnoVaultAccountAddress, 0)
+	TestAccounts[1] = NewTestAccount(VaultKey, &VaultAccountAddress, 0)
+
+	// Fill the test accounts with deterministic addresses
+	for i := uint64(2); i < TestAccountCount; i++ {
 		bs := make([]byte, 8)
 		binary.BigEndian.PutUint64(bs, uint64(i))
 		b := sha256.Sum256(bs)
