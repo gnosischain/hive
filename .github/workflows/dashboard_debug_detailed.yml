@@ -122,5 +122,6 @@ jobs:
           username: ${{ secrets.SSH_USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
-          source: ${{ github.workspace }}/runs/*
-          target: ${{ secrets.DIR }}/
+          source: ${{ github.run_id }}/runs/*
+          target: ${{ secrets.DIR }}/github/workspace/runs/
+          strip_components: 2
