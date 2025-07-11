@@ -2,10 +2,12 @@
 ## Pulls shisui from a git repository and builds it from source.
 
 ## Builder stage: Compiles shisui from a git repository
-FROM golang:1.23 AS builder
+FROM golang:1.24.2 AS builder
 
 ARG github=zen-eth/shisui
 ARG tag=main
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
 
 RUN apt-get update && apt-get install -y libclang-dev pkg-config build-essential \
     && echo "Cloning: $github - $tag" \
