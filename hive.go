@@ -15,8 +15,8 @@ import (
 
 	"github.com/ethereum/hive/internal/libdocker"
 	"github.com/ethereum/hive/internal/libhive"
-	"github.com/lmittmann/tint"
 	docker "github.com/fsouza/go-dockerclient"
+	"github.com/lmittmann/tint"
 )
 
 type buildArgs map[string]string
@@ -67,17 +67,16 @@ Otherwise, it looks for files in the $HOME directory:
 		simDevMode            = flag.Bool("dev", false, "Only starts the simulator API endpoint (listening at 127.0.0.1:3000 by default) without starting any simulators.")
 		simDevModeAPIEndpoint = flag.String("dev.addr", "127.0.0.1:3000", "Endpoint that the simulator API listens on")
 
-		useCredHelper         = flag.Bool("docker.cred-helper", false, "(DEPRECATED) Use --docker.auth instead.")
+		useCredHelper = flag.Bool("docker.cred-helper", false, "(DEPRECATED) Use --docker.auth instead.")
 
 		// Cleanup flags
-		cleanupContainers = flag.Bool("cleanup", false, "Clean up Hive containers instead of running simulations")
-		cleanupDryRun     = flag.Bool("cleanup.dry-run", false, "Show what containers would be cleaned up without actually removing them")
-		cleanupInstance   = flag.String("cleanup.instance", "", "Clean up containers from specific Hive instance ID only")
-		cleanupType       = flag.String("cleanup.type", "", "Clean up specific container type only (client, simulator, proxy)")
-		cleanupOlderThan  = flag.Duration("cleanup.older-than", 0, "Clean up containers older than specified duration (e.g., 1h, 24h)")
-		listContainers    = flag.Bool("list", false, "List Hive containers instead of running simulations")
-		overrideDockerfile    = flag.String("docker.override-dockerfile", "", "override the dockerfile used to build the client image")
-
+		cleanupContainers  = flag.Bool("cleanup", false, "Clean up Hive containers instead of running simulations")
+		cleanupDryRun      = flag.Bool("cleanup.dry-run", false, "Show what containers would be cleaned up without actually removing them")
+		cleanupInstance    = flag.String("cleanup.instance", "", "Clean up containers from specific Hive instance ID only")
+		cleanupType        = flag.String("cleanup.type", "", "Clean up specific container type only (client, simulator, proxy)")
+		cleanupOlderThan   = flag.Duration("cleanup.older-than", 0, "Clean up containers older than specified duration (e.g., 1h, 24h)")
+		listContainers     = flag.Bool("list", false, "List Hive containers instead of running simulations")
+		overrideDockerfile = flag.String("docker.override-dockerfile", "", "override the dockerfile used to build the client image")
 
 		clientsFile = flag.String("client-file", "", `YAML `+"`file`"+` containing client configurations.`)
 
@@ -132,16 +131,12 @@ Otherwise, it looks for files in the $HOME directory:
 
 	// Create the docker backends.
 	dockerConfig := &libdocker.Config{
-<<<<<<< HEAD
+
 		Inventory:           inv,
 		PullEnabled:         *dockerPull,
 		UseCredentialHelper: *useCredHelper,
 		OverrideDockerfile:  *overrideDockerfile,
-=======
-		Inventory:         inv,
-		PullEnabled:       *dockerPull,
-		UseAuthentication: *dockerAuth || *useCredHelper,
->>>>>>> origin/sync-upstream-09-07
+		UseAuthentication:   *dockerAuth || *useCredHelper,
 	}
 	if *dockerNoCache != "" {
 		re, err := regexp.Compile(*dockerNoCache)
@@ -167,12 +162,12 @@ Otherwise, it looks for files in the $HOME directory:
 		if dockerClient == nil {
 			fatal("Docker client not available for cleanup operations")
 		}
-		
+
 		client, ok := dockerClient.(*docker.Client)
 		if !ok {
 			fatal("Invalid Docker client type")
 		}
-		
+
 		if *listContainers {
 			err := libhive.ListHiveContainers(context.Background(), client, *cleanupInstance)
 			if err != nil {
