@@ -33,6 +33,8 @@ type Config struct {
 	UseCredentialHelper bool
 	// This tells the docker client whether to build a debug container with delve for attaching debugger
 	OverrideDockerfile string
+	// This tells the docker client whether to authenticate requests
+	UseAuthentication bool
 }
 
 func Connect(dockerEndpoint string, cfg *Config) (*Builder, *ContainerBackend, error) {
@@ -65,10 +67,10 @@ func Connect(dockerEndpoint string, cfg *Config) (*Builder, *ContainerBackend, e
 }
 
 func createBuilder(client *docker.Client, cfg *Config) (*Builder, error) {
-	var auth Authenticator
+	var auth *docker.AuthConfigurations
 	var err error
-	if cfg.UseCredentialHelper {
-		auth, err = NewCredHelperAuthenticator()
+	if cfg.UseAuthentication {
+		auth, err = docker.NewAuthConfigurationsFromDockerCfg()
 		if err != nil {
 			return nil, err
 		}
