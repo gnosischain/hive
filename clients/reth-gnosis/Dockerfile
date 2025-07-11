@@ -2,6 +2,9 @@ ARG baseimage=ghcr.io/gnosischain/reth_gnosis
 ARG tag=master
 
 FROM $baseimage:$tag as builder
+ARG GOPROXY
+
+ENV GOPROXY=${GOPROXY}
 
 # Install script tools.
 RUN apt-get update -y

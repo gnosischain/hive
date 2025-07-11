@@ -2,6 +2,9 @@
 ARG baseimage=nethermindeth/nethermind
 ARG tag=master
 FROM $baseimage:$tag
+ARG GOPROXY
+
+ENV GOPROXY=${GOPROXY}
 
 RUN apt-get update && apt-get install -y jq && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
