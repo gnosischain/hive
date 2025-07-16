@@ -189,6 +189,9 @@ func (r *Runner) run(ctx context.Context, sim string, env SimEnv, hiveInfo HiveI
 		}
 	}()
 
+	// Set hive instance info for container labeling.
+	r.container.SetHiveInstanceInfo(tm.hiveInstanceID, tm.hiveVersion)
+
 	slog.Debug("starting simulator API server")
 	server, err := r.container.ServeAPI(ctx, tm.API())
 	if err != nil {
@@ -196,6 +199,14 @@ func (r *Runner) run(ctx context.Context, sim string, env SimEnv, hiveInfo HiveI
 		return SimResult{}, err
 	}
 	defer shutdownServer(server)
+
+	// Create labels for simulator container.
+	simLabels := NewBaseLabels(tm.hiveInstanceID, tm.hiveVersion)
+	simLabels[LabelHiveType] = ContainerTypeSimulator
+	simLabels[LabelHiveSimulator] = sim
+
+	// Generate container name.
+	containerName := GenerateSimulatorContainerName(sim)
 
 	// Create the simulator container.
 	opts := ContainerOptions{
@@ -208,6 +219,8 @@ func (r *Runner) run(ctx context.Context, sim string, env SimEnv, hiveInfo HiveI
 			"HIVE_TTD_ENABLED":  os.Getenv("HIVE_TTD_ENABLED"),
 			"HTTP_PROXY":        os.Getenv("HTTP_PROXY"),
 		},
+		Labels: simLabels,
+		Name:   containerName,
 	}
 	containerID, err := r.container.CreateContainer(ctx, r.simImages[sim], opts)
 	if err != nil {
@@ -306,11 +319,16 @@ func createWorkspace(logdir string) error {
 
 func writeInstanceInfo(logdir string) {
 	var obj HiveInstance
+	
+	// Legacy fields for backward compatibility
 	obj.SourceCommit, obj.SourceDate = hiveVersion()
 	buildDate := hiveBuildTime()
 	if !buildDate.IsZero() {
 		obj.BuildDate = buildDate.Format("2006-01-02T15:04:05Z")
 	}
+	
+	// Enhanced version information
+	obj.HiveVersion = GetHiveVersion()
 
 	enc, _ := json.Marshal(&obj)
 	err := os.WriteFile(filepath.Join(logdir, "hive.json"), enc, 0644)
@@ -344,3 +362,5 @@ func hiveBuildTime() time.Time {
 	}
 	return stat.ModTime()
 }
+
+

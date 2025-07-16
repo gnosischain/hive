@@ -2,6 +2,9 @@ ARG baseimage=ethereum/client-go
 ARG tag=latest
 
 FROM $baseimage:$tag as builder
+ARG GOPROXY
+
+ENV GOPROXY=${GOPROXY}
 
 FROM alpine:latest
 RUN apk add --update bash curl jq
