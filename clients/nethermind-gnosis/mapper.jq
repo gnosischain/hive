@@ -294,7 +294,7 @@ def clique_engine:
     "0xcC4e00A72d871D6c328BcFE9025AD93d0a26dF51": {
       "balance": "0xc9f2c9cd04674edea40000000"
     },
-    "0x59f80ed315477f9f0059D862713A7b082A599217": {
+    "0x59f80ed315477f9f0059D'862713A7b082A599217": {
       "balance": "0xc9f2c9cd04674edea40000000"
     },
     "0x4000000000000000000000000000000000000000": {
@@ -674,7 +674,6 @@ def clique_engine:
     },
     "0x000f3df6d732807ef1319fb7b8bb8522d0beac02": {
       "balance": "0",
-      "nonce": "1",
       "code": "0x3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500"
     },
     "0x0f792be4b0c0cb4dae440ef133e90c0ecd48cccc": {
