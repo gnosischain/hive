@@ -60,6 +60,7 @@ def to_bool:
         "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
         "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
         "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
+        "osakaTime": env.HIVE_OSAKA_TIMESTAMP|to_int,
         "burntContract": {
             "0": "0x1559000000000000000000000000000000000000"
         },
@@ -71,16 +72,21 @@ def to_bool:
         "targetBlobGasPerBlock": 131072,
         "blobGasPriceUpdateFraction": 1112826,
         "blobSchedule": {
-            "cancun": {
-                "target": 1,
-                "max": 2,
-                "baseFeeUpdateFraction": 1112826
-            },
-            "prague": {
-                "target": 1,
-                "max": 2,
-                "baseFeeUpdateFraction": 1112826
-            }
+          "cancun": {
+            "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
+            "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_int else 2 end),
+            "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 3338477 end)
+          },
+          "prague": {
+            "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_int else 1 end),
+            "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_int else 2 end),
+            "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 5007716 end)
+          },
+          "osaka": {
+            "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_int else 1 end),
+            "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_int else 2 end),
+            "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 5007716 end)
+          }
         },
         "blockRewardsContract": "0x2000000000000000000000000000000000000001",
         "aura": {
