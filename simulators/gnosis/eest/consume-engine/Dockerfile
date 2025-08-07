@@ -29,5 +29,5 @@ RUN git clone -b feat/geth-fixtures https://github.com/NethermindEth/gnosis-fixt
 
 RUN ls -la fixtures
 ## Define `consume engine` entry point using the local fixtures
-ENTRYPOINT uv run consume engine -v --input fixtures/blockchain_tests_engine/prague
+ENTRYPOINT uv run consume engine -v --input fixtures/blockchain_tests_engine/prague/eip2537_bls_12_381_precompiles
 # ENTRYPOINT uv run consume engine -v --input gnosis-fixtures/blockchain_tests_engine/prague/eip2537_bls_12_381_precompiles/bls12_g1add --sim.limit="id:tests/prague/eip2537_bls_12_381_precompiles/test_bls12_g1add.py::test_call_types[fork_Prague-blockchain_test_engine_from_state_test-inf_plus_inf-call_opcode_CALLCODE-]"
