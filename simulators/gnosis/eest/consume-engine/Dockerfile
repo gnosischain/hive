@@ -31,7 +31,8 @@ RUN ls -la fixtures
 # Passed:
 # fixtures/blockchain_tests_engine/prague/eip2537_bls_12_381_precompiles
 # fixtures/blockchain_tests_engine/prague/eip7623_increase_calldata_cost 
+# fixtures/blockchain_tests_engine/prague/eip7702_set_code_tx
 ## Define `consume engine` entry point using the local fixtures
-ENTRYPOINT uv run consume engine -v --input fixtures/blockchain_tests_engine/prague/eip7702_set_code_tx
+ENTRYPOINT uv run consume engine -v --input fixtures/blockchain_tests_engine/prague/eip7685_general_purpose_el_requests/multi_type_requests
 
 # ENTRYPOINT uv run consume engine -v --input gnosis-fixtures/blockchain_tests_engine/prague/eip2537_bls_12_381_precompiles/bls12_g1add --sim.limit="id:tests/prague/eip2537_bls_12_381_precompiles/test_bls12_g1add.py::test_call_types[fork_Prague-blockchain_test_engine_from_state_test-inf_plus_inf-call_opcode_CALLCODE-]"
