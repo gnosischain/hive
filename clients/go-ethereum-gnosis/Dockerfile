@@ -1,11 +1,12 @@
-ARG baseimage=ethereum/client-go
+ARG baseimage=ghcr.io/gnosischain/geth
 ARG tag=latest
 
-FROM $baseimage:$tag as builder
+# Build the go-ethereum-gnosis binary
+FROM $baseimage:$tag AS builder
 ARG GOPROXY
-
 ENV GOPROXY=${GOPROXY}
 
+# Install dependencies
 FROM alpine:latest
 RUN apk add --update bash curl jq
 COPY --from=builder /usr/local/bin/geth /usr/local/bin/geth

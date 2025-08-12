@@ -1,12 +1,12 @@
-## Build geth from source from a local directory called go-ethereum.
+## Build gnosis geth from source from a local directory.
 
-FROM golang:1-alpine as builder
+FROM golang:1-alpine AS builder
 
-# Default local client path: clients/go-ethereum/<go-ethereum>
-ARG local_path=go-ethereum
-COPY $local_path go-ethereum
+# Default local client path: clients/go-ethereum-gnosis/<go-ethereum-gnosis>
+ARG local_path=go-ethereum-gnosis
+COPY $local_path go-ethereum-gnosis
 
-WORKDIR go-ethereum
+WORKDIR /go-ethereum-gnosis
 RUN apk add --update bash curl jq git make gcc libc-dev linux-headers
 RUN make geth
 RUN mv ./build/bin/geth /usr/local/bin/geth
