@@ -1,9 +1,10 @@
-## Pulls geth from a git repository and builds it from source.
+# Pulls gnosis geth from a git repository and builds it from source.
 
-FROM golang:1.23-alpine as builder
-ARG github=ethereum/go-ethereum
-ARG tag=master
+FROM golang:1.23-alpine AS builder
+ARG github=gnosischain/go-ethereum
+ARG tag=latest
 
+# Install dependencies
 RUN \
   apk add --update bash curl jq git make gcc musl-dev                 \
   ca-certificates linux-headers                                    && \
@@ -15,6 +16,7 @@ RUN \
   apk del go git make gcc musl-dev linux-headers                   && \
   rm -rf /go-ethereum && rm -rf /var/cache/apk/*
 
+# Build the final image
 FROM alpine:latest
 RUN apk add --update bash curl jq
 COPY --from=builder /usr/local/bin/geth /usr/local/bin/geth
