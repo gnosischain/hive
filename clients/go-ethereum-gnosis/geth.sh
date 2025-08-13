@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Startup script to initialize and boot a go-ethereum instance.
+# Startup script to initialize and boot a go-ethereum-gnosis instance.
 #
 # This script assumes the following files:
 #  - `geth` binary is located in the filesystem root
@@ -60,8 +60,8 @@ FLAGS="$FLAGS --bootnodes=$HIVE_BOOTNODE"
 if [ "$HIVE_NETWORK_ID" != "" ]; then
     FLAGS="$FLAGS --networkid $HIVE_NETWORK_ID"
 else
-    # Unless otherwise specified by hive, we try to avoid mainnet networkid. If geth detects mainnet network id,
-    # then it tries to bump memory quite a lot
+    # Unless otherwise specified by hive, we try to avoid mainnet networkid.
+    # If geth detects mainnet network id, then it tries to bump memory quite a lot
     FLAGS="$FLAGS --networkid 1337"
 fi
 
@@ -164,9 +164,9 @@ if [ "$HIVE_ALLOW_UNPROTECTED_TX" != "" ]; then
     FLAGS="$FLAGS --rpc.allow-unprotected-txs"
 fi
 
-# Run the go-ethereum implementation with the requested flags.
+# Run the go-ethereum-gnosis implementation with the requested flags.
 FLAGS="$FLAGS --nat=none"
 # Disable disk space free monitor
 FLAGS="$FLAGS --datadir.minfreedisk=0"
-echo "Running go-ethereum with flags $FLAGS"
+echo "Running go-ethereum-gnosis with flags $FLAGS"
 $geth $FLAGS
