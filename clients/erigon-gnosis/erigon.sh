@@ -47,6 +47,9 @@ fi
 # Disable PoW validation.
 FLAGS="$FLAGS --fakepow"
 
+# Disable downloader for tests
+FLAGS="$FLAGS --no-downloader"
+
 # Create the data directory.
 mkdir /erigon-hive-datadir
 FLAGS="$FLAGS --datadir /erigon-hive-datadir"
