@@ -169,22 +169,4 @@ FLAGS="$FLAGS --nat=none"
 # Disable disk space free monitor
 FLAGS="$FLAGS --datadir.minfreedisk=0"
 echo "Running go-ethereum-gnosis with flags $FLAGS"
-
-# Start geth in the background
-$geth $FLAGS &
-GETH_PID=$!
-
-# Wait for Engine API to be ready if enabled
-if echo "$FLAGS" | grep -q -- '--authrpc.addr'; then
-    echo "Waiting for Engine API (authrpc) to be ready..."
-    for i in {1..30}; do
-        if nc -z localhost 8551; then
-            echo "Engine API is ready."
-            break
-        fi
-        sleep 1
-    done
-fi
-
-# Wait for geth to exit (so container doesn't exit early)
-wait $GETH_PID
+$geth $FLAGS
