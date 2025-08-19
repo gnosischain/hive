@@ -288,6 +288,9 @@ def clique_engine:
     # "parentBeaconBlockRoot": .parentBeaconBlockRoot,
   },
     "accounts": ((.alloc|with_entries(.key|="0x"+.)) * {
+      "0xfffffffffffffffffffffffffffffffffffffffe": {
+      "balance": "0x0"
+    },
       "0xB03a86b3126157C039b55E21D378587CcFc04d45": {
       "balance": "0xc9f2c9cd04674edea40000000"
     },
