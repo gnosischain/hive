@@ -40,6 +40,7 @@ on:
         options:
           - ethereum/gnosis-engine-jq
           - smoke
+          - gnosis/eest/consume-engine
       parallelism:
         description: "Parallelism"
         required: true
