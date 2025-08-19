@@ -1,5 +1,5 @@
-ARG baseimage=ethereum/client-go
-ARG tag=latest
+ARG baseimage=ghcr.io/gnosischain/geth
+ARG tag=v1.16.1-gc
 
 FROM $baseimage:$tag as builder
 ARG GOPROXY
