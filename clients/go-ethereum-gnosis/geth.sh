@@ -86,6 +86,21 @@ fi
 mv /genesis.json /genesis-input.json
 jq -f /mapper.jq /genesis-input.json > /genesis.json
 
+# Check if the genesis contains Gnosis-specific configuration
+CHAIN_ID=$(jq -r '.config.chainId // empty' /genesis.json)
+CONSENSUS_ENGINE=$(jq -r '.config.aura // empty' /genesis.json)
+
+# If chainId is 100 (Gnosis) or if AuRa consensus is detected, add --gnosis flag
+if [ "$CHAIN_ID" = "100" ] || [ "$CONSENSUS_ENGINE" != "null" ] && [ "$CONSENSUS_ENGINE" != "" ]; then
+    echo "Detected Gnosis chain configuration - adding --gnosis flag"
+    FLAGS="$FLAGS --gnosis"
+elif [ "$CHAIN_ID" = "10200" ]; then
+    echo "Detected Chiado testnet configuration - adding --chiado flag"
+    FLAGS="$FLAGS --chiado"
+else
+    echo "No Gnosis Chain detected - using default configuration"
+fi
+
 # Dump genesis. 
 if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
