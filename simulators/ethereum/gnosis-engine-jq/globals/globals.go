@@ -49,11 +49,11 @@ func (a *TestAccount) GetIndex() uint64 {
 var (
 
 	// Test chain parameters
-	ChainID          = big.NewInt(10200)
+	ChainID          = big.NewInt(10202)
 	GasPrice         = big.NewInt(30 * params.GWei)
 	GasTipPrice      = big.NewInt(1 * params.GWei)
 	BlobGasPrice     = big.NewInt(1 * params.GWei)
-	NetworkID        = big.NewInt(10200)
+	NetworkID        = big.NewInt(10202)
 	GenesisTimestamp = uint64(0x1234)
 
 	// RPC Timeout for every call
