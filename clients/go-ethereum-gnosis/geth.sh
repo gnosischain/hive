@@ -57,13 +57,13 @@ fi
 FLAGS="$FLAGS --bootnodes=$HIVE_BOOTNODE"
 
 # If a specific network ID is requested, use that
-if [ "$HIVE_NETWORK_ID" != "" ]; then
-    FLAGS="$FLAGS --networkid $HIVE_NETWORK_ID"
-else
-    # Unless otherwise specified by hive, we try to avoid mainnet networkid.
-    # If geth detects mainnet network id, then it tries to bump memory quite a lot
-    FLAGS="$FLAGS --networkid 1337"
-fi
+# if [ "$HIVE_NETWORK_ID" != "" ]; then
+#     FLAGS="$FLAGS --networkid $HIVE_NETWORK_ID"
+# else
+#     # Unless otherwise specified by hive, we try to avoid mainnet networkid.
+#     # If geth detects mainnet network id, then it tries to bump memory quite a lot
+#     FLAGS="$FLAGS --networkid 1337"
+# fi
 
 # Handle any client mode or operation requests
 if [ "$HIVE_NODETYPE" == "archive" ]; then
