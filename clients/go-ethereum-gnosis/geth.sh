@@ -179,6 +179,6 @@ FLAGS="$FLAGS --datadir.minfreedisk=0"
 # fi
 
 echo "Running go-ethereum-gnosis with flags $FLAGS"
-$FLAGS="$FLAGS --chiado"
+FLAGS="$FLAGS --chiado"
 echo "Running go-ethereum-gnosis with flags $FLAGS"
 $geth $FLAGS
