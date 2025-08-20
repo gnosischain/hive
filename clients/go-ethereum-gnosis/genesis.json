@@ -65,7 +65,7 @@
         }
     },
     "config": {
-        "ChainName": "",
+        "ChainName": "Chiado",
         "chainId": 10200,
         "consensus": "aura",
         "homesteadBlock": 0,

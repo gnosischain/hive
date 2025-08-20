@@ -35,8 +35,8 @@ def to_bool:
     "clique": (if env.HIVE_CLIQUE_PERIOD == null then null else {
       "period": env.HIVE_CLIQUE_PERIOD|to_int,
     } end),
-    "ChainName": "Gnosis",
-    "chainId": env.HIVE_CHAIN_ID|to_int,
+    "ChainName": "Chiado",
+    "chainId": (env.HIVE_CHAIN_ID|to_int // 10200),
     "consensus": "aura",
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "daoForkBlock": env.HIVE_FORK_DAO_BLOCK|to_int,

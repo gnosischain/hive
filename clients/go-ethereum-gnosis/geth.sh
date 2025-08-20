@@ -166,7 +166,17 @@ fi
 
 # Run the go-ethereum-gnosis implementation with the requested flags.
 FLAGS="$FLAGS --nat=none"
-# Disable disk space free monitor
 FLAGS="$FLAGS --datadir.minfreedisk=0"
+
+# Detect network and append the correct flag
+if jq -e '.config.chainId == 10200' /genesis.json > /dev/null; then
+    echo "Detected Chiado chain (10200) - enabling --chiado flag"
+    FLAGS="$FLAGS --chiado"
+fi
+if jq -e '.config.chainId == 100' /genesis.json > /dev/null; then
+    echo "Detected Gnosis chain (100) - enabling --gnosis flag"
+    FLAGS="$FLAGS --gnosis"
+fi
+
 echo "Running go-ethereum-gnosis with flags $FLAGS"
 $geth $FLAGS
