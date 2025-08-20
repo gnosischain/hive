@@ -36,7 +36,7 @@ def to_bool:
       "period": env.HIVE_CLIQUE_PERIOD|to_int,
     } end),
     "ChainName": "Chiado",
-    "chainId": (env.HIVE_CHAIN_ID|to_int // 10200),
+    "chainId": env.HIVE_CHAIN_ID|to_int,
     "consensus": "aura",
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "daoForkBlock": env.HIVE_FORK_DAO_BLOCK|to_int,
