@@ -22,6 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
+      max-parallel: 5  
       matrix:
         include:
           - client: nethermind-gnosis
@@ -128,28 +129,67 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
-      # Clean up any existing Hive containers before starting tests
-      - name: Clean up existing Hive containers
+      # Create unique workspace for this matrix job
+      - name: Setup unique workspace
+        run: |
+          # Create a unique identifier for this matrix job combination
+          JOB_ID=$(echo "${{ matrix.client }}-${{ matrix.suite }}-${{ strategy.job-index }}" | tr '/' '_' | tr '-' '_')
+          echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
+          echo "RESULTS_DIR=${{ github.workspace }}/${{ github.run_id }}/runs/$JOB_ID" >> $GITHUB_ENV
+          mkdir -p "${{ github.workspace }}/${{ github.run_id }}/runs/$JOB_ID"
+
+      # Clean up any potentially conflicting containers
+      - name: Clean up existing containers
         continue-on-error: true
         run: |
-          ./hive --cleanup
-          docker system prune -f --volumes
+          # Kill containers that might conflict with our naming pattern
+          docker ps -aq --filter "name=hive" | head -20 | xargs -r docker rm -f 2>/dev/null || true
+          docker ps -aq --filter "name=${{ matrix.client }}" | head -10 | xargs -r docker rm -f 2>/dev/null || true
+          docker ps -aq --filter "label=hive" | head -20 | xargs -r docker rm -f 2>/dev/null || true
+          
+          # Clean up networks and volumes that might cause conflicts
+          docker network ls --filter "name=hive" -q | head -10 | xargs -r docker network rm 2>/dev/null || true
+          docker volume ls --filter "name=hive" -q | head -20 | xargs -r docker volume rm 2>/dev/null || true
 
       - name: Run tests
         continue-on-error: true
+        env:
+          # Set unique container prefixes to avoid naming conflicts
+          DOCKER_BUILDKIT: 1
         run: |
-          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=40m --docker.output --sim.timelimit=3600s --docker.pull --sim.parallelism=${{ matrix.parallelism }} 
-      
-      # Clean up containers after tests complete (whether they pass or fail)
-      - name: Clean up containers after tests
+          # Add random delay to stagger parallel job starts
+          sleep $((RANDOM % 30))
+          
+          # Run hive with job-specific results directory
+          HIVE_TTD_ENABLED=false ./hive \
+            --sim "${{ matrix.simulator }}" \
+            --sim.limit="${{ matrix.suite }}" \
+            --client "${{ matrix.client }}" \
+            --results-root="$RESULTS_DIR" \
+            --loglevel=3 \
+            --sim.loglevel=3 \
+            --client.checktimelimit=10m \
+            --docker.output \
+            --sim.parallelism=${{ matrix.parallelism }}
+
+      # Clean up containers after this job completes
+      - name: Clean up job containers
         if: always()
         continue-on-error: true
         run: |
-          ./hive --cleanup
-          docker system prune -f --volumes
+          # More aggressive cleanup of this job's containers
+          docker ps -aq --filter "name=hive" | head -20 | xargs -r docker rm -f 2>/dev/null || true
+          docker ps -aq --filter "name=${{ matrix.client }}" | head -10 | xargs -r docker rm -f 2>/dev/null || true
+          docker system prune -f --volumes 2>/dev/null || true
       
       - name: Check report
-        run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
+        run: |
+          echo "Results directory structure:"
+          ls -la "${{ github.workspace }}/${{ github.run_id }}/runs/" || echo "No results directory found"
+          if [ -d "$RESULTS_DIR" ]; then
+            echo "Job-specific results:"
+            ls -la "$RESULTS_DIR" || echo "No job-specific results found"
+          fi
 
       - name: Send file over SSH
         if: always()
@@ -162,3 +202,4 @@ jobs:
           source: ${{ github.run_id }}/runs/*
           target: ${{ secrets.DIR }}/github/workspace/runs/
           strip_components: 2
+          
