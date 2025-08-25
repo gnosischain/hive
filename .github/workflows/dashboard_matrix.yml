@@ -24,78 +24,78 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - client: nethermind-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'withdrawals'
-            parallelism: 8
-          - client: erigon-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'withdrawals'
-            parallelism: 8
+          # - client: nethermind-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'withdrawals'
+          #   parallelism: 8
+          # - client: erigon-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'withdrawals'
+          #   parallelism: 8
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
             parallelism: 8
-          - client: go-ethereum-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'withdrawals'
-            parallelism: 8
-          - client: nethermind-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'cancun'
-            parallelism: 8
-          - client: erigon-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'cancun'
-            parallelism: 8
+          # - client: go-ethereum-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'withdrawals'
+          #   parallelism: 8
+          # - client: nethermind-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'cancun'
+          #   parallelism: 8
+          # - client: erigon-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'cancun'
+          #   parallelism: 8
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'cancun'
             parallelism: 8
-          - client: go-ethereum-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'cancun'
-            parallelism: 8
-          - client: nethermind-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-api'
-            parallelism: 10
-          - client: erigon-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-api'
-            parallelism: 12
+          # - client: go-ethereum-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'cancun'
+          #   parallelism: 8
+          # - client: nethermind-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-api'
+          #   parallelism: 10
+          # - client: erigon-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-api'
+          # parallelism: 12
           - client: reth-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-api'
-            parallelism: 12
-          - client: go-ethereum-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
             parallelism: 12
-          - client: nethermind-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-auth'
-            parallelism: 1
-          - client: nethermind-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-exchange-capabilities'
-            parallelism: 1
-          - client: erigon-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-exchange-capabilities'
-            parallelism: 1
+          # - client: go-ethereum-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-api'
+          #   parallelism: 12
+          # - client: nethermind-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-auth'
+          #   parallelism: 1
+          # - client: nethermind-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-exchange-capabilities'
+          #   parallelism: 1
+          # - client: erigon-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-exchange-capabilities'
+          #   parallelism: 1
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
-          - client: go-ethereum-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-exchange-capabilities'
-            parallelism: 1
-          - client: nethermind-gnosis
-            simulator: 'smoke'
-            suite: 'network'
-            parallelism: 1
+          # - client: go-ethereum-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-exchange-capabilities'
+          #   parallelism: 1
+          # - client: nethermind-gnosis
+          #   simulator: 'smoke'
+          #   suite: 'network'
+          #   parallelism: 1
           - client: reth-gnosis
             simulator: 'smoke'
             suite: 'network'
@@ -128,10 +128,26 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
+      - name: Cleanup old hive containers
+        run: |
+          ./hive --cleanup --cleanup.older-than=5m || true
+          docker ps -a
+
       - name: Run tests
         continue-on-error: true
         run: |
-          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=10m --docker.output --sim.timelimit=3600s --docker.pull --sim.parallelism=${{ matrix.parallelism }} 
+          HIVE_TTD_ENABLED=false ./hive \
+            --sim "${{ matrix.simulator }}" \
+            --sim.limit="${{ matrix.suite }}" \
+            --client "${{ matrix.client }}" \
+            --results-root=${{ github.workspace }}/${{ github.run_id }}/runs \
+            --loglevel=3 \
+            --sim.loglevel=3 \
+            --client.checktimelimit=10m \
+            --sim.timelimit=3600s \
+            --docker.output \
+            --docker.pull \
+            --sim.parallelism=${{ matrix.parallelism }}
       
       - name: Check report
         run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
