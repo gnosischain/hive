@@ -25,82 +25,82 @@ jobs:
       max-parallel: 10  
       matrix:
         include:
-          # - client: nethermind-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'withdrawals'
-          #   parallelism: 1
-          # - client: erigon-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'withdrawals'
-          #   parallelism: 1
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
             parallelism: 4
-          # - client: go-ethereum-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'withdrawals'
-          #   parallelism: 1
-          # - client: nethermind-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'cancun'
-          #   parallelism: 1
-          # - client: erigon-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'cancun'
-          #   parallelism: 1
-          # - client: reth-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'cancun'
-          #   parallelism: 1
-          # - client: go-ethereum-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'cancun'
-          #   parallelism: 1
-          # - client: nethermind-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-api'
-          #   parallelism: 1
-          # - client: erigon-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-api'
-          #   parallelism: 1
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'withdrawals'
+            parallelism: 8
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'cancun'
+            parallelism: 8
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 10
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 12
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
             parallelism: 6
-          # - client: go-ethereum-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-api'
-          #   parallelism: 1
-          # - client: nethermind-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-auth'
-          #   parallelism: 1
-          # - client: nethermind-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-exchange-capabilities'
-          #   parallelism: 1
-          # - client: erigon-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-exchange-capabilities'
-          #   parallelism: 1
-          # - client: reth-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-exchange-capabilities'
-          #   parallelism: 1
-          # - client: go-ethereum-gnosis
-          #   simulator: 'ethereum/gnosis-engine-jq'
-          #   suite: 'engine-exchange-capabilities'
-          #   parallelism: 1
-          # - client: nethermind-gnosis
-          #   simulator: 'smoke'
-          #   suite: 'network'
-          #   parallelism: 1
-          # - client: reth-gnosis
-          #   simulator: 'smoke'
-          #   suite: 'network'
-          #   parallelism: 1
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-api'
+            parallelism: 12
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: nethermind-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: erigon-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: reth-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: go-ethereum-gnosis
+            simulator: 'ethereum/gnosis-engine-jq'
+            suite: 'engine-exchange-capabilities'
+            parallelism: 1
+          - client: nethermind-gnosis
+            simulator: 'smoke'
+            suite: 'network'
+            parallelism: 1
+          - client: reth-gnosis
+            simulator: 'smoke'
+            suite: 'network'
+            parallelism: 1
     env:
       # Global unique prefix for all containers in each workflow run
       CONTAINER_PREFIX: ${{ github.run_id }}-${{ github.job }}-${{ strategy.job-index }}
@@ -197,8 +197,7 @@ jobs:
             --sim.loglevel=3 \
             --client.checktimelimit=20m \
             --docker.output \
-            --sim.parallelism=${{ matrix.parallelism }} \
-            --docker.name-prefix="$CONTAINER_PREFIX"
+            --sim.parallelism=${{ matrix.parallelism }}
 
       - name: Cleanup job containers after run
         if: always()
