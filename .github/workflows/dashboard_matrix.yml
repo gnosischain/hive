@@ -22,7 +22,6 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      max-parallel: 10  
       matrix:
         include:
           - client: nethermind-gnosis
@@ -36,7 +35,7 @@ jobs:
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
-            parallelism: 4
+            parallelism: 8
           - client: go-ethereum-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'withdrawals'
@@ -68,7 +67,7 @@ jobs:
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
-            parallelism: 6
+            parallelism: 12
           - client: go-ethereum-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
@@ -101,20 +100,7 @@ jobs:
             simulator: 'smoke'
             suite: 'network'
             parallelism: 1
-    env:
-      # Global unique prefix for all containers in each workflow run
-      CONTAINER_PREFIX: ${{ github.run_id }}-${{ github.job }}-${{ strategy.job-index }}
-
     steps:
-      - name: Initial Docker cleanup
-        continue-on-error: true
-        run: |
-          # Force cleanup any existing containers that might be left over
-          docker ps -aq | xargs -r docker rm -f 2>/dev/null || true
-          docker network prune -f 2>/dev/null || true
-          docker volume prune -f 2>/dev/null || true
-          docker system prune -f 2>/dev/null || true
-
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
@@ -142,97 +128,13 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
-      - name: Calculate Unique Job Name
-        run: |
-          TIMESTAMP=$(date +%s)
-          JOB_ID="${{ matrix.client }}-${{ matrix.suite }}-${{ github.run_id }}-${{ strategy.job-index }}-${TIMESTAMP}"
-          echo "JOB_ID=$JOB_ID" >> $GITHUB_ENV
-          echo "RESULTS_DIR=${{ github.workspace }}/${{ github.run_id }}/runs/$JOB_ID" >> $GITHUB_ENV
-          echo "CONTAINER_PREFIX=${{ github.run_id }}-${{ matrix.client }}-${{ matrix.suite }}-${{ strategy.job-index }}-${TIMESTAMP}" >> $GITHUB_ENV
-          mkdir -p "${{ github.workspace }}/${{ github.run_id }}/runs/$JOB_ID"
-
-      - name: Cleanup existing containers before run
-        continue-on-error: true
-        run: |
-          # Stop all running containers first
-          docker ps -q --filter "name=${CONTAINER_PREFIX}" | xargs -r docker stop -t 10 2>/dev/null || true
-          docker ps -q --filter "label=hive" | xargs -r docker stop -t 10 2>/dev/null || true
-          
-          # Remove all containers (running and stopped)
-          docker ps -aq --filter "name=${CONTAINER_PREFIX}" | xargs -r docker rm -f 2>/dev/null || true
-          docker ps -aq --filter "label=hive" | xargs -r docker rm -f 2>/dev/null || true
-          docker ps -aq --filter "name=hive_" | xargs -r docker rm -f 2>/dev/null || true
-          docker ps -aq --filter "name=reth-gnosis" | xargs -r docker rm -f 2>/dev/null || true
-          
-          # Clean up networks
-          docker network ls --filter "name=${CONTAINER_PREFIX}" -q | xargs -r docker network rm 2>/dev/null || true
-          docker network ls --filter "name=hive" -q | xargs -r docker network rm 2>/dev/null || true
-          
-          # Clean up volumes
-          docker volume ls --filter "name=${CONTAINER_PREFIX}" -q | xargs -r docker volume rm -f 2>/dev/null || true
-          docker volume ls --filter "name=hive" -q | xargs -r docker volume rm -f 2>/dev/null || true
-          
-          # Additional cleanup for any remaining containers
-          docker container prune -f 2>/dev/null || true
-          
-          # Wait a moment for cleanup to complete
-          sleep 5
-
       - name: Run tests
         continue-on-error: true
-        env:
-          # Set unique container prefixes to avoid naming conflicts
-          DOCKER_BUILDKIT: 1
         run: |
-          # Add random delay to stagger parallel job starts
-          sleep $((RANDOM % 30))
-
-          # Run hive with job-specific results directory
-          HIVE_TTD_ENABLED=false ./hive \
-            --sim "${{ matrix.simulator }}" \
-            --sim.limit="${{ matrix.suite }}" \
-            --client "${{ matrix.client }}" \
-            --results-root="$RESULTS_DIR" \
-            --loglevel=3 \
-            --sim.loglevel=3 \
-            --client.checktimelimit=20m \
-            --docker.output \
-            --sim.parallelism=${{ matrix.parallelism }}
-
-      - name: Cleanup job containers after run
-        if: always()
-        continue-on-error: true
-        run: |
-          # Stop all running containers first
-          docker ps -q --filter "name=${CONTAINER_PREFIX}" | xargs -r docker stop -t 10 2>/dev/null || true
-          docker ps -q --filter "label=hive" | xargs -r docker stop -t 10 2>/dev/null || true
-          
-          # Remove all containers
-          docker ps -aq --filter "name=${CONTAINER_PREFIX}" | xargs -r docker rm -f 2>/dev/null || true
-          docker ps -aq --filter "label=hive" | xargs -r docker rm -f 2>/dev/null || true
-          docker ps -aq --filter "name=hive_" | xargs -r docker rm -f 2>/dev/null || true
-          docker ps -aq --filter "name=reth-gnosis" | xargs -r docker rm -f 2>/dev/null || true
-          
-          # Clean up networks and volumes
-          docker network ls --filter "name=${CONTAINER_PREFIX}" -q | xargs -r docker network rm 2>/dev/null || true
-          docker network ls --filter "name=hive" -q | xargs -r docker network rm 2>/dev/null || true
-          docker volume ls --filter "name=${CONTAINER_PREFIX}" -q | xargs -r docker volume rm -f 2>/dev/null || true
-          docker volume ls --filter "name=hive" -q | xargs -r docker volume rm -f 2>/dev/null || true
-          
-          # Comprehensive cleanup
-          docker system prune -f --volumes 2>/dev/null || true
-          docker container prune -f 2>/dev/null || true
-          docker network prune -f 2>/dev/null || true
-          docker volume prune -f 2>/dev/null || true
-
+          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=10m --docker.output --sim.timelimit=3600s --docker.pull --sim.parallelism=${{ matrix.parallelism }} 
+      
       - name: Check report
-        run: |
-          echo "Results directory structure:"
-          ls -la "${{ github.workspace }}/${{ github.run_id }}/runs/" || echo "No results directory found"
-          if [ -d "$RESULTS_DIR" ]; then
-            echo "Job-specific results:"
-            ls -la "$RESULTS_DIR" || echo "No job-specific results found"
-          fi
+        run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
 
       - name: Send file over SSH
         if: always()
