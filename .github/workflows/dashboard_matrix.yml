@@ -128,10 +128,25 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
+      # Clean up any existing Hive containers before starting tests
+      - name: Clean up existing Hive containers
+        continue-on-error: true
+        run: |
+          ./hive --cleanup
+          docker system prune -f --volumes
+
       - name: Run tests
         continue-on-error: true
         run: |
           HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=40m --docker.output --sim.timelimit=3600s --docker.pull --sim.parallelism=${{ matrix.parallelism }} 
+      
+      # Clean up containers after tests complete (whether they pass or fail)
+      - name: Clean up containers after tests
+        if: always()
+        continue-on-error: true
+        run: |
+          ./hive --cleanup
+          docker system prune -f --volumes
       
       - name: Check report
         run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
