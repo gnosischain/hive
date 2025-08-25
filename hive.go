@@ -54,7 +54,7 @@ Otherwise, it looks for files in the $HOME directory:
 - $HOME/.dockercfg`)
 		dockerEndpoint        = flag.String("docker.endpoint", "", "Endpoint of the local Docker daemon.")
 		dockerNoCache         = flag.String("docker.nocache", "", "Regular `expression` selecting the docker images to forcibly rebuild.")
-		dockerPull            = flag.Bool("docker.pull", true, "Refresh base images when building images.")
+		dockerPull            = flag.Bool("docker.pull", false, "Refresh base images when building images.")
 		dockerOutput          = flag.Bool("docker.output", false, "Relay all docker output to stderr.")
 		dockerBuildOutput     = flag.Bool("docker.buildoutput", false, "Relay only docker build output to stderr.")
 		simPattern            = flag.String("sim", "", "Regular `expression` selecting the simulators to run.")
@@ -86,7 +86,7 @@ Otherwise, it looks for files in the $HOME directory:
 			"a single client type may be requested with different branches.\n"+
 			"Example: \"besu_latest,besu_20.10.2\"\n")
 
-		clientTimeout = flag.Duration("client.checktimelimit", 10*time.Minute, "The `timeout` of waiting for clients to open up the RPC port.\n"+
+		clientTimeout = flag.Duration("client.checktimelimit", 3*time.Minute, "The `timeout` of waiting for clients to open up the RPC port.\n"+
 			"If a very long chain is imported, this timeout may need to be quite large.\n"+
 			"A lower value means that hive won't wait as long in case the node crashes and\n"+
 			"never opens the RPC port.")
