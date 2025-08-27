@@ -256,6 +256,9 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 
 	// Generate container name.
 	containerName := GenerateClientContainerName(clientDef.Name, suiteID, testID)
+	// Add unique identifier to prevent collisions in parallel test execution
+	uniqueSuffix := fmt.Sprintf("-%d", time.Now().UnixNano())
+	containerName = containerName + uniqueSuffix
 
 	// Create the client container.
 	options := ContainerOptions{Env: env, Files: files, Labels: labels, Name: containerName}
