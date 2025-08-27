@@ -30,6 +30,9 @@ type ContainerBackend struct {
 	// Hive instance information for labeling
 	hiveInstanceID string
 	hiveVersion    string
+
+	// Global mutex to prevent race conditions in container creation
+	createMutex sync.Mutex
 }
 
 func NewContainerBackend(c *docker.Client, cfg *Config) *ContainerBackend {
@@ -89,6 +92,10 @@ func (b *ContainerBackend) RunProgram(ctx context.Context, containerID string, c
 
 // CreateContainer creates a docker container.
 func (b *ContainerBackend) CreateContainer(ctx context.Context, imageName string, opt libhive.ContainerOptions) (string, error) {
+	// Serialize container creation to prevent race conditions
+	b.createMutex.Lock()
+	defer b.createMutex.Unlock()
+
 	vars := []string{}
 	for key, val := range opt.Env {
 		vars = append(vars, key+"="+val)
@@ -101,6 +108,16 @@ func (b *ContainerBackend) CreateContainer(ctx context.Context, imageName string
 			Env:    vars,
 			Labels: opt.Labels,
 		},
+	}
+
+	// Log the container name being created for debugging
+	if createOpts.Name != "" {
+		b.logger.Debug("creating container with name", "name", createOpts.Name, "image", imageName)
+	}
+
+	// Additional debug info for CI troubleshooting
+	if os.Getenv("CI") == "true" {
+		b.logger.Info("CI: creating container", "name", createOpts.Name, "image", imageName, "timestamp", time.Now().UnixNano())
 	}
 
 	// Pre-flight: if a container with the same name exists, remove it to avoid conflicts.

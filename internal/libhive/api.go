@@ -7,8 +7,10 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -18,6 +20,11 @@ import (
 	"github.com/ethereum/hive/internal/simapi"
 	"github.com/gorilla/mux"
 )
+
+func init() {
+	// Seed the random number generator for container name uniqueness
+	rand.Seed(time.Now().UnixNano())
+}
 
 // hiveEnvvarPrefix is the prefix of the environment variables names that should
 // be moved from test images to client container to fine tune their setup.
@@ -258,7 +265,10 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 	containerName := GenerateClientContainerName(clientDef.Name, suiteID, testID)
 	// Add unique identifier to prevent collisions in parallel test execution
 	uniqueSuffix := fmt.Sprintf("-%d", time.Now().UnixNano())
-	containerName = containerName + uniqueSuffix
+	// Add process ID and additional random component for absolute uniqueness
+	processID := os.Getpid()
+	randomComponent := fmt.Sprintf("-%d-%04x", processID, rand.Intn(65536))
+	containerName = containerName + uniqueSuffix + randomComponent
 
 	// Create the client container.
 	options := ContainerOptions{Env: env, Files: files, Labels: labels, Name: containerName}
