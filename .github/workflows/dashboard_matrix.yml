@@ -67,7 +67,7 @@ jobs:
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
-            parallelism: 12
+            parallelism: 8
           # - client: go-ethereum-gnosis
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'engine-api'
