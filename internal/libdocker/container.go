@@ -103,6 +103,14 @@ func (b *ContainerBackend) CreateContainer(ctx context.Context, imageName string
 		},
 	}
 
+	// Pre-flight: if a container with the same name exists, remove it to avoid conflicts.
+	if createOpts.Name != "" {
+		if existing, inspErr := b.client.InspectContainerWithOptions(docker.InspectContainerOptions{ID: createOpts.Name}); inspErr == nil && existing != nil && existing.ID != "" {
+			b.logger.Warn("pre-clean existing container by name before create", "name", createOpts.Name, "id", existing.ID[:8])
+			_ = b.client.RemoveContainer(docker.RemoveContainerOptions{ID: existing.ID, Force: true})
+		}
+	}
+
 	// TODO: [max] - tidy up - this sets up the port bindings for debug on the simulator onlyi
 	// TODO: check on parallelism (should convert to int)
 	if len(opt.Env["HIVE_SIMULATOR"]) > 0 && opt.Env["HIVE_PARALLELISM"] == "1" {

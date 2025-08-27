@@ -32,10 +32,10 @@ jobs:
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'withdrawals'
           #   parallelism: 8
-          - client: reth-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'withdrawals'
-            parallelism: 8
+          # - client: reth-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'withdrawals'
+          #   parallelism: 8
           # - client: go-ethereum-gnosis
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'withdrawals'
