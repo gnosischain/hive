@@ -139,7 +139,20 @@ func (b *ContainerBackend) CreateContainer(ctx context.Context, imageName string
 
 	c, err := b.client.CreateContainer(createOpts)
 	if err != nil {
-		return "", err
+		// If the container name is already in use, attempt to remove the existing one and retry once.
+		if dockerErr, ok := err.(*docker.Error); ok && dockerErr != nil && dockerErr.Status == 409 && createOpts.Name != "" {
+			b.logger.Warn("container name conflict detected, attempting cleanup and retry", "name", createOpts.Name)
+			// Find existing container by name and remove it forcefully.
+			existing, inspErr := b.client.InspectContainerWithOptions(docker.InspectContainerOptions{ID: createOpts.Name})
+			if inspErr == nil && existing != nil && existing.ID != "" {
+				_ = b.client.RemoveContainer(docker.RemoveContainerOptions{ID: existing.ID, Force: true})
+				// Retry create once
+				c, err = b.client.CreateContainer(createOpts)
+			}
+		}
+		if err != nil {
+			return "", err
+		}
 	}
 	logger := b.logger.With("image", imageName, "container", c.ID[:8])
 
