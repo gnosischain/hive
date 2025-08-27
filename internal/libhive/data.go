@@ -9,15 +9,15 @@ import (
 
 // Docker label keys used by Hive
 const (
-	LabelHiveInstance    = "hive.instance"       // Unique Hive instance ID
-	LabelHiveVersion     = "hive.version"        // Hive version/commit
-	LabelHiveType        = "hive.type"           // container type: client|simulator|proxy
-	LabelHiveTestSuite   = "hive.test.suite"     // test suite ID
-	LabelHiveTestCase    = "hive.test.case"      // test case ID
-	LabelHiveClientName  = "hive.client.name"    // client name (go-ethereum, etc)
-	LabelHiveClientImage = "hive.client.image"   // Docker image name
-	LabelHiveCreated     = "hive.created"        // RFC3339 timestamp
-	LabelHiveSimulator   = "hive.simulator"      // simulator name
+	LabelHiveInstance    = "hive.instance"     // Unique Hive instance ID
+	LabelHiveVersion     = "hive.version"      // Hive version/commit
+	LabelHiveType        = "hive.type"         // container type: client|simulator|proxy
+	LabelHiveTestSuite   = "hive.test.suite"   // test suite ID
+	LabelHiveTestCase    = "hive.test.case"    // test case ID
+	LabelHiveClientName  = "hive.client.name"  // client name (go-ethereum, etc)
+	LabelHiveClientImage = "hive.client.image" // Docker image name
+	LabelHiveCreated     = "hive.created"      // RFC3339 timestamp
+	LabelHiveSimulator   = "hive.simulator"    // simulator name
 )
 
 // Container types
@@ -47,7 +47,7 @@ func SanitizeContainerNameComponent(s string) string {
 	if s == "" {
 		return s
 	}
-	
+
 	// Replace invalid characters with dashes
 	sanitized := ""
 	for i, r := range s {
@@ -61,10 +61,10 @@ func SanitizeContainerNameComponent(s string) string {
 			sanitized += "-"
 		}
 	}
-	
+
 	// Ensure first character is alphanumeric
-	if len(sanitized) > 0 && !((sanitized[0] >= 'a' && sanitized[0] <= 'z') || 
-		(sanitized[0] >= 'A' && sanitized[0] <= 'Z') || 
+	if len(sanitized) > 0 && !((sanitized[0] >= 'a' && sanitized[0] <= 'z') ||
+		(sanitized[0] >= 'A' && sanitized[0] <= 'Z') ||
 		(sanitized[0] >= '0' && sanitized[0] <= '9')) {
 		if len(sanitized) > 1 {
 			sanitized = sanitized[1:]
@@ -72,19 +72,24 @@ func SanitizeContainerNameComponent(s string) string {
 			sanitized = "container"
 		}
 	}
-	
+
 	return sanitized
 }
 
 // GenerateContainerName generates a Hive-prefixed container name
 func GenerateContainerName(containerType, identifier string) string {
-	timestamp := time.Now().Format("20060102-150405")
+	// Use higher precision timestamp and a short monotonic-derived suffix to avoid collisions
+	// when many containers are created within the same second in CI parallel runs.
+	now := time.Now()
+	timestamp := now.Format("20060102-150405.000000000")
+	suffix := fmt.Sprintf("%09d", now.Nanosecond())
+
 	sanitizedType := SanitizeContainerNameComponent(containerType)
 	if identifier != "" {
 		sanitizedIdentifier := SanitizeContainerNameComponent(identifier)
-		return fmt.Sprintf("hive-%s-%s-%s", sanitizedType, sanitizedIdentifier, timestamp)
+		return fmt.Sprintf("hive-%s-%s-%s-%s", sanitizedType, sanitizedIdentifier, timestamp, suffix)
 	}
-	return fmt.Sprintf("hive-%s-%s", sanitizedType, timestamp)
+	return fmt.Sprintf("hive-%s-%s-%s", sanitizedType, timestamp, suffix)
 }
 
 // GenerateClientContainerName generates a name for client containers

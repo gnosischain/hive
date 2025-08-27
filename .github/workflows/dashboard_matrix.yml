@@ -63,11 +63,11 @@ jobs:
           # - client: erigon-gnosis
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'engine-api'
-          # parallelism: 12
+          #   parallelism: 12
           - client: reth-gnosis
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-api'
-            parallelism: 10
+            parallelism: 12
           # - client: go-ethereum-gnosis
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'engine-api'
@@ -131,19 +131,7 @@ jobs:
       - name: Run tests
         continue-on-error: true
         run: |
-          UNIQUE_SUFFIX="${{ github.run_id }}-${{ matrix.client }}-${{ matrix.suite }}"
-          HIVE_TTD_ENABLED=false ./hive \
-            --sim "${{ matrix.simulator }}" \
-            --sim.limit="${{ matrix.suite }}" \
-            --client "${{ matrix.client }}-${UNIQUE_SUFFIX}" \
-            --results-root=${{ github.workspace }}/${{ github.run_id }}/runs \
-            --loglevel=3 \
-            --sim.loglevel=3 \
-            --client.checktimelimit=30m \
-            --sim.timelimit=3600s \
-            --docker.output \
-            --docker.pull \
-            --sim.parallelism=${{ matrix.parallelism }}
+          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=10m --docker.output --sim.timelimit=3600s --docker.pull --sim.parallelism=${{ matrix.parallelism }} 
       
       - name: Check report
         run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs
@@ -159,4 +147,3 @@ jobs:
           source: ${{ github.run_id }}/runs/*
           target: ${{ secrets.DIR }}/github/workspace/runs/
           strip_components: 2
-
