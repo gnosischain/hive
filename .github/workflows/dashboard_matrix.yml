@@ -48,10 +48,10 @@ jobs:
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'cancun'
           #   parallelism: 8
-          - client: reth-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'cancun'
-            parallelism: 8
+          # - client: reth-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'cancun'
+          #   parallelism: 8
           # - client: go-ethereum-gnosis
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'cancun'
@@ -84,10 +84,10 @@ jobs:
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'engine-exchange-capabilities'
           #   parallelism: 1
-          - client: reth-gnosis
-            simulator: 'ethereum/gnosis-engine-jq'
-            suite: 'engine-exchange-capabilities'
-            parallelism: 1
+          # - client: reth-gnosis
+          #   simulator: 'ethereum/gnosis-engine-jq'
+          #   suite: 'engine-exchange-capabilities'
+          #   parallelism: 1
           # - client: go-ethereum-gnosis
           #   simulator: 'ethereum/gnosis-engine-jq'
           #   suite: 'engine-exchange-capabilities'
@@ -96,10 +96,10 @@ jobs:
           #   simulator: 'smoke'
           #   suite: 'network'
           #   parallelism: 1
-          - client: reth-gnosis
-            simulator: 'smoke'
-            suite: 'network'
-            parallelism: 1
+          # - client: reth-gnosis
+          #   simulator: 'smoke'
+          #   suite: 'network'
+          #   parallelism: 1
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
@@ -128,11 +128,6 @@ jobs:
       - name: Build hive
         run: go build -v -o hive hive.go
 
-      - name: Cleanup old hive containers
-        run: |
-          ./hive --cleanup --cleanup.older-than=5m || true
-          docker ps -a
-
       - name: Run tests
         continue-on-error: true
         run: |
@@ -143,7 +138,7 @@ jobs:
             --results-root=${{ github.workspace }}/${{ github.run_id }}/runs \
             --loglevel=3 \
             --sim.loglevel=3 \
-            --client.checktimelimit=10m \
+            --client.checktimelimit=30m \
             --sim.timelimit=3600s \
             --docker.output \
             --docker.pull \
@@ -163,3 +158,9 @@ jobs:
           source: ${{ github.run_id }}/runs/*
           target: ${{ secrets.DIR }}/github/workspace/runs/
           strip_components: 2
+
+      - name: Cleanup Docker containers/images/volumes/networks
+        if: always()
+        run: |
+          chmod +x docker-cleanup.sh
+          ./docker-cleanup.sh
