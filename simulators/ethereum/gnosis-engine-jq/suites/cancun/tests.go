@@ -221,38 +221,92 @@ var Tests = []test.Spec{
 
 		TestSequence: TestSequence{
 			NewPayloads{},
-			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions.
+
+			// Send 5 single-blob transactions step-by-step
 			SendBlobTransactions{
-				TransactionCount:              5,
-				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
 				BlobTransactionGasTipCap:      big.NewInt(1e9),
 				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
 			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
 
-			// Then send the dual-blob transaction
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			// Then send the dual-blob transaction, produce a block with 2 blobs.
 			SendBlobTransactions{
 				TransactionCount:              1,
 				BlobsPerTransaction:           2,
 				BlobTransactionGasTipCap:      big.NewInt(1e9),
 				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
 			},
-
-			// First five payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
 			NewPayloads{
-				PayloadCount:              5,
-				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK - 1,
-			},
-
-			// First five payloads have cancun.MAX_BLOBS_PER_BLOCK-1 blobs each
-			NewPayloads{
-				PayloadCount:              1,
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
 			},
-			// The rest of the payloads have full blobs
-			NewPayloads{
-				PayloadCount:              1,
-				ExpectedIncludedBlobCount: 0,
+
+			// Send 2 single-blob transactions step-by-step
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
 			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			// Final empty payload to advance
+			NewPayloads{ExpectedIncludedBlobCount: 0},
 		},
 	},
 
