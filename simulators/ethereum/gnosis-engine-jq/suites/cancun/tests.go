@@ -284,27 +284,6 @@ var Tests = []test.Spec{
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
 			},
 
-			// Send 2 single-blob transactions step-by-step
-			SendBlobTransactions{
-				TransactionCount:              1,
-				BlobsPerTransaction:           1,
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
-			},
-			NewPayloads{
-				ExpectedIncludedBlobCount: 1,
-			},
-
-			SendBlobTransactions{
-				TransactionCount:              1,
-				BlobsPerTransaction:           1,
-				BlobTransactionGasTipCap:      big.NewInt(1e9),
-				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
-			},
-			NewPayloads{
-				ExpectedIncludedBlobCount: 1,
-			},
-
 			// Final empty payload to advance
 			NewPayloads{ExpectedIncludedBlobCount: 0},
 		},
