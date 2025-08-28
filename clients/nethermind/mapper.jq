@@ -172,6 +172,7 @@ def clique_engine:
     "eip7951TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
     "eip7939TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
     "eip7934TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
+    "eip7907TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
     "eip7934MaxRlpBlockSize": "0x800000",
 
     # Other chain parameters
@@ -181,51 +182,21 @@ def clique_engine:
     "blobSchedule": [
       if env.HIVE_CANCUN_TIMESTAMP then {
           "timestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_hex else "0x3" end),
-          "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_hex else "0x6" end),
+          "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_hex else "0x1" end),
+          "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_hex else "0x2" end),
           "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x32f0ed" end)
       } else null end,
       if env.HIVE_PRAGUE_TIMESTAMP then {
           "timestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x6" end),
-          "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x9" end),
+          "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x1" end),
+          "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x2" end),
           "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x4c6964" end)
       } else null end,
       if env.HIVE_OSAKA_TIMESTAMP then {
           "timestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_hex else "0x6" end),
-          "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_hex else "0x9" end),
+          "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_hex else "0x1" end),
+          "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_hex else "0x2" end),
           "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x4c6964" end)
-      } else null end,
-      if env.HIVE_BPO1_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO1_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO1_BLOB_TARGET then env.HIVE_BPO1_BLOB_TARGET|to_hex else "0x9" end),
-          "max": (if env.HIVE_BPO1_BLOB_MAX then env.HIVE_BPO1_BLOB_MAX|to_hex else "0xe" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x86c73b" end)
-      } else null end,
-      if env.HIVE_BPO2_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO2_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO2_BLOB_TARGET then env.HIVE_BPO2_BLOB_TARGET|to_hex else "0x9" end),
-          "max": (if env.HIVE_BPO2_BLOB_MAX then env.HIVE_BPO2_BLOB_MAX|to_hex else "0xe" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x86c73b" end)
-      } else null end,
-      if env.HIVE_BPO3_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO3_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO3_BLOB_TARGET then env.HIVE_BPO3_BLOB_TARGET|to_hex else "0x9" end),
-          "max": (if env.HIVE_BPO3_BLOB_MAX then env.HIVE_BPO3_BLOB_MAX|to_hex else "0xe" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x86c73b" end)
-      } else null end,
-      if env.HIVE_BPO4_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO4_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO4_BLOB_TARGET then env.HIVE_BPO4_BLOB_TARGET|to_hex else "0x9" end),
-          "max": (if env.HIVE_BPO4_BLOB_MAX then env.HIVE_BPO4_BLOB_MAX|to_hex else "0xe" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x86c73b" end)
-      } else null end,
-      if env.HIVE_BPO5_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO5_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO5_BLOB_TARGET then env.HIVE_BPO5_BLOB_TARGET|to_hex else "0x9" end),
-          "max": (if env.HIVE_BPO5_BLOB_MAX then env.HIVE_BPO5_BLOB_MAX|to_hex else "0xe" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x86c73b" end)
       } else null end
     ] | map(select(. != null)) | reverse | unique_by(.timestamp),
   },

@@ -8,3 +8,11 @@ workspace
 simulators/**/target
 hivesim-rs/Cargo.lock
 hivesim-rs/target
+
+scripts/experiments/*
+scripts/proxy/*
+
+.DS_Store
+hiveview
+.lh/*
+simulators/eth2/go.work.sum
