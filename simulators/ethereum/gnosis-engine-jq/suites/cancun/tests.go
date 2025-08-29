@@ -302,38 +302,121 @@ var Tests = []test.Spec{
 			All transactions have sufficient data gas price to be included any
 			of the payloads.
 			`,
-			MainFork:   config.Cancun,
-			ForkHeight: 1,
+			MainFork: config.Cancun,
 		},
 
 		TestSequence: TestSequence{
 			NewPayloads{},
-			// First send the cancun.MAX_BLOBS_PER_BLOCK-1 blob transactions from
-			// account A.
+
+			// Send 5 single-blob transactions from account A, validating one payload per tx
 			SendBlobTransactions{
-				TransactionCount:              5,
+				TransactionCount:              1,
 				BlobsPerTransaction:           1,
-				BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
 				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
 				AccountIndex:                  0,
 			},
-			// Then send the single-blob transactions from account B
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
 			SendBlobTransactions{
-				TransactionCount:              5,
+				TransactionCount:              1,
 				BlobsPerTransaction:           1,
-				BlobTransactionGasFeeCap:      big.NewInt(1e10),
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  0,
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  0,
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  0,
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  0,
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			// Then send 5 single-blob transactions from account B, also validating per payload
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
 				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
 				AccountIndex:                  1,
 			},
-
-			// All payloads have full blobs
 			NewPayloads{
-				PayloadCount:              5,
 				ExpectedIncludedBlobCount: 1,
 			},
-			// All payloads have full blobs
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  1,
+			},
 			NewPayloads{
-				PayloadCount:              5,
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  1,
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  1,
+			},
+			NewPayloads{
+				ExpectedIncludedBlobCount: 1,
+			},
+
+			SendBlobTransactions{
+				TransactionCount:              1,
+				BlobsPerTransaction:           1,
+				BlobTransactionGasTipCap:      big.NewInt(1e9),
+				BlobTransactionMaxBlobGasCost: big.NewInt(200000000000),
+				AccountIndex:                  1,
+			},
+			NewPayloads{
 				ExpectedIncludedBlobCount: 1,
 			},
 		},
