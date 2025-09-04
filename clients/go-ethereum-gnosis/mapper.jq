@@ -65,7 +65,7 @@ def to_bool:
     },
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
-    
+
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
@@ -85,6 +85,31 @@ def to_bool:
         "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_int else 1 end),
         "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_int else 2 end),
         "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 5007716 end)
+      },
+      "bpo1": {
+        "target": (if env.HIVE_BPO1_BLOB_TARGET then env.HIVE_BPO1_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_BPO1_BLOB_MAX then env.HIVE_BPO1_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
+      },
+      "bpo2": {
+        "target": (if env.HIVE_BPO2_BLOB_TARGET then env.HIVE_BPO2_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_BPO2_BLOB_MAX then env.HIVE_BPO2_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
+      },
+      "bpo3": {
+        "target": (if env.HIVE_BPO3_BLOB_TARGET then env.HIVE_BPO3_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_BPO3_BLOB_MAX then env.HIVE_BPO3_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
+      },
+      "bpo4": {
+        "target": (if env.HIVE_BPO4_BLOB_TARGET then env.HIVE_BPO4_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_BPO4_BLOB_MAX then env.HIVE_BPO4_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
+      },
+      "bpo5": {
+        "target": (if env.HIVE_BPO5_BLOB_TARGET then env.HIVE_BPO5_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_BPO5_BLOB_MAX then env.HIVE_BPO5_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
       }
     },
     "blockRewardsContract": "0x2000000000000000000000000000000000000001",
@@ -131,6 +156,11 @@ def to_bool:
     },
     "eip1559FeeCollectorTransition": 0,
     "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
+    "bpo1Time": env.HIVE_BPO1_TIMESTAMP|to_int,
+    "bpo2Time": env.HIVE_BPO2_TIMESTAMP|to_int,
+    "bpo3Time": env.HIVE_BPO3_TIMESTAMP|to_int,
+    "bpo4Time": env.HIVE_BPO4_TIMESTAMP|to_int,
+    "bpo5Time": env.HIVE_BPO5_TIMESTAMP|to_int,
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003"
   }|remove_empty
 }
