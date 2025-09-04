@@ -11,9 +11,7 @@
 
 set -e
 
-TARGET_ENODE=$(
-  sed -n -e 's/^.*This node.*: //p' /log.txt \
-  | LC_ALL=C sed -E 's/\x1b\[[0-9;]*[a-zA-Z]//g' \
-  | iconv -c -t UTF-8
-)
-echo "${TARGET_ENODE/|/}"
+TARGET_RESPONSE=$(curl -s -X POST  -H "Content-Type: application/json"  --data '{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}' "localhost:8545" )
+
+TARGET_ENODE=$(echo ${TARGET_RESPONSE}| jq -r '.result.enode')
+echo "$TARGET_ENODE"

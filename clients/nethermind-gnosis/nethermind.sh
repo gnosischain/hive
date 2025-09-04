@@ -62,7 +62,7 @@ echo "==="
 echo "Original genesis:"
 cat /genesis.json
 echo "==="
-# Dump genesis. 
+# Dump genesis.
 if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.accounts[] | select(.balance == "0x123450000000000000000" or has("builtin")))' /chainspec/test.json
@@ -100,5 +100,4 @@ if [ "$HIVE_LOGLEVEL" != "" ]; then
     LOG_FLAG="--log $LOG"
 fi
 echo "Running Nethermind..."
-# The output is tee:d, via /log.txt, because the enode script uses that logfile to parse out the enode id
-dotnet /nethermind/nethermind.dll --config /configs/test.cfg $LOG_FLAG 2>&1 | tee /log.txt
+dotnet /nethermind/nethermind.dll --config /configs/test.cfg $LOG_FLAG

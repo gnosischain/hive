@@ -146,7 +146,7 @@
             "eip1559FeeCollectorTransition": 0,
             "eip1559FeeCollector": "0x1559000000000000000000000000000000000000",
             "depositContractAddress": "0xbabe2bed00000000000000000000000000000003"
-        },
+        }
     },
     "difficulty": "0x64",
     "gasLimit": "0x989680",
