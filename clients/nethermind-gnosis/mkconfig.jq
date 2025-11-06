@@ -60,13 +60,11 @@ def json_rpc_config:
 ;
 
 def sync_config:
-  if env.HIVE_SYNC_CONFIG != null then
-    {
-      "Sync": ( env.HIVE_SYNC_CONFIG | fromjson | remove_empty )
-    }
-  else
-    {}
-  end
+  {
+    "Sync": {
+      "SnapSync": (env.HIVE_NODETYPE == "snap"),
+    },
+  }
 ;
 
 def txpool_config:
