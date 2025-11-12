@@ -503,7 +503,6 @@ func (ec *HiveRPCEngineClient) ExchangeTransitionConfigurationV1(ctx context.Con
 }
 
 func (ec *HiveRPCEngineClient) ExchangeCapabilities(ctx context.Context, clCapabilities []string) (result []string, err error) {
-	ec.PrepareDefaultAuthCallToken()
 	err = ec.c.CallContext(ctx, &result, "engine_exchangeCapabilities", clCapabilities)
 	return result, err
 }

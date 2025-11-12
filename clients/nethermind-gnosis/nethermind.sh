@@ -82,8 +82,8 @@ case "$HIVE_NODETYPE" in
 esac
 
 # Generate the config file.
-# mkdir /configs
-# jq -n -f /mkconfig.jq > /configs/test.cfg
+mkdir -p /configs
+jq -n -f /mkconfig.jq > /configs/test.json
 
 
 echo "test.json"
