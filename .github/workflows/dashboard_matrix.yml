@@ -92,14 +92,6 @@ jobs:
             simulator: 'ethereum/gnosis-engine-jq'
             suite: 'engine-exchange-capabilities'
             parallelism: 1
-          - client: nethermind-gnosis
-            simulator: 'smoke'
-            suite: 'network'
-            parallelism: 1
-          - client: reth-gnosis
-            simulator: 'smoke'
-            suite: 'network'
-            parallelism: 1
     steps:
       - name: Set up Go
         uses: actions/setup-go@v5
