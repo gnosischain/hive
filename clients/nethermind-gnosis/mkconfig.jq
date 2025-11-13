@@ -60,13 +60,11 @@ def json_rpc_config:
 ;
 
 def sync_config:
-  if env.HIVE_SYNC_CONFIG != null then
-    {
-      "Sync": ( env.HIVE_SYNC_CONFIG | fromjson | remove_empty )
-    }
-  else
-    {}
-  end
+  {
+    "Sync": {
+      "SnapSync": (env.HIVE_NODETYPE == "snap"),
+    },
+  }
 ;
 
 def txpool_config:
@@ -87,7 +85,7 @@ def base_config:
       "WebSocketsEnabled": true,
       "IsMining": (env.HIVE_MINER != null),
       "UseMemDb": true,
-      "ChainSpecPath": "/genesis.json",
+      "ChainSpecPath": "/chainspec/test.json",
       "BaseDbPath": "nethermind_db/hive",
       "LogFileName": "/hive.logs.txt"
     },
