@@ -4,9 +4,6 @@ import (
 	"context"
 	"time"
 
-	api "github.com/ethereum/go-ethereum/beacon/engine"
-	"github.com/ethereum/go-ethereum/common"
-	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
@@ -88,12 +85,6 @@ type AuthTestSpec struct {
 func (authTestSpec AuthTestSpec) Execute(t *test.Env) {
 	// Default values
 	var (
-		// All test cases send a simple TransitionConfigurationV1 to check the Authentication mechanism (JWT)
-		tConf = api.TransitionConfigurationV1{
-			TerminalTotalDifficulty: (*hexutil.Big)(t.Genesis.Config.TerminalTotalDifficulty),
-			TerminalBlockHash:       common.Hash{},
-			TerminalBlockNumber:     0,
-		}
 		testSecret = authTestSpec.CustomAuthSecretBytes
 		// Time drift test cases are reattempted in order to mitigate false negatives
 		retryAttemptsLeft = authTestSpec.RetryAttempts
@@ -112,7 +103,7 @@ func (authTestSpec AuthTestSpec) Execute(t *test.Env) {
 		}
 		ctx, cancel := context.WithTimeout(t.TestContext, globals.RPCTimeout)
 		defer cancel()
-		_, err := t.HiveEngine.ExchangeTransitionConfigurationV1(ctx, &tConf)
+		_, err := t.HiveEngine.ExchangeCapabilities(ctx, []string{})
 		if (authTestSpec.AuthOk && err == nil) || (!authTestSpec.AuthOk && err != nil) {
 			// Test passed
 			return

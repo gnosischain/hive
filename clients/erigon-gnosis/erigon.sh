@@ -141,6 +141,6 @@ fi
 # Disable Caplin
 FLAGS="$FLAGS --externalcl"
 # Launch the main client.
-FLAGS="$FLAGS --nat=none"
+FLAGS="$FLAGS --nat=none --no-downloader"
 echo "Running erigon with flags $FLAGS"
 $erigon $FLAGS
