@@ -28,7 +28,7 @@ def keystore_config:
 
 def merge_config:
   if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then
-    { 
+    {
       "Merge": {
         "Enabled": true,
         "TerminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY,
@@ -46,27 +46,25 @@ def json_rpc_config:
     {
       "JsonRpc": {
         "JwtSecretFile": "/jwt.secret",
-        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health"],
-        "AdditionalRpcUrls": ["http://0.0.0.0:8550|http;ws|debug;net;eth;subscribe;engine;web3;client|no-auth", "http://0.0.0.0:8551|http;ws|debug;net;eth;subscribe;engine;web3;client"]
+        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin"],
+        "AdditionalRpcUrls": ["http://0.0.0.0:8550|http;ws|debug;net;eth;subscribe;engine;web3;client;admin|no-auth", "http://0.0.0.0:8551|http;ws|debug;net;eth;subscribe;engine;web3;client;admin"]
       }
     }
   else
     {
       "JsonRpc": {
-        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health"]
+        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin"]
       }
     }
   end
 ;
 
 def sync_config:
-  if env.HIVE_SYNC_CONFIG != null then
-    {
-      "Sync": ( env.HIVE_SYNC_CONFIG | fromjson | remove_empty )
-    }
-  else
-    {}
-  end
+  {
+    "Sync": {
+      "SnapSync": (env.HIVE_NODETYPE == "snap"),
+    },
+  }
 ;
 
 def txpool_config:
@@ -87,7 +85,7 @@ def base_config:
       "WebSocketsEnabled": true,
       "IsMining": (env.HIVE_MINER != null),
       "UseMemDb": true,
-      "ChainSpecPath": "/genesis.json",
+      "ChainSpecPath": "/chainspec/test.json",
       "BaseDbPath": "nethermind_db/hive",
       "LogFileName": "/hive.logs.txt"
     },
@@ -95,6 +93,7 @@ def base_config:
       "Enabled": true,
       "Host": "0.0.0.0",
       "Port": 8545,
+      "GasCap": 50000000,
       "WebSocketsPort": 8546,
     },
     "Network": {
@@ -110,6 +109,9 @@ def base_config:
     },
     "Sync": {
       "SnapServingEnabled": true,
+    },
+    "Discovery": {
+      "DiscoveryVersion": "All"
     },
   }
 ;

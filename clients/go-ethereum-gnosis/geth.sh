@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Startup script to initialize and boot a go-ethereum instance.
+# Startup script to initialize and boot a go-ethereum-gnosis instance.
 #
 # This script assumes the following files:
 #  - `geth` binary is located in the filesystem root
@@ -60,33 +60,29 @@ FLAGS="$FLAGS --bootnodes=$HIVE_BOOTNODE"
 if [ "$HIVE_NETWORK_ID" != "" ]; then
     FLAGS="$FLAGS --networkid $HIVE_NETWORK_ID"
 else
-    # Unless otherwise specified by hive, we try to avoid mainnet networkid. If geth detects mainnet network id,
-    # then it tries to bump memory quite a lot
+    # Unless otherwise specified by hive, we try to avoid mainnet networkid.
+    # If geth detects mainnet network id, then it tries to bump memory quite a lot
     FLAGS="$FLAGS --networkid 1337"
 fi
 
 # Handle any client mode or operation requests
-if [ "$HIVE_NODETYPE" == "archive" ]; then
-    FLAGS="$FLAGS --syncmode full --gcmode archive"
-fi
-if [ "$HIVE_NODETYPE" == "full" ]; then
-    FLAGS="$FLAGS --syncmode full"
-fi
-if [ "$HIVE_NODETYPE" == "light" ]; then
-    FLAGS="$FLAGS --syncmode light"
-fi
-if [ "$HIVE_NODETYPE" == "snap" ]; then
-    FLAGS="$FLAGS --syncmode snap"
-fi
-if [ "$HIVE_NODETYPE" == "" ]; then
-    FLAGS="$FLAGS --syncmode snap"
-fi
+case "$HIVE_NODETYPE" in
+    "" | full)
+        FLAGS="$FLAGS --syncmode full" ;;
+    archive)
+        FLAGS="$FLAGS --syncmode full --gcmode archive" ;;
+    snap)
+        FLAGS="$FLAGS --syncmode snap" ;;
+    *)
+        echo "Unsupported HIVE_NODETYPE = $HIVE_NODETYPE"
+        exit 1 ;;
+esac
 
 # Configure the chain.
 mv /genesis.json /genesis-input.json
 jq -f /mapper.jq /genesis-input.json > /genesis.json
 
-# Dump genesis. 
+# Dump genesis.
 if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.alloc[] | select(.balance == "0x123450000000000000000"))' /genesis.json
@@ -113,7 +109,7 @@ fi
 # Load the remainder of the test chain
 echo "Loading remaining individual blocks..."
 if [ -d /blocks ]; then
-    (cd /blocks && $geth $FLAGS --gcmode=archive --verbosity=$HIVE_LOGLEVEL --nocompaction import `ls | sort -n`)
+    (cd /blocks && $geth $FLAGS --gcmode=archive --verbosity=$HIVE_LOGLEVEL import --nocompaction `ls | sort -n`)
 else
     echo "Warning: blocks folder not found."
 fi
@@ -147,8 +143,8 @@ if [ "$HIVE_LES_SERVER" == "1" ]; then
 fi
 
 # Configure RPC.
-FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.port=8545 --http.api=admin,debug,eth,miner,net,personal,txpool,web3"
-FLAGS="$FLAGS --ws --ws.addr=0.0.0.0 --ws.origins \"*\" --ws.api=admin,debug,eth,miner,net,personal,txpool,web3"
+FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.port=8545 --http.api=admin,debug,eth,miner,net,txpool,web3"
+FLAGS="$FLAGS --ws --ws.addr=0.0.0.0 --ws.origins \"*\" --ws.api=admin,debug,eth,miner,net,txpool,web3"
 
 if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
     echo "0x7365637265747365637265747365637265747365637265747365637265747365" > /jwtsecret
@@ -164,9 +160,9 @@ if [ "$HIVE_ALLOW_UNPROTECTED_TX" != "" ]; then
     FLAGS="$FLAGS --rpc.allow-unprotected-txs"
 fi
 
-# Run the go-ethereum implementation with the requested flags.
+# Run the go-ethereum-gnosis implementation with the requested flags.
 FLAGS="$FLAGS --nat=none"
 # Disable disk space free monitor
 FLAGS="$FLAGS --datadir.minfreedisk=0"
-echo "Running go-ethereum with flags $FLAGS"
+echo "Running go-ethereum-gnosis with flags $FLAGS"
 $geth $FLAGS

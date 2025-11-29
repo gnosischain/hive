@@ -63,7 +63,7 @@ fi
 mv /genesis.json /genesis-input.json
 jq -f /mapper.jq /genesis-input.json > /genesis.json
 
-# Dump genesis. 
+# Dump genesis.
 if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.alloc[] | select(.balance == "0x123450000000000000000"))' /genesis.json
@@ -138,8 +138,9 @@ if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
     echo -n $JWT_SECRET > /jwt.secret
     FLAGS="$FLAGS --authrpc.addr=0.0.0.0 --authrpc.jwtsecret=/jwt.secret"
 fi
-
+# Disable Caplin
+FLAGS="$FLAGS --externalcl"
 # Launch the main client.
-FLAGS="$FLAGS --nat=none"
+FLAGS="$FLAGS --nat=none --no-downloader"
 echo "Running erigon with flags $FLAGS"
 $erigon $FLAGS

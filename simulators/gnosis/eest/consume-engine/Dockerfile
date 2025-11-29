@@ -1,22 +1,38 @@
 # Builds and runs the EEST (execution-spec-tests) consume engine simulator
-FROM python:3.10-slim
+FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 
-## Default fixtures
-ARG fixtures=latest-stable-release
-ENV INPUT=${fixtures}
-ARG branch=main
-ENV BRANCH=${branch}
-
-## Install dependencies
-RUN apt-get update && \
-    apt-get install -y git wget tar && \
-    apt-get clean && \
-    rm -rf /var/lib/apt/lists/*
+## Default fixtures/git-ref
+ARG fixtures=fixtures/blockchain_tests_engine/prague
+ENV FIXTURES=${fixtures}
+ARG branch=feat/working-geth-test
+ENV GIT_REF=${branch} 
 
 ## Clone and install EEST
-RUN git clone https://github.com/gnosischain/execution-spec-tests.git --branch "$BRANCH" --single-branch --depth 1
-WORKDIR execution-spec-tests
-RUN pip install uv && uv sync
+RUN apt-get update && apt-get install -y git
 
+# Allow the user to specify a branch or commit to checkout
+RUN git init execution-spec-tests && \
+    cd execution-spec-tests && \
+    git remote add origin https://github.com/dmitriy-b/execution-spec-tests-gnosis.git && \
+    git fetch --depth 1 origin $GIT_REF && \
+    git checkout FETCH_HEAD;
+
+WORKDIR /execution-spec-tests
+RUN uv sync
+
+# Cache the fixtures. This is done to avoid re-downloading the fixtures every time
+# the container starts.
+# If newer version of the fixtures is needed, the image needs to be rebuilt.
+# Use `--docker.nocache` flag to force rebuild.
+# RUN uv run consume cache --input "$FIXTURES"
+RUN git clone -b feat/geth-fixtures https://github.com/NethermindEth/gnosis-fixtures.git fixtures
+
+RUN ls -la fixtures
+# Passed:
+# fixtures/blockchain_tests_engine/prague/eip2537_bls_12_381_precompiles
+# fixtures/blockchain_tests_engine/prague/eip7623_increase_calldata_cost 
+# fixtures/blockchain_tests_engine/prague/eip7702_set_code_tx
 ## Define `consume engine` entry point using the local fixtures
-ENTRYPOINT uv run consume engine -v --input "$INPUT"
+ENTRYPOINT uv run consume engine -v --input fixtures/blockchain_tests_engine/prague/eip7685_general_purpose_el_requests/multi_type_requests
+
+# ENTRYPOINT uv run consume engine -v --input gnosis-fixtures/blockchain_tests_engine/prague/eip2537_bls_12_381_precompiles/bls12_g1add --sim.limit="id:tests/prague/eip2537_bls_12_381_precompiles/test_bls12_g1add.py::test_call_types[fork_Prague-blockchain_test_engine_from_state_test-inf_plus_inf-call_opcode_CALLCODE-]"

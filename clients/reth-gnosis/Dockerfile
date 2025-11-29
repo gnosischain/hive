@@ -1,22 +1,26 @@
 ARG baseimage=ghcr.io/gnosischain/reth_gnosis
-ARG tag=master
+ARG tag=latest
 
-FROM $baseimage:$tag as builder
+# Build the reth-gnosis binary
+FROM $baseimage:$tag AS builder
+ARG GOPROXY
+ENV GOPROXY=${GOPROXY}
 
 # Install script tools.
 RUN apt-get update -y
 RUN apt-get install -y bash curl jq
 
-# Add genesis mapper script.
-ADD genesis.json /genesis.json
-ADD mapper.jq /mapper.jq
+# Add default genesis file and genesis mapper script.
+COPY genesis.json /genesis.json
+COPY mapper.jq /mapper.jq
 
 # Add the startup script.
-ADD reth.sh /reth.sh
+COPY reth.sh /reth.sh
 RUN chmod +x /reth.sh
 
 # Add the enode URL retriever script.
-ADD enode.sh /hive-bin/enode.sh
+RUN mkdir /hive-bin
+COPY enode.sh /hive-bin/enode.sh
 RUN chmod +x /hive-bin/enode.sh
 
 # Create version.txt
