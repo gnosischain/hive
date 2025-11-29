@@ -6,6 +6,7 @@ import (
 	"math"
 	"math/big"
 	"math/rand"
+	"sort"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -27,10 +28,11 @@ type generatorConfig struct {
 	merged       bool   // create a proof-of-stake chain
 
 	// chain options
-	txInterval        int // frequency of blocks containing transactions
-	txCount           int // number of txs in block
-	chainLength       int // number of generated blocks
-	finalizedDistance int // distance of finalized block from head
+	txInterval        int    // frequency of blocks containing transactions
+	txCount           int    // number of txs in block
+	chainLength       int    // number of generated blocks
+	gasLimit          uint64 // block gas limit
+	finalizedDistance int    // distance of finalized block from head
 
 	// output options
 	outputs   []string // enabled outputs
@@ -46,6 +48,9 @@ func (cfg generatorConfig) withDefaults() (generatorConfig, error) {
 	}
 	if cfg.outputs == nil {
 		cfg.outputs = []string{"genesis", "chain", "txinfo"}
+	}
+	if cfg.gasLimit == 0 {
+		cfg.gasLimit = defaultGasLimit
 	}
 	return cfg, nil
 }
@@ -126,8 +131,22 @@ func (g *generator) run() error {
 		return err
 	}
 
+	// Write output files.
 	g.blockchain = bc
-	return g.write()
+	if err := g.write(); err != nil {
+		return err
+	}
+
+	// Check if some modifiers did not run.
+	if len(g.virgins) > 0 {
+		names := make([]string, len(g.virgins))
+		for i, m := range g.virgins {
+			names[i] = m.name
+		}
+		sort.Strings(names)
+		fmt.Println("warning: some modifiers did not run:", strings.Join(names, ", "))
+	}
+	return nil
 }
 
 func (g *generator) importChain(engine consensus.Engine, chain []*types.Block) (*core.BlockChain, error) {
