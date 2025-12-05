@@ -1,0 +1,41 @@
+## Build reth gnosis from source from a local directory.
+
+## Builder stage: Compiles reth from a git repository
+FROM rust:latest AS builder
+
+# Default local client path: clients/reth-gnosis/<reth_gnosis>
+ARG local_path=reth_gnosis
+COPY $local_path /reth_gnosis
+
+RUN apt-get update && apt-get install -y libclang-dev pkg-config build-essential \
+    && cd /reth_gnosis && cargo build --release \
+    && cp target/release/reth /usr/local/bin/reth
+
+## Final stage: Sets up the environment for running reth
+FROM debian:latest
+RUN apt-get update && apt-get install -y bash curl jq \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
+
+# Copy compiled binary from builder
+COPY --from=builder /usr/local/bin/reth /usr/local/bin/reth
+
+# Add default genesis file and genesis mapper script
+COPY genesis.json /genesis.json
+COPY mapper.jq /mapper.jq
+
+# Inject the startup script.
+COPY reth.sh /reth.sh
+RUN chmod +x /reth.sh
+
+# Inject the enode id retriever script.
+RUN mkdir /hive-bin
+COPY enode.sh /hive-bin/enode.sh
+RUN chmod +x /hive-bin/enode.sh
+
+# Create version.txt
+RUN /usr/local/bin/reth --version | sed -e 's/reth \(.*\)/\1/' > /version.txt
+
+# Export the usual networking ports
+EXPOSE 8545 8546 30303 30303/udp
+
+ENTRYPOINT ["/reth.sh"]
