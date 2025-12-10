@@ -48,7 +48,6 @@ def to_bool:
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": (env.HIVE_SHANGHAI_TIMESTAMP // "0")|to_int,
-    "cancunTime": (env.HIVE_CANCUN_TIMESTAMP // "0")|to_int,
     "blobSchedule": {
       "cancun": {
         "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
@@ -66,8 +65,6 @@ def to_bool:
         "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       }
     },
-    "pragueTime": (env.HIVE_PRAGUE_TIMESTAMP // "0")|to_int,
-    "osakaTime": env.HIVE_OSAKA_TIMESTAMP|to_int,
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
@@ -103,9 +100,9 @@ def to_bool:
     "eip1559collector": "0x1559000000000000000000000000000000000000",
     "blockRewardsContract": "0x2000000000000000000000000000000000000001"
   }|remove_empty,
-  "baseFeePerGas": "0x3b9aca00",
-  "difficulty": "0x01",
-  "gasLimit": "0x989680",
+  "baseFeePerGas": "0x7",
+  "difficulty": "0x00",
+  "gasLimit": "0x01036640",
   "seal": {
     "authorityRound": {
       "step": "0x0",
