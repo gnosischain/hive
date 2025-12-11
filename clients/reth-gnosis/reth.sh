@@ -167,4 +167,4 @@ FLAGS="$FLAGS --nat none --block-interval 500000"
 
 # Launch the main client.
 echo "Running reth with flags: $FLAGS"
-RUST_LOG=trace $reth node $FLAGS
+RUST_LOG=debug $reth node $FLAGS
