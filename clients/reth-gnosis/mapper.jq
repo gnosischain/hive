@@ -106,7 +106,7 @@ def to_bool:
   }|remove_empty,
   "baseFeePerGas": "0x7",
   "difficulty": "0x00",
-  "gasLimit": "0x01036640",
+  "gasLimit": "0x55CC4A80",
   "seal": {
     "authorityRound": {
       "step": "0x0",
