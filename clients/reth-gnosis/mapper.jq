@@ -34,7 +34,7 @@ def to_bool:
     "chainId": (if env.HIVE_CHAIN_ID then env.HIVE_CHAIN_ID|to_int else 100 end),
     "consensus": "aura",
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
-    "eip150Block": env.HIVE_FORK_TANGERINE_HASH,
+    "eip150Block": env.HIVE_FORK_TANGERINE_HASH|to_int,
     "eip155Block": env.HIVE_FORK_SPURIOUS|to_int,
     "byzantiumBlock": env.HIVE_FORK_BYZANTIUM|to_int,
     "constantinopleBlock": env.HIVE_FORK_CONSTANTINOPLE|to_int,
@@ -47,8 +47,6 @@ def to_bool:
     },
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
-    "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
-    "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
     "blobSchedule": {
       "cancun": {
