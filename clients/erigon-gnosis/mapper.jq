@@ -28,6 +28,12 @@ def to_bool:
   end
 ;
 
+# Rename uncleHash to sha3Uncles if it exists
+. | if has("uncleHash") then
+  . + {"sha3Uncles": .uncleHash} | del(.uncleHash)
+else
+  .
+end |
 # Replace config in input.
 . + {
   "config": {
