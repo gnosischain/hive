@@ -111,7 +111,7 @@ def to_bool:
     },
     "eip1559collector": "0x1559000000000000000000000000000000000000",
     "blockRewardsContract": "0x2000000000000000000000000000000000000001"
-  }|remove_empty
+  }|remove_empty,
   "baseFeePerGas": "0x7",
   "difficulty": "0x00",
   "gasLimit": "0x01036640",
