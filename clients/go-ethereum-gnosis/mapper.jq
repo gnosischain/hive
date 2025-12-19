@@ -28,6 +28,12 @@ def to_bool:
   end
 ;
 
+# Rename uncleHash to sha3Uncles if it exists
+. | if has("uncleHash") then
+  . + {"sha3Uncles": .uncleHash} | del(.uncleHash)
+else
+  .
+end |
 # Replace config in input.
 . + {
   "config": {
@@ -112,5 +118,15 @@ def to_bool:
       "eip1559FeeCollectorTransition": 0,
       "eip1559FeeCollector": "0x1559000000000000000000000000000000000000"
     }
-  }|remove_empty
+  }|remove_empty,
+  "baseFeePerGas": "0x7",
+  "difficulty": "0x00",
+  "gasLimit": "0x01036640",
+  "seal": {
+    "authorityRound": {
+      "step": "0x0",
+      "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    }
+  },
+  "alloc": (.alloc|with_entries(.key|="0x"+.))
 }
