@@ -3,9 +3,6 @@ ARG baseimage=erigontech/erigon
 ARG tag=main-latest
 
 FROM $baseimage:$tag
-ARG GOPROXY
-
-ENV GOPROXY=${GOPROXY}
 
 # The upstream erigon container uses a non-root user, but we need
 # to install additional commands, so switch back to root.
@@ -33,4 +30,4 @@ RUN chmod +x /erigon.sh /hive-bin/enode.sh
 # Expose networking ports
 EXPOSE 8545 8546 8551 30303 30303/udp
 
-ENTRYPOINT ["/erigon.sh"]
+ENTRYPOINT ["/erigon.sh"]    
