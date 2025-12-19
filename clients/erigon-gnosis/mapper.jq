@@ -36,7 +36,6 @@ def to_bool:
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "eip150Block": env.HIVE_FORK_TANGERINE|to_int,
     "eip155Block": env.HIVE_FORK_SPURIOUS|to_int,
-    "eip158Block": env.HIVE_FORK_SPURIOUS|to_int,
     "byzantiumBlock": env.HIVE_FORK_BYZANTIUM|to_int,
     "constantinopleBlock": env.HIVE_FORK_CONSTANTINOPLE|to_int,
     "petersburgBlock": env.HIVE_FORK_PETERSBURG|to_int,
@@ -53,8 +52,7 @@ def to_bool:
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
     "osakaTime": env.HIVE_OSAKA_TIMESTAMP|to_int,
     "amsterdamTime": env.HIVE_AMSTERDAM_TIMESTAMP|to_int,
-    "blobSchedule":
-    {
+    "blobSchedule": {
       "cancun": {
         "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
         "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_int else 2 end),
@@ -91,7 +89,7 @@ def to_bool:
         "multi": {
           "0": {
             "list": [
-              "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"
+              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
             ]
           }
         }
