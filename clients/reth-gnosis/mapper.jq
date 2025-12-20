@@ -28,6 +28,12 @@ def to_bool:
   end
 ;
 
+# Rename uncleHash to ommersHash if it exists
+. | if has("uncleHash") then
+  . + {"ommersHash": .uncleHash} | del(.uncleHash)
+else
+  .
+end |
 # Replace config in input.
 . + {
   "config": {
@@ -111,7 +117,7 @@ def to_bool:
   }|remove_empty,
   "baseFeePerGas": "0x7",
   "difficulty": "0x00",
-  "gasLimit": "0x01036640",
+  "gasLimit": ".gasLimit",
   "seal": {
     "authorityRound": {
       "step": "0x0",
