@@ -121,7 +121,7 @@ end |
   }|remove_empty,
   "baseFeePerGas": "0x7",
   "difficulty": "0x00",
-  "gasLimit": "0x01036640",
+  "gasLimit": .gasLimit,
   "seal": {
     "authorityRound": {
       "step": "0x0",
