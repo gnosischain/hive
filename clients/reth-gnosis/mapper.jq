@@ -115,7 +115,7 @@ end |
     "eip1559collector": "0x1559000000000000000000000000000000000000",
     "blockRewardsContract": "0x2000000000000000000000000000000000000001"
   }|remove_empty,
-  "baseFeePerGas": "0x7",
+  "baseFeePerGas": .baseFeePerGas,
   "difficulty": "0x00",
   "gasLimit": .gasLimit,
   "seal": {

@@ -118,7 +118,7 @@ end |
       "eip1559FeeCollector": "0x1559000000000000000000000000000000000000"
     }
   }|remove_empty,
-  "baseFeePerGas": "0x7",
+  "baseFeePerGas": .baseFeePerGas,
   "difficulty": "0x00",
   "gasLimit": .gasLimit,
   "seal": {
