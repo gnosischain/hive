@@ -116,8 +116,6 @@ end |
     "blockRewardsContract": "0x2000000000000000000000000000000000000001"
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
-  "excessBlobGas": .excessBlobGas,
-  "blobGasUsed": .blobGasUsed,
   "difficulty": "0x00",
   "gasLimit": .gasLimit,
   "seal": {
