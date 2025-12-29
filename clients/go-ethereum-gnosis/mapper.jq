@@ -37,48 +37,47 @@ end |
 # Replace config in input.
 . + {
   "config": {
-    "chainId": (env.HIVE_CHAIN_ID | to_int),
+    "chainId": (if env.HIVE_CHAIN_ID then env.HIVE_CHAIN_ID|to_int else 100 end),
     "consensus": "aura",
-    "homesteadBlock": (env.HIVE_FORK_HOMESTEAD | to_int),
-    "eip150Block": (env.HIVE_FORK_TANGERINE | to_int),
-    "eip155Block": (env.HIVE_FORK_SPURIOUS | to_int),
-    "eip158Block": (env.HIVE_FORK_SPURIOUS | to_int),
-    "byzantiumBlock": (env.HIVE_FORK_BYZANTIUM | to_int),
-    "constantinopleBlock": (env.HIVE_FORK_CONSTANTINOPLE | to_int),
-    "petersburgBlock": (env.HIVE_FORK_PETERSBURG | to_int),
-    "istanbulBlock": (env.HIVE_FORK_ISTANBUL | to_int),
-    "berlinBlock": (env.HIVE_FORK_BERLIN | to_int),
-    "londonBlock": (env.HIVE_FORK_LONDON | to_int),
+    "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
+    "eip150Block": env.HIVE_FORK_TANGERINE|to_int,
+    "eip155Block": env.HIVE_FORK_SPURIOUS|to_int,
+    "byzantiumBlock": env.HIVE_FORK_BYZANTIUM|to_int,
+    "constantinopleBlock": env.HIVE_FORK_CONSTANTINOPLE|to_int,
+    "petersburgBlock": env.HIVE_FORK_PETERSBURG|to_int,
+    "istanbulBlock": env.HIVE_FORK_ISTANBUL|to_int,
+    "berlinBlock": env.HIVE_FORK_BERLIN|to_int,
+    "londonBlock": env.HIVE_FORK_LONDON|to_int,
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
     },
     "terminalTotalDifficulty": 0,
     "terminalTotalDifficultyPassed": true,
-    "shanghaiTime": (env.HIVE_SHANGHAI_TIMESTAMP | to_int),
-    "cancunTime": (env.HIVE_CANCUN_TIMESTAMP | to_int),
-    "pragueTime": (env.HIVE_PRAGUE_TIMESTAMP | to_int),
-    "osakaTime": (env.HIVE_OSAKA_TIMESTAMP | to_int),
-    "amsterdamTime": (env.HIVE_AMSTERDAM_TIMESTAMP | to_int),
+    "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
+    "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
+    "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
+    "osakaTime": env.HIVE_OSAKA_TIMESTAMP|to_int,
+    "amsterdamTime": env.HIVE_AMSTERDAM_TIMESTAMP|to_int,
     "blobSchedule": {
       "cancun": {
-        "target": (env.HIVE_CANCUN_BLOB_TARGET // "1" | to_int),
-        "max": (env.HIVE_CANCUN_BLOB_MAX // "2" | to_int),
-        "baseFeeUpdateFraction": (env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION // "1112826" | to_int)
+        "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       },
       "prague": {
-        "target": (env.HIVE_PRAGUE_BLOB_TARGET // "1" | to_int),
-        "max": (env.HIVE_PRAGUE_BLOB_MAX // "2" | to_int),
-        "baseFeeUpdateFraction": (env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION // "1112826" | to_int)
+        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       },
       "osaka": {
-        "target": (env.HIVE_OSAKA_BLOB_TARGET // "1" | to_int),
-        "max": (env.HIVE_OSAKA_BLOB_MAX // "2" | to_int),
-        "baseFeeUpdateFraction": (env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION // "1112826" | to_int)
+        "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       },
       "amsterdam": {
-        "target": (env.HIVE_AMSTERDAM_BLOB_TARGET // "1" | to_int),
-        "max": (env.HIVE_AMSTERDAM_BLOB_MAX // "2" | to_int),
-        "baseFeeUpdateFraction": (env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION // "1112826" | to_int)
+        "target": (if env.HIVE_AMSTERDAM_BLOB_TARGET then env.HIVE_AMSTERDAM_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_AMSTERDAM_BLOB_MAX then env.HIVE_AMSTERDAM_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       }
     },
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
