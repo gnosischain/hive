@@ -126,6 +126,8 @@ end |
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": "0x00",
   "gasLimit": .gasLimit,
+  "auraStep": .auraStep,
+  "auraSeal": .auraSeal,
   "seal": {
     "authorityRound": {
       "step": "0x0",
