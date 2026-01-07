@@ -30,7 +30,7 @@ def to_bool:
 
 # Rename coinbase to miner if it exists
 . | if has("coinbase") then
-  . + {"miner": .coinbase} | del(.miner)
+  . + {"miner": .coinbase} | del(.coinbase)
 else
   .
 end |
