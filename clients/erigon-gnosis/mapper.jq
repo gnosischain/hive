@@ -45,7 +45,6 @@ end |
 . + {
   "config": {
     "chainId": (if env.HIVE_CHAIN_ID == null then 1 else env.HIVE_CHAIN_ID|to_int end),
-    "consensus": "aura",
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "eip150Block": env.HIVE_FORK_TANGERINE|to_int,
     "eip155Block": env.HIVE_FORK_SPURIOUS|to_int,
@@ -93,46 +92,11 @@ end |
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
     "blobGasPriceUpdateFraction": 1112826,
-    "aura": {
-      "stepDuration": 5,
-      "blockReward": 0,
-      "maximumUncleCountTransition": 0,
-      "maximumUncleCount": 0,
-      "validators": {
-        "multi": {
-          "0": {
-            "list": [
-              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
-            ]
-          }
-        }
-      },
-      "blockRewardContractAddress": "0x2000000000000000000000000000000000000001",
-      "blockRewardContractTransition": 0,
-      "randomnessContractAddress": {
-        "0": "0x3000000000000000000000000000000000000001"
-      },
-      "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
-      "twoThirdsMajorityTransition": 0,
-      "posdaoTransition": 0,
-      "blockGasLimitContractTransitions": {
-        "0": "0x4000000000000000000000000000000000000001"
-      },
-      "registrar": "0x6000000000000000000000000000000000000000"
-    },
     "eip1559collector": "0x1559000000000000000000000000000000000000",
     "blockRewardsContract": "0x2000000000000000000000000000000000000001"
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": "0x00",
   "gasLimit": .gasLimit,
-  "auraStep": .auraStep,
-  "auraSeal": .auraSeal,
-  "seal": {
-    "authorityRound": {
-      "step": "0x0",
-      "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-    }
-  },
   "alloc": (.alloc|with_entries(.key|="0x"+.))
 }
