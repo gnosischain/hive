@@ -221,12 +221,6 @@ def gnosis_engine:
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
-    "seal": {
-      "authorityRound": {
-        "step": "0x0",
-        "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
     "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
