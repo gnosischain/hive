@@ -45,17 +45,13 @@ def infix_zeros_to_length(s;l):
   end
 ;
 
-def gnosis_engine:
-  {
+{
+  "version": "1",
+  "engine": "engine": {
     "ethash": {
       "params": {}
     }
-  }
-;
-
-{
-  "version": "1",
-  "engine": gnosis_engine,
+  },
   "params": {
     # Tangerine Whistle
     "eip150Transition": env.HIVE_FORK_TANGERINE|to_hex,
@@ -73,6 +69,8 @@ def gnosis_engine:
     "maximumExtraDataSize": "0x20",
     "maxCodeSizeTransitionTimestamp": "0x0",
     "terminalTotalDifficulty": "0x0",
+    "feeCollector": "0x1559000000000000000000000000000000000000",
+    "eip1559FeeCollectorTransition": 0,
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
     "eip1559ElasticityMultiplier": "0x2",
     "eip4844BlobGasPriceUpdateFraction": "0x10fafa",
