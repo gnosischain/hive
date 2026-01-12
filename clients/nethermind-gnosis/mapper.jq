@@ -47,33 +47,8 @@ def infix_zeros_to_length(s;l):
 
 def gnosis_engine:
   {
-    "authorityRound": {
-      "params": {
-        "stepDuration": 5,
-        "blockReward": "0x0",
-        "maximumUncleCountTransition": 0,
-        "maximumUncleCount": 0,
-        "validators": {
-          "multi": {
-            "0": {
-              "list": [
-                "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
-              ]
-            }
-          }
-        },
-        "blockRewardContractAddress": "0x2000000000000000000000000000000000000001",
-        "blockRewardContractTransition": 0,
-        "randomnessContractAddress": {
-          "0": "0x3000000000000000000000000000000000000001"
-        },
-        "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
-        "twoThirdsMajorityTransition": 0,
-        "posdaoTransition": 0,
-        "blockGasLimitContractTransitions": {
-          "0": "0x4000000000000000000000000000000000000001"
-        }
-      }
+    "ethash": {
+      "params": {}
     }
   }
 ;
@@ -98,13 +73,8 @@ def gnosis_engine:
     "maximumExtraDataSize": "0x20",
     "maxCodeSizeTransitionTimestamp": "0x0",
     "terminalTotalDifficulty": "0x0",
-    "transactionPermissionContract": "0x4000000000000000000000000000000000000001",
-    "transactionPermissionContractTransition": "0x0",
-    "feeCollector": "0x1559000000000000000000000000000000000000",
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
     "eip1559ElasticityMultiplier": "0x2",
-    "eip1559FeeCollectorTransition": 0,
-    "registrar": "0x6000000000000000000000000000000000000000",
     "eip4844BlobGasPriceUpdateFraction": "0x10fafa",
     "eip4844MaxBlobGasPerBlock": "0x40000",
     "eip4844MinBlobGasPrice": "0x3b9aca00",
