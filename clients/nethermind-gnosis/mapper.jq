@@ -47,7 +47,7 @@ def infix_zeros_to_length(s;l):
 
 {
   "version": "1",
-  "engine": "engine": {
+  "engine": {
     "ethash": {
       "params": {}
     }
