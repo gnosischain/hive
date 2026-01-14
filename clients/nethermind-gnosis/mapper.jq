@@ -49,35 +49,7 @@ def infix_zeros_to_length(s;l):
   "version": "1",
   "engine": {
     "ethash": {
-      "params": {
-        "stepDuration": 5,
-        "blockReward": "0x0",
-        "maximumUncleCountTransition": 0,
-        "maximumUncleCount": 0,
-        "validators": {
-          "multi": {
-            "0": {
-              "list": [
-                "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
-              ]
-            }
-          }
-        },
-        "blockRewardContractAddress": "0x2000000000000000000000000000000000000001",
-        "blockRewardContractTransition": 0,
-        "blockRewardContractTransitions": {
-        "9186425": "0x481c034c6d9441db23ea48de68bcae812c5d39ba"
-        },
-        "randomnessContractAddress": {
-          "0": "0x3000000000000000000000000000000000000001"
-        },
-        "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
-        "twoThirdsMajorityTransition": 0,
-        "posdaoTransition": 0,
-        "blockGasLimitContractTransitions": {
-          "0": "0x4000000000000000000000000000000000000001"
-        }
-      }
+      "params": {}
     }
   },
   "params": {
@@ -97,6 +69,7 @@ def infix_zeros_to_length(s;l):
     "maximumExtraDataSize": "0x20",
     "maxCodeSizeTransitionTimestamp": "0x0",
     "terminalTotalDifficulty": "0x0",
+    "registrar": "0x6000000000000000000000000000000000000000",
     "feeCollector": "0x1559000000000000000000000000000000000000",
     "eip1559FeeCollectorTransition": 0,
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
