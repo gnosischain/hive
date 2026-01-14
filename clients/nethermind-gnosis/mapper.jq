@@ -158,8 +158,7 @@ def infix_zeros_to_length(s;l):
     "eip7928TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
 
     # Other chain parameters
-    "networkID": env.HIVE_NETWORK_ID|to_hex,
-    "chainID": env.HIVE_CHAIN_ID|to_hex,
+    "chainID": (if env.HIVE_CHAIN_ID then env.HIVE_CHAIN_ID|to_hex else "0x64" end),
 
     "blobSchedule": [
       if env.HIVE_CANCUN_TIMESTAMP then {
