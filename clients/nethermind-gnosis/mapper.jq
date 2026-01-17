@@ -102,7 +102,7 @@ def infix_zeros_to_length(s;l):
     "eip1559FeeCollectorTransition": 0,
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
     "eip1559ElasticityMultiplier": "0x2",
-    "eip4844BlobGasPriceUpdateFraction": "0x10fafa",
+    "eip4844BlobGasPriceUpdateFraction": "0x10FBDA",
     "eip4844MaxBlobGasPerBlock": "0x40000",
     "eip4844MinBlobGasPrice": "0x3b9aca00",
     "eip4844TargetBlobGasPerBlock": "0x20000",
@@ -194,25 +194,25 @@ def infix_zeros_to_length(s;l):
           "timestamp": env.HIVE_CANCUN_TIMESTAMP|to_hex,
           "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_hex else "0x1" end),
           "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
+          "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10FBDA" end)
       } else null end,
       if env.HIVE_PRAGUE_TIMESTAMP then {
           "timestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
           "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_hex else "0x1" end),
           "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
+          "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10FBDA" end)
       } else null end,
       if env.HIVE_OSAKA_TIMESTAMP then {
           "timestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
           "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_hex else "0x1" end),
           "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
+          "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10FBDA" end)
       } else null end,
       if env.HIVE_AMSTERDAM_TIMESTAMP then {
           "timestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
           "target": (if env.HIVE_AMSTERDAM_BLOB_TARGET then env.HIVE_AMSTERDAM_BLOB_TARGET|to_hex else "0x1" end),
           "max": (if env.HIVE_AMSTERDAM_BLOB_MAX then env.HIVE_AMSTERDAM_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
+          "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10FBDA" end)
       } else null end
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
