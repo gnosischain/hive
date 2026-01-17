@@ -219,7 +219,7 @@ def infix_zeros_to_length(s;l):
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
-    "difficulty": "0x1",
+    "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
     "parentHash": .parentHash,
