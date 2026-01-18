@@ -80,7 +80,6 @@ end |
         "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       }
     },
-    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
@@ -116,7 +115,7 @@ end |
       "registrar": "0x6000000000000000000000000000000000000000"
     },
     "eip1559collector": "0x1559000000000000000000000000000000000000",
-    "blockRewardsContract": "0x2000000000000000000000000000000000000001"
+    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": "0x00",
