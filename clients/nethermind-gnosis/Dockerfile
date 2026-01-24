@@ -1,6 +1,6 @@
 ## Build Nethermind Via Pre-Built Image:
-ARG baseimage=nethermind/nethermind
-ARG tag=1.31.4
+ARG baseimage=nethermindeth/nethermind
+ARG tag=master
 FROM $baseimage:$tag
 ARG GOPROXY
 
