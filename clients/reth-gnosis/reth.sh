@@ -81,9 +81,6 @@ echo $FLAGS
 echo "Initializing database with genesis state..."
 $reth init $FLAGS --chain /genesis.json
 
-# Make sure pruner doesn't start
-# echo -e "[prune]\\nblock_interval = 500_000" >> $DATADIR/reth.toml
-
 # make sure we use the same genesis each time
 FLAGS="$FLAGS --chain /genesis.json"
 
@@ -100,14 +97,23 @@ fi
 
 # Load the remainder of the test chain
 echo "Loading remaining individual blocks..."
-if [ -d /blocks ]; then
-    echo "Loading remaining individual blocks..."
-    for file in $(ls /blocks | sort -n); do
-        echo "Importing " $file
-        $reth import $FLAGS /blocks/$file
-    done
+mapfile -t BLOCKS < <(ls /blocks/*.rlp 2>/dev/null | sort -n)
+
+if [[ ! -d "/blocks" || ${#BLOCKS[@]} -eq 0 ]]; then
+    echo "Warning: No blocks found."
+elif [[ ${#BLOCKS[@]} -eq 1 ]]; then
+    # Import the only existing block
+    $reth import $FLAGS "${BLOCKS[0]}"
 else
-    echo "Warning: blocks folder not found."
+    # First import as many blocks as possible, and only then import the last one.
+    # This is important because usually tests expecting a failure will assert that the last valid inserted block is at last - 1. If we attempted to import all of them the pipeline would unwind the whole range.
+    cat "${BLOCKS[@]:0:${#BLOCKS[@]}-1}" > "combined.rlp"
+
+    # Import all but the last block first
+    $reth import $FLAGS "combined.rlp"
+
+    # Import the last block separately
+    $reth import $FLAGS "${BLOCKS[-1]}"
 fi
 
 # Only set boot nodes in online steps
@@ -158,7 +164,7 @@ fi
 
 # Configure NAT and disable pruning
 FLAGS="$FLAGS --nat none --block-interval 500000"
-jq '(.alloc | with_entries(.key |= if (length == 40) then "0x" + . else . end)) as $new_alloc | .alloc = $new_alloc' /genesis.json > /genesis-temp.json && mv /genesis-temp.json /genesis.json
+
 # Launch the main client.
 echo "Running reth with flags: $FLAGS"
-RUST_LOG=info $reth node $FLAGS
+RUST_LOG=debug $reth node $FLAGS

@@ -6,7 +6,6 @@ Ethereum Foundation maintains two public Hive instances to check for consensus, 
 blockchain compatibility:
 
 - eth1 consensus, EngineAPI, RPC tests, graphql and p2p tests are on <https://hive.ethpandaops.io>
- 
 
 **To read more about hive, please check [the documentation][doc].**
 
@@ -18,8 +17,8 @@ Supported clients:
 
 - Nethermind (`nethermind-gnosis`)
 - Erigon (`erigon-gnosis`)
-- Geth (`geth-gnosis`)
-- Reth (`rethink-gnosis`)
+- Geth (`go-ethereum-gnosis`)
+- Reth (`reth-gnosis`)
 
 Supported simulators:
 
@@ -34,12 +33,12 @@ Following suites are supported:
 - engine-exchange-capabilities
 - engine-api
 
-- smoke/network (nethermind and reth only)
-
-Below simulators used to run EEST tests. Gnosis implementation of EEST currently in progress.
+The following simulators are used to run EEST tests:
 
 - gnosis/eest/consume-engine
 - gnosis/eest/consume-rlp
+
+The Gnosis-specific EEST implementation is currently a work in progress.
 
 ## Scripts Module
 
