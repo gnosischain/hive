@@ -162,6 +162,7 @@ def infix_zeros_to_length(s;l):
     "eip4844MaxBlobGasPerBlock": "0x40000",
     "eip4844MinBlobGasPrice": "0x3b9aca00",
     "eip4844TargetBlobGasPerBlock": "0x20000",
+    "eip4844FeeCollectorTransitionTimestamp": "0x0",
 
     # Prague
     "eip2537TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
