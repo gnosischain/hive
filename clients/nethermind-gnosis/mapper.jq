@@ -173,6 +173,7 @@ def infix_zeros_to_length(s;l):
     "eip7685TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
+    "eip7692TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
 
