@@ -1,5 +1,5 @@
 ARG baseimage=ghcr.io/gnosischain/reth_gnosis
-ARG tag=prerelease-v1
+ARG tag=master
 
 FROM $baseimage:$tag as builder
 
