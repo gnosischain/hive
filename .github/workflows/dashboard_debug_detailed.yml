@@ -41,6 +41,7 @@ on:
           - ethereum/gnosis-engine-jq
           - smoke
           - gnosis/eest/consume-engine
+          - gnosis/eels/consume-engine
       parallelism:
         description: "Parallelism"
         required: true
