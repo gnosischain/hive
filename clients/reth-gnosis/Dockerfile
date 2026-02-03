@@ -1,5 +1,5 @@
 ARG baseimage=ghcr.io/gnosischain/reth_gnosis
-ARG tag=latest
+ARG tag=prerelease-v1
 
 # Build the reth-gnosis binary
 FROM $baseimage:$tag AS builder
