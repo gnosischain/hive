@@ -33,7 +33,7 @@ var (
 	Safe                                            = big.NewInt(-4)
 	InvalidParamsError                              = -32602
 	MAX_INITCODE_SIZE                               = 49152
-	MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK uint64   = 16
+	MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK uint64   = 6
 
 	/*
 		Warm coinbase contract needs to check if EIP-3651 applied after shapella
