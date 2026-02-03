@@ -30,4 +30,4 @@ RUN chmod +x /erigon.sh /hive-bin/enode.sh
 # Expose networking ports
 EXPOSE 8545 8546 8551 30303 30303/udp
 
-ENTRYPOINT ["/erigon.sh"]    
+ENTRYPOINT ["/erigon.sh"]
