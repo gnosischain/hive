@@ -123,7 +123,7 @@ jobs:
       - name: Run tests
         continue-on-error: true
         run: |
-          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=10m --docker.output --sim.parallelism=${{ matrix.parallelism }} 
+          HIVE_TTD_ENABLED=false ./hive --sim "${{ matrix.simulator }}" --sim.limit="${{ matrix.suite }}" --client "${{ matrix.client }}" --results-root=${{ github.workspace }}/${{ github.run_id }}/runs --loglevel=3 --sim.loglevel=3 --client.checktimelimit=10m --docker.output --docker.pull --sim.parallelism=${{ matrix.parallelism }} 
       
       - name: Check report
         run: ls -la ${{ github.workspace }}/${{ github.run_id }}/runs

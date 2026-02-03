@@ -1,0 +1,20 @@
+name: Clear Reports
+
+on:
+  workflow_dispatch:
+
+jobs:
+  clear-reports:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Execute cleanup on remote server
+        uses: appleboy/ssh-action@v1.2.4
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          port: ${{ secrets.SSH_PORT }}
+          script: |
+            rm -rf /root/logs/github/workspace/runs/
+            mkdir -p /root/logs/github/workspace/runs/
+            rm -f /root/*.tar.gz
