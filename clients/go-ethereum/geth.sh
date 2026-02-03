@@ -137,11 +137,6 @@ if [ "$HIVE_MINER_EXTRA" != "" ]; then
     FLAGS="$FLAGS --miner.extradata $HIVE_MINER_EXTRA"
 fi
 
-# Configure LES.
-if [ "$HIVE_LES_SERVER" == "1" ]; then
-  FLAGS="$FLAGS --light.serve 50 --light.nosyncserve"
-fi
-
 # Configure RPC.
 FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.port=8545 --http.api=admin,debug,eth,miner,net,txpool,web3"
 FLAGS="$FLAGS --ws --ws.addr=0.0.0.0 --ws.origins \"*\" --ws.api=admin,debug,eth,miner,net,txpool,web3"
@@ -161,7 +156,9 @@ if [ "$HIVE_ALLOW_UNPROTECTED_TX" != "" ]; then
 fi
 
 # Run the go-ethereum implementation with the requested flags.
-FLAGS="$FLAGS --nat=none"
+ip=$(ip addr show eth0 | grep 'inet ' | awk '{print $2}' | cut -d/ -f1)
+FLAGS="$FLAGS --nat=extip:$ip"
+
 # Disable disk space free monitor
 FLAGS="$FLAGS --datadir.minfreedisk=0"
 echo "Running go-ethereum with flags $FLAGS"
