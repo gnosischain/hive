@@ -1,30 +1,26 @@
 ARG baseimage=ghcr.io/gnosischain/reth_gnosis
-ARG tag=prerelease-v1
+ARG tag=master
 
-# Build the reth-gnosis binary
-FROM $baseimage:$tag AS builder
-ARG GOPROXY
-ENV GOPROXY=${GOPROXY}
+FROM $baseimage:$tag as builder
 
 # Install script tools.
 RUN apt-get update -y
 RUN apt-get install -y bash curl jq
 
-# Add default genesis file and genesis mapper script.
-COPY genesis.json /genesis.json
-COPY mapper.jq /mapper.jq
+# Add genesis mapper script.
+ADD genesis.json /genesis.json
+ADD mapper.jq /mapper.jq
 
 # Add the startup script.
-COPY reth.sh /reth.sh
+ADD reth.sh /reth.sh
 RUN chmod +x /reth.sh
 
 # Add the enode URL retriever script.
-RUN mkdir /hive-bin
-COPY enode.sh /hive-bin/enode.sh
+ADD enode.sh /hive-bin/enode.sh
 RUN chmod +x /hive-bin/enode.sh
 
 # Create version.txt
-RUN /usr/local/bin/reth --version | sed -e 's/reth \(.*\)/\1/' > /version.txt
+RUN /usr/local/bin/reth --version | head -2 | awk 'NR==1 {gsub("reth Version: ", ""); version=$0} NR==2 {gsub("Commit SHA: ", ""); sha=substr($0, 1, 8)} END {print version"+"sha}' > /version.txt
 
 # Export the usual networking ports to allow outside access to the node.
 EXPOSE 8545 8546 30303 30303/udp
