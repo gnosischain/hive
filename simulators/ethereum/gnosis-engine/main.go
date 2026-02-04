@@ -20,6 +20,8 @@ import (
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 )
 
+const setupTime = time.Minute
+
 var (
 	engine = hivesim.Suite{
 		Name: "engine-api",
@@ -46,16 +48,6 @@ var (
 		Name: "engine-cancun",
 		Description: `
 	Test Engine API on Cancun.`[1:],
-	}
-	cancun_gnosis = hivesim.Suite{
-		Name: "engine-cancun-gnosis",
-		Description: `
-	Test Engine API on Cancun Gnosis.`[1:],
-	}
-	withdrawals_gnosis = hivesim.Suite{
-		Name: "engine-withdrawals-gnosis",
-		Description: `
-	Test Engine API withdrawals, pre/post Shanghai.`[1:],
 	}
 )
 
@@ -90,7 +82,6 @@ func main() {
 		Run:         makeRunner(suite_cancun.Tests, "full"),
 		AlwaysRun:   true,
 	})
-
 	simulator := hivesim.New()
 
 	// Mark suites for execution
@@ -101,8 +92,6 @@ func main() {
 	hivesim.MustRunSuite(simulator, cancun)
 }
 
-const SetupTime = time.Minute
-
 func getTimestamp(spec test.Spec) uint64 {
 	now := time.Now()
 
@@ -112,8 +101,9 @@ func getTimestamp(spec test.Spec) uint64 {
 	}
 
 	preShapellaTime := time.Duration(uint64(preShapellaBlock)*spec.GetBlockTimeIncrements()) * time.Second
-	// after setup wait chain will produce blocks in preShapellaTime and than shapella happens
-	shanghaiTimestamp := now.Add(SetupTime).Add(preShapellaTime)
+
+	// After setup wait chain will produce blocks in preShapellaTime and then shapella happens.
+	shanghaiTimestamp := now.Add(setupTime).Add(preShapellaTime)
 	return uint64(shanghaiTimestamp.Unix())
 }
 
@@ -129,15 +119,15 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 		}
 		t.Log("parallelism", parallelism)
 
-		random_seed := time.Now().Unix()
+		randomSeed := time.Now().Unix()
 		if val, ok := os.LookupEnv("HIVE_RANDOM_SEED"); ok {
 			if p, err := strconv.Atoi(val); err != nil {
 				t.Logf("Warning: invalid HIVE_RANDOM_SEED value %q", val)
 			} else if p > 0 {
-				random_seed = int64(p)
+				randomSeed = int64(p)
 			}
 		}
-		t.Log("random_seed", random_seed)
+		t.Log("random_seed", randomSeed)
 
 		var wg sync.WaitGroup
 		var testCh = make(chan hivesim.TestSpec)
@@ -154,12 +144,9 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 		for _, currentTest := range tests {
 			currentTest := currentTest
 			currentTestName := fmt.Sprintf("%s (%s)", currentTest.GetName(), currentTest.GetMainFork())
-			if currentTestName == "Blob Transaction Ordering, Single Account, Single Blob (Cancun)" {
-				fmt.Printf("Current test", currentTestName)
-			}
 
+			// Get the timestamp for the test
 			timestamp := new(big.Int).SetUint64(getTimestamp(currentTest))
-
 			if currentTest.GetMainFork() != "Cancun" {
 				globals.GenesisTimestamp = timestamp.Uint64()
 			}
@@ -169,12 +156,13 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 			forkConfig := currentTest.GetForkConfig()
 			if forkConfig == nil {
 				// Test cannot be configured as is for current fork, skip
-				fmt.Printf("skipping test \"%s\" because fork configuration is not possible\n", currentTestName)
+				fmt.Printf("skipping test %q because fork configuration is not possible\n", currentTestName)
 				continue
 			}
 
-			cancunTimestamp := new(big.Int).Add(timestamp, big.NewInt(0))
+			// Set the timestamps for the forks
 			shanghaiTimestamp := new(big.Int).Add(timestamp, big.NewInt(-1000000))
+			cancunTimestamp := new(big.Int).Add(timestamp, big.NewInt(0))
 			forkConfig.CancunTimestamp = cancunTimestamp
 
 			if currentTest.GetMainFork() == "Cancun" {
@@ -183,21 +171,24 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 
 			forkConfig.ShanghaiTimestamp = shanghaiTimestamp
 
+			// Configure the genesis file
 			forkConfig.ConfigGenesis(genesis)
+
+			// Get the genesis start option
 			genesisStartOption, err := helper.GenesisStartOption(genesis)
 			if err != nil {
-				panic("unable to inject genmsis")
+				panic("unable to inject genesis")
 			}
 
-			// Configure Forks
+			// Configure the parameters for the clients
 			newParams := globals.DefaultClientEnv
 			newParams = newParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED", "1")
 			newParams = newParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", genesis.Difficulty))
 			newParams = newParams.Set("HIVE_MERGE_BLOCK_ID", "0")
 
+			// Configure the timestamps for the forks
 			if forkConfig.ShanghaiTimestamp != nil {
 				newParams = newParams.Set("HIVE_SHANGHAI_TIMESTAMP", fmt.Sprintf("%d", forkConfig.ShanghaiTimestamp))
-
 				if forkConfig.CancunTimestamp != nil {
 					newParams = newParams.Set("HIVE_CANCUN_TIMESTAMP", fmt.Sprintf("%d", forkConfig.CancunTimestamp))
 				}
@@ -235,7 +226,7 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 								t,
 								c,
 								genesis,
-								rand.New(rand.NewSource(random_seed)),
+								rand.New(rand.NewSource(randomSeed)),
 								newParams,
 								hivesim.Params{},
 							)
