@@ -9,11 +9,10 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/core"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	beacon "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
@@ -75,7 +74,7 @@ var (
 		PUSH0 contract needs to check if EIP-3855 applied after shapella
 		https://eips.ethereum.org/EIPS/eip-3855
 
-		Contract bytecode reverts tx before the shapells (because PUSH0 opcode does not exists)
+		Contract bytecode reverts tx before Shapella (because PUSH0 opcode does not exist)
 		After shapella hardfork it saves current block number to 0 slot
 	*/
 	PUSH0_ADDRESS = common.HexToAddress("0x0202020202020202020202020202020202020202")
@@ -98,7 +97,7 @@ var (
 var Tests = []test.Spec{
 	&WithdrawalsBaseSpec{
 		BaseSpec: test.BaseSpec{
-			Name: "Withdawals Fork on Block 1",
+			Name: "Withdrawals Fork on Block 1",
 			About: `
 				Tests the withdrawals fork happening on block 1, Block 0 is for Aura.
 				`,
@@ -767,13 +766,21 @@ func (wh WithdrawalsHistory) GetExpectedAccumulatedBalanceDelta(account common.A
 
 // Get a list of all addresses that were credited by withdrawals on a given block.
 func (wh WithdrawalsHistory) GetAddressesWithdrawnOnBlock(block uint64) []common.Address {
+	return wh.GetAddressesWithdrawnInRange(block, block)
+}
+
+// GetAddressesWithdrawnInRange returns all addresses that received at least one
+// withdrawal in blocks [fromBlock, toBlock] (inclusive).
+func (wh WithdrawalsHistory) GetAddressesWithdrawnInRange(fromBlock, toBlock uint64) []common.Address {
 	addressMap := make(map[common.Address]bool)
-	if withdrawals, ok := wh[block]; ok && withdrawals != nil {
-		for _, withdrawal := range withdrawals {
-			addressMap[withdrawal.Address] = true
+	for b := fromBlock; b <= toBlock; b++ {
+		if withdrawals, ok := wh[b]; ok && withdrawals != nil {
+			for _, withdrawal := range withdrawals {
+				addressMap[withdrawal.Address] = true
+			}
 		}
 	}
-	addressList := make([]common.Address, 0)
+	addressList := make([]common.Address, 0, len(addressMap))
 	for addr := range addressMap {
 		addressList = append(addressList, addr)
 	}
@@ -1020,7 +1027,6 @@ func (ws *WithdrawalsBaseSpec) GetPreWithdrawalsBlockCount() uint64 {
 		return 0
 	}
 	return ws.WithdrawalsForkHeight - 1
-
 }
 
 // Number of payloads to be produced (pre and post withdrawals) during the entire test
@@ -1849,18 +1855,19 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 func (ws *WithdrawalsExecutionLayerSpec) VerifyClaimsExecution(
 	t *test.Env, client *ethclient.Client, fromBlock, toBlock uint64,
 ) {
-	addresses := ws.WithdrawalsHistory.GetAddressesWithdrawnOnBlock(toBlock - 1)
+	// All addresses that had withdrawals in [fromBlock, toBlock-1] (toBlock is the claim block)
+	addresses := ws.WithdrawalsHistory.GetAddressesWithdrawnInRange(fromBlock, toBlock-1)
 	transfersMap, err := libgno.GetWithdrawalsTransferEvents(client, addresses, fromBlock, toBlock)
 	if err != nil {
-		t.Fatalf("FAIL (%s): Error trying to get claims transfer events: %w", t.TestName, err)
+		t.Fatalf("FAIL (%s): Error trying to get claims transfer events: %v", t.TestName, err)
 	}
 	if len(addresses) == 0 {
-		t.Fatalf("FAIL (%s): No withdrawal addresses found: %w", t.TestName)
+		t.Fatalf("FAIL (%s): No withdrawal addresses found", t.TestName)
 	}
 	for _, addr := range addresses {
 		balanceDelta, err := getBalanceChangeDelta(client, addr, big.NewInt(int64(fromBlock)), big.NewInt(int64(toBlock)))
 		if err != nil {
-			t.Fatalf("FAIL (%s): Error trying to get balance delta of token: %v, address: %v, from block %d to block %d", t.TestName, err, addr.Hex(), fromBlock, toBlock)
+			t.Fatalf("FAIL (%s): Error getting GNO token balance delta: %v, address: %v, blocks %d-%d", t.TestName, err, addr.Hex(), fromBlock, toBlock)
 		}
 
 		withdrawalsAccumulatedDeltaMGNO := ws.WithdrawalsHistory.GetExpectedAccumulatedBalanceDelta(addr, fromBlock, toBlock)
@@ -1873,7 +1880,7 @@ func (ws *WithdrawalsExecutionLayerSpec) VerifyClaimsExecution(
 				t.TestName, addr, balanceDelta, withdrawalsDeltaGNO,
 			)
 		}
-		// if block range is >1 there will be the trasfered sum from all transfer events
+		// if block range is >1 there will be the transferred sum from all transfer events
 		// for specific address in block range
 		eventValue := transfersMap[addr.Hex()]
 		if eventValue == nil {
@@ -1943,16 +1950,14 @@ func (ws *WithdrawalsExecutionLayerSpec) Execute(t *test.Env) {
 	// 1. Produce WithdrawalsBlockCount number of blocks with withdrawals
 	// 2. Claim accumulated withdrawals and verify claims execution and balances
 	// 3. Iteratively produce block pairs (first with withdrawals and second with claim Tx)
-	//    and verify every claim execution
-	for i := 0; i < int(ws.WithdrawalsBlockCount); i++ {
-		t.CLMock.ProduceBlocks(int(ws.WithdrawalsBlockCount), clmock.BlockProcessCallbacks{
-			OnPayloadProducerSelected: func() {
-				// Send some withdrawals
-				t.CLMock.NextWithdrawals, nextIndex = ws.GenerateWithdrawalsForBlock(nextIndex, startAccount)
-				ws.WithdrawalsHistory[t.CLMock.CurrentPayloadNumber] = t.CLMock.NextWithdrawals
-			},
-		})
-	}
+	// and verify every claim execution
+	t.CLMock.ProduceBlocks(int(ws.WithdrawalsBlockCount), clmock.BlockProcessCallbacks{
+		OnPayloadProducerSelected: func() {
+			// Send some withdrawals
+			t.CLMock.NextWithdrawals, nextIndex = ws.GenerateWithdrawalsForBlock(nextIndex, startAccount)
+			ws.WithdrawalsHistory[t.CLMock.CurrentPayloadNumber] = t.CLMock.NextWithdrawals
+		},
+	})
 
 	t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{
 		OnPayloadProducerSelected: func() {
