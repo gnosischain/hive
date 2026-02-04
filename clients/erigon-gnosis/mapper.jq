@@ -153,5 +153,5 @@ end |
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": "0x00",
   "gasLimit": .gasLimit,
-  "alloc": (.alloc|with_entries(.key|="0x"+.))
+  "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
 }
