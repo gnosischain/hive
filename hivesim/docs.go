@@ -217,7 +217,7 @@ func (s *markdownSuite) toMarkdownFile(fw FileWriter, simName string) error {
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	// Write the markdown.
 	markdown, err := s.toMarkdown(simName)
@@ -403,7 +403,7 @@ func (docs *docsCollector) generateIndexFile(fw FileWriter, simName string) erro
 	if err != nil {
 		return err
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 	_, err = file.Write([]byte(markdownIndex))
 	return err
 }

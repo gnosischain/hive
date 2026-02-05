@@ -220,7 +220,7 @@ func fsLoaderPlugin(fsys fs.FS) esbuild.Plugin {
 					}
 
 					if !strings.HasPrefix(args.Path, ".") {
-						err = fmt.Errorf("File %s does not exist. Missing definition in moduleAliases?", p)
+						err = fmt.Errorf("file %s does not exist. Missing definition in moduleAliases?", p)
 					}
 				}
 				return res, err
@@ -261,14 +261,14 @@ func loaderFromExt(name string) esbuild.Loader {
 func renderBuildMsg(msgs []esbuild.Message, w io.Writer) {
 	for _, msg := range msgs {
 		if msg.Location == nil {
-			fmt.Fprintln(w, msg.Text)
+			_, _ = fmt.Fprintln(w, msg.Text)
 			continue
 		}
 		file := filepath.FromSlash(path.Join("assets", msg.Location.File))
-		fmt.Fprintf(w, "%s:%d   %s\n", file, msg.Location.Line, msg.Text)
-		fmt.Fprintln(w, "  |")
-		fmt.Fprintln(w, "  |", msg.Location.LineText)
-		fmt.Fprintln(w, "  |")
-		fmt.Fprintln(w, "")
+		_, _ = fmt.Fprintf(w, "%s:%d   %s\n", file, msg.Location.Line, msg.Text)
+		_, _ = fmt.Fprintln(w, "  |")
+		_, _ = fmt.Fprintln(w, "  |", msg.Location.LineText)
+		_, _ = fmt.Fprintln(w, "  |")
+		_, _ = fmt.Fprintln(w, "")
 	}
 }

@@ -67,9 +67,10 @@ func SanitizeContainerNameComponent(s string) string {
 	}
 
 	// Ensure first character is alphanumeric
-	if len(sanitized) > 0 && !((sanitized[0] >= 'a' && sanitized[0] <= 'z') ||
-		(sanitized[0] >= 'A' && sanitized[0] <= 'Z') ||
-		(sanitized[0] >= '0' && sanitized[0] <= '9')) {
+	if len(sanitized) > 0 &&
+		(sanitized[0] < 'a' || sanitized[0] > 'z') &&
+		(sanitized[0] < 'A' || sanitized[0] > 'Z') &&
+		(sanitized[0] < '0' || sanitized[0] > '9') {
 		if len(sanitized) > 1 {
 			sanitized = sanitized[1:]
 		} else {

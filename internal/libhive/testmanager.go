@@ -205,7 +205,7 @@ func (manager *TestManager) Terminate() error {
 			}
 		}
 		// ensure the db is updated with results
-		manager.doEndSuite(suiteID)
+		_ = manager.doEndSuite(suiteID)
 	}
 
 	return nil
@@ -395,7 +395,7 @@ func (manager *TestManager) doEndSuite(testSuite TestSuiteID) error {
 		}
 	}
 	if suite.testDetailsFile != nil {
-		suite.testDetailsFile.Close()
+		_ = suite.testDetailsFile.Close()
 	}
 
 	// Create comprehensive run metadata
@@ -536,7 +536,7 @@ func (manager *TestManager) EndTest(suiteID TestSuiteID, testID TestID, result *
 	// Stop running clients.
 	for _, v := range testCase.ClientInfo {
 		if v.wait != nil {
-			manager.backend.DeleteContainer(v.ID)
+			_ = manager.backend.DeleteContainer(v.ID)
 			v.wait()
 			v.wait = nil
 		}
@@ -671,7 +671,7 @@ func writeSuiteFile(s *TestSuite, logdir string) error {
 	}
 	// Randomize the name, but make it so that it's ordered by date - makes cleanups easier
 	b := make([]byte, 16)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	suiteFileName := fmt.Sprintf("%v-%x.json", time.Now().Unix(), b)
 	suiteFile := filepath.Join(logdir, suiteFileName)
 	// Write it.

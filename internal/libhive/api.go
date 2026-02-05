@@ -180,7 +180,7 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 		serveError(w, err, http.StatusBadRequest)
 		return
 	}
-	defer r.MultipartForm.RemoveAll()
+	defer func() { _ = r.MultipartForm.RemoveAll() }()
 
 	if !r.Form.Has("config") {
 		slog.Error("API: missing 'config' parameter in node request", "error", err)
@@ -314,7 +314,7 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 
 		// Register the node. This should always be done, even if starting the container
 		// failed, to ensure that the failed client log is associated with the test.
-		api.tm.RegisterNode(testID, info.ID, clientInfo)
+		_ = api.tm.RegisterNode(testID, info.ID, clientInfo)
 	}
 	if err != nil {
 		slog.Error("API: could not start client", "client", clientDef.Name, "container", containerID[:8], "error", err)
@@ -333,7 +333,7 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 // The filePath is passed to the docker backend and uses the platform separator.
 func (api *simAPI) clientLogFilePaths(clientName, containerID string) (jsonPath string, file string) {
 	// TODO: might be nice to put timestamp into the filename as well.
-	safeDir := strings.Replace(clientName, string(filepath.Separator), "_", -1)
+	safeDir := strings.ReplaceAll(clientName, string(filepath.Separator), "_")
 	jsonPath = path.Join(safeDir, fmt.Sprintf("client-%s.log", containerID))
 	file = filepath.Join(api.env.LogDir, filepath.FromSlash(jsonPath))
 	return jsonPath, file
@@ -635,18 +635,18 @@ func serveJSON(w http.ResponseWriter, value interface{}) {
 	}
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	w.Write(resp)
+	_, _ = w.Write(resp)
 }
 
 func serveOK(w http.ResponseWriter) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	io.WriteString(w, "null")
+	_, _ = io.WriteString(w, "null")
 }
 
 func serveError(w http.ResponseWriter, err error, status int) {
 	resp, _ := json.Marshal(&simapi.Error{Error: err.Error()})
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)
-	w.Write(resp)
+	_, _ = w.Write(resp)
 }

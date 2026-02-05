@@ -41,10 +41,10 @@ func main() {
 		runServer(config)
 	case *listing:
 		fsys := os.DirFS(config.logDir)
-		generateListing(fsys, ".", os.Stdout, listLimit)
+		_ = generateListing(fsys, ".", os.Stdout, listLimit)
 	case *gc:
 		cutoff := time.Now().Add(-*gcKeepInterval)
-		logdirGC(config.logDir, cutoff, *gcKeepMin)
+		_ = logdirGC(config.logDir, cutoff, *gcKeepMin)
 	case *deploy:
 		doDeploy(&config)
 	default:
@@ -91,7 +91,7 @@ func copyFS(dest string, src fs.FS) error {
 		if err != nil {
 			return err
 		}
-		defer destFile.Close()
+		defer func() { _ = destFile.Close() }()
 		log.Println("copy", path)
 		_, err = io.Copy(destFile, srcFile)
 		return err
