@@ -914,13 +914,26 @@ func AddUnconditionalBytecode(g *core.Genesis, start *big.Int, end *big.Int) {
 	}
 }
 
+// AddWithdrawalRecipientAccounts adds EOA (no code) accounts in the given range.
+// Withdrawal recipients must be EOAs so the deposit contract's withdrawableAmount(addr)
+// view does not revert (some implementations revert when addr has code).
+func AddWithdrawalRecipientAccounts(g *core.Genesis, start *big.Int, end *big.Int) {
+	for ; start.Cmp(end) <= 0; start.Add(start, common.Big1) {
+		accountAddress := common.BigToAddress(start)
+		g.Alloc[accountAddress] = types.Account{
+			Nonce:   0,
+			Balance: common.Big0,
+		}
+	}
+}
+
 func (ws *WithdrawalsBaseSpec) GetGenesis() *core.Genesis {
 	genesis := ws.BaseSpec.GetGenesis()
 
-	// Add some accounts to withdraw to with unconditional SSTOREs
+	// Add EOA accounts to withdraw to so deposit contract withdrawableAmount(addr) does not revert
 	startAccount := big.NewInt(0x1000)
 	endAccount := big.NewInt(0x1000 + int64(ws.GetWithdrawableAccountCount()) - 1)
-	AddUnconditionalBytecode(genesis, startAccount, endAccount)
+	AddWithdrawalRecipientAccounts(genesis, startAccount, endAccount)
 
 	warmCoinbaseCode := []byte{
 		0x5A, // GAS
@@ -1261,7 +1274,7 @@ func (ws *WithdrawalsBaseSpec) Execute(t *test.Env) {
 						// Test balance at `latest`, which should have the withdrawal applied.
 						withdrawableAmount, err := getWithdrawableAmount(client, addr, big.NewInt(int64(t.CLMock.LatestExecutedPayload.Number)))
 						if err != nil {
-							t.Fatalf("FAIL (%s): Error trying to get balance of token: %v, address: %v", t.TestName, err, addr.Hex())
+							t.Fatalf("FAIL (%s): Error getting withdrawable amount from deposit contract: %v, address: %v", t.TestName, err, addr.Hex())
 						}
 
 						expectBalanceMGNO := ws.WithdrawalsHistory.GetExpectedAccumulatedBalance(addr, t.CLMock.LatestExecutedPayload.Number)
