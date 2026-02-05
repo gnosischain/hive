@@ -1336,7 +1336,6 @@ func getBalanceChangeDelta(client *ethclient.Client, account common.Address, fro
 		return nil, err
 	}
 	diff := big.NewInt(0).Sub(toBalance, fromBalance)
-	// if diff is positive return it, othervise return -(diff)
 	if toBalance.Cmp(fromBalance) == 1 {
 		return diff, nil
 	}
@@ -1776,10 +1775,10 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 		addresses = append(addresses, w.Address)
 	}
 
-	// Send claim transaction
+	// Send claimWithdrawals transaction
 	claims, err := libgno.ClaimWithdrawalsData(addresses)
 	if err != nil {
-		t.Fatalf("FAIL (%s): Cant create claimWithdrawals transaction payload: %v", t.TestName, err)
+		t.Fatalf("FAIL (%s): Can't create claimWithdrawals transaction payload: %v", t.TestName, err)
 	}
 
 	sender := globals.NewTestAccount(globals.GnoVaultVaultKey, &globals.GnoVaultAccountAddress, 0)
@@ -1792,7 +1791,7 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 			Amount:     common.Big0,
 			Payload:    claims,
 			TxType:     t.TestTransactionType,
-			GasLimit:   100000,
+			GasLimit:   10000000,
 			ForkConfig: t.ForkConfig,
 		},
 		sender,
