@@ -102,7 +102,7 @@ func ListHiveContainers(ctx context.Context, client *docker.Client, instanceID s
 		return nil
 	}
 
-	fmt.Printf("%-12s %-20s %-12s %-12s %-20s %-10s %s\n", 
+	fmt.Printf("%-12s %-20s %-12s %-12s %-20s %-10s %s\n",
 		"CONTAINER ID", "NAME", "TYPE", "STATUS", "CREATED", "INSTANCE", "DETAILS")
 	fmt.Println(strings.Repeat("-", 120))
 
@@ -142,9 +142,7 @@ func ListHiveContainers(ctx context.Context, client *docker.Client, instanceID s
 		if len(container.Names) > 0 {
 			containerName = container.Names[0]
 			// Remove the leading "/" that Docker adds to container names
-			if strings.HasPrefix(containerName, "/") {
-				containerName = containerName[1:]
-			}
+			containerName = strings.TrimPrefix(containerName, "/")
 			// Truncate long names
 			if len(containerName) > 18 {
 				containerName = containerName[:18] + "..."

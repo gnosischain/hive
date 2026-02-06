@@ -105,14 +105,14 @@ func filterClientDesignators(clients []ClientDesignator) []ClientDesignator {
 			DockerfileExt: client.DockerfileExt,
 			BuildArgs:     make(map[string]string),
 		}
-		
+
 		// Filter build args
 		for key, value := range client.BuildArgs {
 			if !excludedBuildArgs[key] {
 				filteredClient.BuildArgs[key] = value
 			}
 		}
-		
+
 		filtered[i] = filteredClient
 	}
 	return filtered
@@ -122,10 +122,10 @@ func NewTestManager(config SimEnv, b ContainerBackend, clients []*ClientDefiniti
 	if hiveInfo.Commit == "" && hiveInfo.Date == "" {
 		hiveInfo.Commit, hiveInfo.Date = hiveVersion()
 	}
-	
+
 	// Filter sensitive build args from HiveInfo.ClientFile
 	hiveInfo.ClientFile = filterClientDesignators(hiveInfo.ClientFile)
-	
+
 	return &TestManager{
 		clientDefs:        clients,
 		config:            config,
@@ -205,7 +205,7 @@ func (manager *TestManager) Terminate() error {
 			}
 		}
 		// ensure the db is updated with results
-		manager.doEndSuite(suiteID)
+		_ = manager.doEndSuite(suiteID)
 	}
 
 	return nil
@@ -395,31 +395,31 @@ func (manager *TestManager) doEndSuite(testSuite TestSuiteID) error {
 		}
 	}
 	if suite.testDetailsFile != nil {
-		suite.testDetailsFile.Close()
+		_ = suite.testDetailsFile.Close()
 	}
-	
+
 	// Create comprehensive run metadata
 	runMetadata := &RunMetadata{
 		HiveCommand: manager.hiveInfo.Command,
 		HiveVersion: GetHiveVersion(),
 	}
-	
+
 	// Add client configuration if available
 	if manager.hiveInfo.ClientFilePath != "" && len(manager.hiveInfo.ClientFile) > 0 {
 		// Convert existing ClientFile data to consistent format for storage
 		clientConfigContent := map[string]interface{}{
 			"clients": manager.hiveInfo.ClientFile,
 		}
-		
+
 		runMetadata.ClientConfig = &ClientConfigInfo{
 			FilePath: manager.hiveInfo.ClientFilePath,
 			Content:  clientConfigContent,
 		}
 	}
-	
+
 	// Attach metadata to suite
 	suite.RunMetadata = runMetadata
-	
+
 	// Write the result.
 	if manager.config.LogDir != "" {
 		err := writeSuiteFile(suite, manager.config.LogDir)
@@ -536,7 +536,7 @@ func (manager *TestManager) EndTest(suiteID TestSuiteID, testID TestID, result *
 	// Stop running clients.
 	for _, v := range testCase.ClientInfo {
 		if v.wait != nil {
-			manager.backend.DeleteContainer(v.ID)
+			_ = manager.backend.DeleteContainer(v.ID)
 			v.wait()
 			v.wait = nil
 		}
@@ -655,15 +655,14 @@ func (manager *TestManager) UnpauseNode(testID TestID, nodeID string) error {
 // writeSuiteFile writes the simulation result to the log directory.
 // List of build arguments to exclude from result JSON for security/privacy
 var excludedBuildArgs = map[string]bool{
-	"GOPROXY":    true,  // Go proxy URLs may contain sensitive info
-	"GITHUB_TOKEN": true,  // GitHub tokens
-	"ACCESS_TOKEN": true,  // Generic access tokens
-	"API_KEY":      true,  // API keys
-	"PASSWORD":     true,  // Passwords
-	"SECRET":       true,  // Generic secrets
-	"TOKEN":        true,  // Generic tokens
+	"GOPROXY":      true, // Go proxy URLs may contain sensitive info
+	"GITHUB_TOKEN": true, // GitHub tokens
+	"ACCESS_TOKEN": true, // Generic access tokens
+	"API_KEY":      true, // API keys
+	"PASSWORD":     true, // Passwords
+	"SECRET":       true, // Generic secrets
+	"TOKEN":        true, // Generic tokens
 }
-
 
 func writeSuiteFile(s *TestSuite, logdir string) error {
 	suiteData, err := json.Marshal(s)
@@ -672,7 +671,7 @@ func writeSuiteFile(s *TestSuite, logdir string) error {
 	}
 	// Randomize the name, but make it so that it's ordered by date - makes cleanups easier
 	b := make([]byte, 16)
-	rand.Read(b)
+	_, _ = rand.Read(b)
 	suiteFileName := fmt.Sprintf("%v-%x.json", time.Now().Unix(), b)
 	suiteFile := filepath.Join(logdir, suiteFileName)
 	// Write it.

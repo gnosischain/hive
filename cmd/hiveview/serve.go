@@ -64,7 +64,7 @@ func runServer(config serverConfig) {
 		log.Fatalf("Can't listen: %v", err)
 	}
 	log.Printf("Serving at http://%v/", l.Addr())
-	http.Serve(l, mux)
+	_ = http.Serve(l, mux)
 }
 
 type serveListing struct{ fsys fs.FS }

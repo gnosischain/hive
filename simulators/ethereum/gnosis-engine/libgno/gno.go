@@ -12,12 +12,6 @@ import (
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-const (
-	// MAX_FAILED_WITHDRAWALS_TO_PROCESS represents the maximum number of failed withdrawals to process.
-	MAX_FAILED_WITHDRAWALS_TO_PROCESS = 4
-	GAS_LIMIT                         = 1000000
-)
-
 var (
 	// SYSTEM_SENDER represents the address of the system sender.
 	// var SYSTEM_SENDER = common.HexToAddress("0xfffffffffffffffffffffffffffffffffffffffe")

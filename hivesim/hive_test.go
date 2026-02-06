@@ -20,7 +20,7 @@ import (
 func TestClientTypes(t *testing.T) {
 	tm, srv := newFakeAPI(nil)
 	defer srv.Close()
-	defer tm.Terminate()
+	defer func() { _ = tm.Terminate() }()
 
 	sim := NewAt(srv.URL)
 	ctypes, err := sim.ClientTypes()
@@ -70,7 +70,7 @@ func TestEnodeReplaceIP(t *testing.T) {
 	}
 	tm, srv := newFakeAPI(hooks)
 	defer srv.Close()
-	defer tm.Terminate()
+	defer func() { _ = tm.Terminate() }()
 
 	// Start the client.
 	sim := NewAt(srv.URL)
@@ -122,7 +122,7 @@ func TestStartClientStartOptions(t *testing.T) {
 		},
 	})
 	defer srv.Close()
-	defer tm.Terminate()
+	defer func() { _ = tm.Terminate() }()
 
 	// Start the suite and test.
 	sim := NewAt(srv.URL)
@@ -181,7 +181,7 @@ func TestStartClientStartOptions(t *testing.T) {
 		if _, err := file1.WriteString("aaa"); err != nil {
 			t.Fatal(err)
 		}
-		defer os.Remove(file1.Name())
+		defer func() { _ = os.Remove(file1.Name()) }()
 
 		file2, err := os.CreateTemp("", "hivesim_test")
 		if err != nil {
@@ -190,7 +190,7 @@ func TestStartClientStartOptions(t *testing.T) {
 		if _, err := file2.WriteString("bb"); err != nil {
 			t.Fatal(err)
 		}
-		defer os.Remove(file2.Name())
+		defer func() { _ = os.Remove(file2.Name()) }()
 
 		t.Run("static", func(t *testing.T) {
 			// Static files with override of /data/foo
@@ -260,7 +260,7 @@ func TestRunProgram(t *testing.T) {
 	}
 	tm, srv := newFakeAPI(hooks)
 	defer srv.Close()
-	defer tm.Terminate()
+	defer func() { _ = tm.Terminate() }()
 
 	sim := NewAt(srv.URL)
 	suiteID, err := sim.StartSuite(&simapi.TestRequest{Name: "suite"}, "")
@@ -307,7 +307,7 @@ func TestRunProgram(t *testing.T) {
 func TestStartClientErrors(t *testing.T) {
 	tm, srv := newFakeAPI(nil)
 	defer srv.Close()
-	defer tm.Terminate()
+	defer func() { _ = tm.Terminate() }()
 
 	sim := NewAt(srv.URL)
 	suiteID, err := sim.StartSuite(&simapi.TestRequest{Name: "suite"}, "")
@@ -363,7 +363,7 @@ func TestStartClientInitialNetworks(t *testing.T) {
 		},
 	})
 	defer srv.Close()
-	defer tm.Terminate()
+	defer func() { _ = tm.Terminate() }()
 
 	sim := NewAt(srv.URL)
 	suiteID, err := sim.StartSuite(&simapi.TestRequest{Name: "suite"}, "")
@@ -376,12 +376,20 @@ func TestStartClientInitialNetworks(t *testing.T) {
 	}
 
 	// Create networks.
-	sim.CreateNetwork(suiteID, "Init Network 1")
-	sim.CreateNetwork(suiteID, "Init Network 2")
-	sim.CreateNetwork(suiteID, "Init Network 3")
-	defer sim.RemoveNetwork(suiteID, "Init Network 1")
-	defer sim.RemoveNetwork(suiteID, "Init Network 2")
-	defer sim.RemoveNetwork(suiteID, "Init Network 3")
+	if err := sim.CreateNetwork(suiteID, "Init Network 1"); err != nil {
+		t.Fatal("can't create network 1:", err)
+	}
+	if err := sim.CreateNetwork(suiteID, "Init Network 2"); err != nil {
+		t.Fatal("can't create network 2:", err)
+	}
+	if err := sim.CreateNetwork(suiteID, "Init Network 3"); err != nil {
+		t.Fatal("can't create network 3:", err)
+	}
+	defer func() {
+		_ = sim.RemoveNetwork(suiteID, "Init Network 1")
+		_ = sim.RemoveNetwork(suiteID, "Init Network 2")
+		_ = sim.RemoveNetwork(suiteID, "Init Network 3")
+	}()
 
 	// Start the client.
 	opt := WithInitialNetworks([]string{"Init Network 1", "Init Network 3"})

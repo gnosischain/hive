@@ -75,7 +75,7 @@ func RunSuite(host *Simulation, suite Suite) error {
 	if err != nil {
 		return err
 	}
-	defer host.EndSuite(suiteID)
+	defer func() { _ = host.EndSuite(suiteID) }()
 
 	for _, test := range suite.Tests {
 		if err := test.runTest(host, suiteID, &suite); err != nil {
@@ -250,23 +250,29 @@ func (t *T) RunClient(clientType string, spec ClientTestSpec) {
 		desc:        spec.Description,
 		alwaysRun:   spec.AlwaysRun,
 	}
-	runTest(t.Sim, test, func(t *T) {
+	if err := runTest(t.Sim, test, func(t *T) {
 		client := t.StartClient(clientType, spec.Parameters, WithStaticFiles(spec.Files))
 		spec.Run(t, client)
-	})
+	}); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // RunAllClients runs the given client test against all available client types.
 // It waits for all subtests to complete.
 func (t *T) RunAllClients(spec ClientTestSpec) {
-	spec.runTest(t.Sim, t.SuiteID, t.suite)
+	if err := spec.runTest(t.Sim, t.SuiteID, t.suite); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // Run runs a subtest of this test. It waits for the subtest to complete before continuing.
 // It is safe to call this from multiple goroutines concurrently, just be sure to wait for
 // all your tests to finish until returning from the parent test.
 func (t *T) Run(spec TestSpec) {
-	spec.runTest(t.Sim, t.SuiteID, t.suite)
+	if err := spec.runTest(t.Sim, t.SuiteID, t.suite); err != nil {
+		t.Fatal(err)
+	}
 }
 
 // Error is like testing.T.Error.
@@ -375,7 +381,7 @@ func runTest(host *Simulation, test testSpec, runit func(t *T)) error {
 	defer func() {
 		t.mu.Lock()
 		defer t.mu.Unlock()
-		host.EndTest(test.suiteID, testID, t.result)
+		_ = host.EndTest(test.suiteID, testID, t.result)
 	}()
 
 	// Run the test function.

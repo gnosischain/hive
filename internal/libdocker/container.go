@@ -146,7 +146,7 @@ func (b *ContainerBackend) CreateContainer(ctx context.Context, imageName string
 	// Now upload files.
 	if err := b.uploadFiles(ctx, c.ID, opt.Files); err != nil {
 		logger.Error("container file upload failed", "err", err)
-		b.DeleteContainer(c.ID)
+		_ = b.DeleteContainer(c.ID)
 		return "", err
 	}
 	logger.Debug("container created")
@@ -166,7 +166,7 @@ func (b *ContainerBackend) StartContainer(ctx context.Context, containerID strin
 	var startTime = time.Now()
 	waiter, err := b.runContainer(ctx, logger, containerID, opt)
 	if err != nil {
-		b.DeleteContainer(containerID)
+		_ = b.DeleteContainer(containerID)
 		return nil, fmt.Errorf("container did not start: %v", err)
 	}
 
@@ -179,6 +179,7 @@ func (b *ContainerBackend) StartContainer(ctx context.Context, containerID strin
 		logger.Debug("container exited", "err", err)
 		err = waiter.Close()
 		logger.Debug("container files closed", "err", err)
+		_ = err
 	}()
 	// Set up the wait function.
 	info.Wait = func() { <-containerExit }
@@ -187,8 +188,8 @@ func (b *ContainerBackend) StartContainer(ctx context.Context, containerID strin
 	inspect := docker.InspectContainerOptions{Context: ctx, ID: containerID}
 	container, err := b.client.InspectContainerWithOptions(inspect)
 	if err != nil {
-		waiter.Close()
-		b.DeleteContainer(containerID)
+		_ = waiter.Close()
+		_ = b.DeleteContainer(containerID)
 		info.Wait()
 		info.Wait = nil
 		return info, err
@@ -223,7 +224,7 @@ func (b *ContainerBackend) StartContainer(ctx context.Context, containerID strin
 		checkErr = errors.New("timed out waiting for container startup")
 	}
 	if checkErr != nil {
-		b.DeleteContainer(containerID)
+		_ = b.DeleteContainer(containerID)
 		info.Wait()
 		info.Wait = nil
 	}
@@ -343,9 +344,10 @@ func (b *ContainerBackend) uploadFiles(ctx context.Context, id string, files map
 		pipeR, pipeW = io.Pipe()
 		streamErrCh  = make(chan error, 1)
 	)
+	//nolint:errcheck // goroutine return value is sent to streamErrCh
 	go func() (err error) {
 		defer func() { streamErrCh <- err }()
-		defer pipeW.Close()
+		defer func() { _ = pipeW.Close() }()
 
 		tw := tar.NewWriter(pipeW)
 		for filePath, fileHeader := range files {
@@ -360,7 +362,7 @@ func (b *ContainerBackend) uploadFiles(ctx context.Context, id string, files map
 				return err
 			}
 			_, copyErr := io.Copy(tw, file)
-			file.Close()
+			_ = file.Close()
 			if copyErr != nil {
 				return copyErr
 			}
@@ -461,7 +463,7 @@ func (b *ContainerBackend) runContainer(ctx context.Context, logger *slog.Logger
 
 	logger.Debug("starting container")
 	if err := b.client.StartContainerWithContext(id, nil, ctx); err != nil {
-		closer.Close()
+		_ = closer.Close()
 		logger.Error("failed to start container", "err", err)
 		return nil, err
 	}

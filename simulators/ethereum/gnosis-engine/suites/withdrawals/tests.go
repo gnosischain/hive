@@ -1,4 +1,11 @@
-// # Test suite for withdrawals tests
+// Test suite for Gnosis chain withdrawals (Shanghai fork).
+//
+// Gnosis differs from Ethereum: withdrawals are processed via system calls to the
+// deposit contract (0xbabe2bed...03), which credits withdrawableAmount. Users
+// must call claimWithdrawals() to receive GNO tokens. Balances are verified via
+// the GNO token contract (32 mGNO == 1 GNO).
+//
+// Spec: https://github.com/gnosischain/specs/blob/master/execution/withdrawals.md
 package suite_withdrawals
 
 import (
@@ -9,11 +16,10 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/core"
-
 	"github.com/ethereum/go-ethereum/accounts/abi/bind"
 	beacon "github.com/ethereum/go-ethereum/beacon/engine"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/ethclient"
 	"github.com/ethereum/hive/simulators/ethereum/engine/client/hive_rpc"
@@ -75,7 +81,7 @@ var (
 		PUSH0 contract needs to check if EIP-3855 applied after shapella
 		https://eips.ethereum.org/EIPS/eip-3855
 
-		Contract bytecode reverts tx before the shapells (because PUSH0 opcode does not exists)
+		Contract bytecode reverts tx before Shapella (because PUSH0 opcode does not exist)
 		After shapella hardfork it saves current block number to 0 slot
 	*/
 	PUSH0_ADDRESS = common.HexToAddress("0x0202020202020202020202020202020202020202")
@@ -98,13 +104,13 @@ var (
 var Tests = []test.Spec{
 	&WithdrawalsBaseSpec{
 		BaseSpec: test.BaseSpec{
-			Name: "Withdawals Fork on Block 1",
+			Name: "Withdrawals Fork on Block 1",
 			About: `
-				Tests the withdrawals fork happening on block 1, Block 0 is for Aura.
+				Tests the withdrawals fork happening on block 1. Block 0 is for Aura.
 				`,
 		},
 		WithdrawalsForkHeight: 1,
-		WithdrawalsBlockCount: 1, // Genesis is not a withdrawals block
+		WithdrawalsBlockCount: 1,
 		WithdrawalsPerBlock:   MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK,
 		TimeIncrements:        5,
 	},
@@ -116,7 +122,7 @@ var Tests = []test.Spec{
 				Tests the withdrawals fork happening directly after genesis.
 				`,
 		},
-		WithdrawalsForkHeight: 1, // Only Genesis is Pre-Withdrawals
+		WithdrawalsForkHeight: 1,
 		WithdrawalsBlockCount: 1,
 		WithdrawalsPerBlock:   MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK,
 	},
@@ -147,11 +153,11 @@ var Tests = []test.Spec{
 			client is expected to respond with the appropriate error.
 			`,
 		},
-		WithdrawalsForkHeight:    3, // Genesis, Block 1 and 2 are Pre-Withdrawals
-		WithdrawalsBlockCount:    1,
-		WithdrawalsPerBlock:      16,
-		TimeIncrements:           5,
-		TestCorrupedHashPayloads: true,
+		WithdrawalsForkHeight:     3, // Genesis, Block 1 and 2 are Pre-Withdrawals
+		WithdrawalsBlockCount:     1,
+		WithdrawalsPerBlock:       16,
+		TimeIncrements:            5,
+		TestCorruptedHashPayloads: true,
 	},
 
 	&WithdrawalsBaseSpec{
@@ -235,9 +241,9 @@ var Tests = []test.Spec{
 				Send a valid payload with a corrupted hash using engine_newPayloadV2.
 				`,
 		},
-		WithdrawalsForkHeight:    1,
-		WithdrawalsBlockCount:    1,
-		TestCorrupedHashPayloads: true,
+		WithdrawalsForkHeight:     1,
+		WithdrawalsBlockCount:     1,
+		TestCorruptedHashPayloads: true,
 	},
 
 	// Block value tests
@@ -767,13 +773,21 @@ func (wh WithdrawalsHistory) GetExpectedAccumulatedBalanceDelta(account common.A
 
 // Get a list of all addresses that were credited by withdrawals on a given block.
 func (wh WithdrawalsHistory) GetAddressesWithdrawnOnBlock(block uint64) []common.Address {
+	return wh.GetAddressesWithdrawnInRange(block, block)
+}
+
+// GetAddressesWithdrawnInRange returns all addresses that received at least one
+// withdrawal in blocks [fromBlock, toBlock] (inclusive).
+func (wh WithdrawalsHistory) GetAddressesWithdrawnInRange(fromBlock, toBlock uint64) []common.Address {
 	addressMap := make(map[common.Address]bool)
-	if withdrawals, ok := wh[block]; ok && withdrawals != nil {
-		for _, withdrawal := range withdrawals {
-			addressMap[withdrawal.Address] = true
+	for b := fromBlock; b <= toBlock; b++ {
+		if withdrawals, ok := wh[b]; ok && withdrawals != nil {
+			for _, withdrawal := range withdrawals {
+				addressMap[withdrawal.Address] = true
+			}
 		}
 	}
-	addressList := make([]common.Address, 0)
+	addressList := make([]common.Address, 0, len(addressMap))
 	for addr := range addressMap {
 		addressList = append(addressList, addr)
 	}
@@ -828,21 +842,20 @@ func (wh WithdrawalsHistory) Copy() WithdrawalsHistory {
 // on genesis or afterwards.
 type WithdrawalsBaseSpec struct {
 	test.BaseSpec
-	TimeIncrements           uint64             // Timestamp increments per block throughout the test
-	WithdrawalsForkHeight    uint64             // Withdrawals activation fork height
-	WithdrawalsBlockCount    uint64             // Number of blocks on and after withdrawals fork activation
-	WithdrawalsPerBlock      uint64             // Number of withdrawals per block
-	WithdrawableAccountCount uint64             // Number of accounts to withdraw to (round-robin)
-	WithdrawalsHistory       WithdrawalsHistory // Internal withdrawals history that keeps track of all withdrawals
-	WithdrawAmounts          []uint64           // Amounts of withdrawn wei on each withdrawal (round-robin)
-	TransactionsPerBlock     *big.Int           // Amount of test transactions to include in withdrawal blocks
-	TestCorrupedHashPayloads bool               // Send a valid payload with corrupted hash
-	SkipBaseVerifications    bool               // For code reuse of the base spec procedure
+	TimeIncrements            uint64             // Timestamp increments per block throughout the test
+	WithdrawalsForkHeight     uint64             // Withdrawals activation fork height
+	WithdrawalsBlockCount     uint64             // Number of blocks on and after withdrawals fork activation
+	WithdrawalsPerBlock       uint64             // Number of withdrawals per block
+	WithdrawableAccountCount  uint64             // Number of accounts to withdraw to (round-robin)
+	WithdrawalsHistory        WithdrawalsHistory // Internal withdrawals history that keeps track of all withdrawals
+	WithdrawAmounts           []uint64           // Amounts of withdrawn wei on each withdrawal (round-robin)
+	TransactionsPerBlock      *big.Int           // Amount of test transactions to include in withdrawal blocks
+	TestCorruptedHashPayloads bool               // Send a valid payload with corrupted hash
+	SkipBaseVerifications     bool               // For code reuse of the base spec procedure
 }
 
 func (ws *WithdrawalsBaseSpec) GetTTD() int64 {
-	//TODO implement me
-	panic("implement me")
+	return 0
 }
 
 func (ws *WithdrawalsBaseSpec) GetPreShapellaBlockCount() int {
@@ -880,41 +893,13 @@ func (ws *WithdrawalsBaseSpec) GetWithdrawalsStartAccount() *big.Int {
 	return big.NewInt(0x1000)
 }
 
-// Append the accounts we are going to withdraw to, which should also include
-// bytecode for testing purposes.
-//func (ws *WithdrawalsBaseSpec) GetGenesisTest(base string) string {
-//
-//	genesis := ws.BaseSpec.GetGenesisTest(base)
-//	return genesis
-//}
-
-// Append the accounts we are going to withdraw to, which should also include
-// bytecode for testing purposes.
-//func (ws *WithdrawalsBaseSpec) GetGenesis(base string) client.Genesis {
-//
-//	genesis := ws.BaseSpec.GetGenesis(base)
-//
-//	warmCoinbaseAcc := client.NewAccount()
-//	push0Acc := client.NewAccount()
-//
-//	warmCoinbaseAcc.SetBalance(common.Big0)
-//	warmCoinbaseAcc.SetCode(warmCoinbaseCode)
-//
-//	genesis.AllocGenesis(WARM_COINBASE_ADDRESS, warmCoinbaseAcc)
-//
-//	push0Acc.SetBalance(common.Big0)
-//	push0Acc.SetCode(push0Code)
-//
-//	genesis.AllocGenesis(PUSH0_ADDRESS, push0Acc)
-//	return genesis
-//}
-
-// Adds bytecode that unconditionally sets an storage key to specified account range
+// AddUnconditionalBytecode adds bytecode that unconditionally sets a storage
+// key to the specified account range.
 func AddUnconditionalBytecode(g *core.Genesis, start *big.Int, end *big.Int) {
 	for ; start.Cmp(end) <= 0; start.Add(start, common.Big1) {
 		accountAddress := common.BigToAddress(start)
 		// Bytecode to unconditionally set a storage key
-		g.Alloc[accountAddress] = core.GenesisAccount{
+		g.Alloc[accountAddress] = types.Account{
 			Code: []byte{
 				0x60, // PUSH1(0x01)
 				0x01,
@@ -929,15 +914,27 @@ func AddUnconditionalBytecode(g *core.Genesis, start *big.Int, end *big.Int) {
 	}
 }
 
+// AddWithdrawalRecipientAccounts adds EOA (no code) accounts in the given range.
+// Withdrawal recipients must be EOAs so the deposit contract's withdrawableAmount(addr)
+// view does not revert (some implementations revert when addr has code).
+func AddWithdrawalRecipientAccounts(g *core.Genesis, start *big.Int, end *big.Int) {
+	for ; start.Cmp(end) <= 0; start.Add(start, common.Big1) {
+		accountAddress := common.BigToAddress(start)
+		g.Alloc[accountAddress] = types.Account{
+			Nonce:   0,
+			Balance: common.Big0,
+		}
+	}
+}
+
 func (ws *WithdrawalsBaseSpec) GetGenesis() *core.Genesis {
 	genesis := ws.BaseSpec.GetGenesis()
 
-	// Add some accounts to withdraw to with unconditional SSTOREs
+	// Add EOA accounts to withdraw to so deposit contract withdrawableAmount(addr) does not revert
 	startAccount := big.NewInt(0x1000)
 	endAccount := big.NewInt(0x1000 + int64(ws.GetWithdrawableAccountCount()) - 1)
-	AddUnconditionalBytecode(genesis, startAccount, endAccount)
+	AddWithdrawalRecipientAccounts(genesis, startAccount, endAccount)
 
-	// Add accounts that use the coinbase (EIP-3651)
 	warmCoinbaseCode := []byte{
 		0x5A, // GAS
 		0x60, // PUSH1(0x00)
@@ -966,21 +963,23 @@ func (ws *WithdrawalsBaseSpec) GetGenesis() *core.Genesis {
 		0x43, // NUMBER
 		0x55, // SSTORE
 	}
-	genesis.Alloc[WARM_COINBASE_ADDRESS] = core.GenesisAccount{
-		Code:    warmCoinbaseCode,
-		Balance: common.Big0,
-	}
 
-	// Add accounts that use the PUSH0 (EIP-3855)
 	push0Code := []byte{
 		0x43, // NUMBER
 		0x5F, // PUSH0
 		0x55, // SSTORE
 	}
-	genesis.Alloc[PUSH0_ADDRESS] = core.GenesisAccount{
+
+	// Add accounts for EIP-3651 (warm coinbase) and EIP-3855 (PUSH0) verification
+	genesis.Alloc[WARM_COINBASE_ADDRESS] = types.Account{
+		Code:    warmCoinbaseCode,
+		Balance: common.Big0,
+	}
+	genesis.Alloc[PUSH0_ADDRESS] = types.Account{
 		Code:    push0Code,
 		Balance: common.Big0,
 	}
+
 	return genesis
 }
 
@@ -1020,7 +1019,6 @@ func (ws *WithdrawalsBaseSpec) GetPreWithdrawalsBlockCount() uint64 {
 		return 0
 	}
 	return ws.WithdrawalsForkHeight - 1
-
 }
 
 // Number of payloads to be produced (pre and post withdrawals) during the entire test
@@ -1069,15 +1067,7 @@ func (ws *WithdrawalsBaseSpec) GetTransactionCountPerPayload() uint64 {
 	return ws.TransactionsPerBlock.Uint64()
 }
 
-// sendPayloadTransactions spreads and sends TransactionCountPerPayload equaly between TX_CONTRACT_ADDRESSES
-//
-// Tx params:
-//
-//	Amount:    common.Big1
-//	Payload:   nil
-//	TxType:    t.TestTransactionType
-//	GasLimit:  t.Genesis.GasLimit()
-//	ChainID:   t.Genesis.Config().ChainID,
+// sendPayloadTransactions spreads and sends TransactionCountPerPayload equally between TX_CONTRACT_ADDRESSES
 func (ws *WithdrawalsBaseSpec) sendPayloadTransactions(t *test.Env) {
 	for i := uint64(0); i < ws.GetTransactionCountPerPayload(); i++ {
 		var destAddr = TX_CONTRACT_ADDRESSES[int(i)%len(TX_CONTRACT_ADDRESSES)]
@@ -1091,7 +1081,7 @@ func (ws *WithdrawalsBaseSpec) sendPayloadTransactions(t *test.Env) {
 			&helper.BaseTransactionCreator{
 				Recipient: &destAddr,
 				// TODO: figure out why contract storage check fails on block 2 with Genesis.GasLimit()
-				GasLimit:   75000,
+				GasLimit:   100000,
 				Amount:     common.Big1,
 				Payload:    nil,
 				TxType:     t.TestTransactionType,
@@ -1265,7 +1255,7 @@ func (ws *WithdrawalsBaseSpec) Execute(t *test.Env) {
 				// Check withdrawal addresses and verify withdrawal balances
 				// have not yet been applied
 				if !ws.SkipBaseVerifications {
-					if ws.TestCorrupedHashPayloads {
+					if ws.TestCorruptedHashPayloads {
 						payload := t.CLMock.LatestExecutedPayload
 
 						// Corrupt the hash
@@ -1284,7 +1274,7 @@ func (ws *WithdrawalsBaseSpec) Execute(t *test.Env) {
 						// Test balance at `latest`, which should have the withdrawal applied.
 						withdrawableAmount, err := getWithdrawableAmount(client, addr, big.NewInt(int64(t.CLMock.LatestExecutedPayload.Number)))
 						if err != nil {
-							t.Fatalf("FAIL (%s): Error trying to get balance of token: %v, address: %v", t.TestName, err, addr.Hex())
+							t.Fatalf("FAIL (%s): Error getting withdrawable amount from deposit contract: %v, address: %v", t.TestName, err, addr.Hex())
 						}
 
 						expectBalanceMGNO := ws.WithdrawalsHistory.GetExpectedAccumulatedBalance(addr, t.CLMock.LatestExecutedPayload.Number)
@@ -1359,7 +1349,6 @@ func getBalanceChangeDelta(client *ethclient.Client, account common.Address, fro
 		return nil, err
 	}
 	diff := big.NewInt(0).Sub(toBalance, fromBalance)
-	// if diff is positive return it, othervise return -(diff)
 	if toBalance.Cmp(fromBalance) == 1 {
 		return diff, nil
 	}
@@ -1395,21 +1384,6 @@ type WithdrawalsSyncSpec struct {
 }
 
 func (ws *WithdrawalsSyncSpec) Execute(t *test.Env) {
-	//var secondaryEngineTestChan chan *test.TestEngineClient
-	//var secondaryEngineChan chan client.EngineClient
-	//ws.WithdrawalsBaseSpec.SkipBaseVerifications = true
-	//ws.WithdrawalsBaseSpec.Execute(t)
-	//go func() {
-	//	if err != nil {
-	//		t.Fatalf("FAIL (%s): Unable to spawn a secondary client: %v", t.TestName, err)
-	//	}
-	//	secondaryEngineChan <- secondaryEngine
-	//	secondaryEngineTestChan <- test.NewTestEngineClient(t, secondaryEngine)
-	//
-	//}()
-	//// Do the base withdrawal test first, skipping base verifications
-	//secondaryEngine := <-secondaryEngineChan
-	//secondaryEngineTest := <-secondaryEngineTestChan
 	ws.WithdrawalsBaseSpec.SkipBaseVerifications = true
 	ws.WithdrawalsBaseSpec.Execute(t)
 
@@ -1806,18 +1780,18 @@ func (ws *WithdrawalsExecutionLayerSpec) claimBlocksCount() int {
 	return ws.ClaimBlocksCount
 }
 
-// ClaimWithdrawals sends claimWithdrawals() call to deposit contract with list of addresses
-// from withdrawals history
+// ClaimWithdrawals sends claimWithdrawals() call to deposit contract with list of addresses from withdrawals history
 func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 	// Get ExecuteWithdrawalsClaims
 	addresses := make([]common.Address, 0)
 	for _, w := range ws.WithdrawalsHistory[t.CLMock.CurrentPayloadNumber-1] {
 		addresses = append(addresses, w.Address)
 	}
-	// Send claim transaction
+
+	// Send claimWithdrawals transaction
 	claims, err := libgno.ClaimWithdrawalsData(addresses)
 	if err != nil {
-		t.Fatalf("FAIL (%s): Cant create claimWithdrawals transaction payload: %v", t.TestName, err)
+		t.Fatalf("FAIL (%s): Can't create claimWithdrawals transaction payload: %v", t.TestName, err)
 	}
 
 	sender := globals.NewTestAccount(globals.GnoVaultVaultKey, &globals.GnoVaultAccountAddress, 0)
@@ -1830,9 +1804,8 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 			Amount:     common.Big0,
 			Payload:    claims,
 			TxType:     t.TestTransactionType,
-			GasLimit:   t.Genesis.GasLimit,
+			GasLimit:   10000000,
 			ForkConfig: t.ForkConfig,
-			//ChainID:    t.Genesis.Config().ChainID,
 		},
 		sender,
 	)
@@ -1842,25 +1815,23 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 }
 
 // VerifyClaimsExecution verifies that:
-//
-// sum(withdrawals) == ERC20 balance delta == sum(transfer events values)
-//
-// for provided block range
+// sum(withdrawals) == ERC20 balance delta == sum(transfer events values) for provided block range
 func (ws *WithdrawalsExecutionLayerSpec) VerifyClaimsExecution(
 	t *test.Env, client *ethclient.Client, fromBlock, toBlock uint64,
 ) {
-	addresses := ws.WithdrawalsHistory.GetAddressesWithdrawnOnBlock(toBlock - 1)
+	// All addresses that had withdrawals in [fromBlock, toBlock-1] (toBlock is the claim block)
+	addresses := ws.WithdrawalsHistory.GetAddressesWithdrawnInRange(fromBlock, toBlock-1)
 	transfersMap, err := libgno.GetWithdrawalsTransferEvents(client, addresses, fromBlock, toBlock)
 	if err != nil {
-		t.Fatalf("FAIL (%s): Error trying to get claims transfer events: %w", t.TestName, err)
+		t.Fatalf("FAIL (%s): Error trying to get claims transfer events: %v", t.TestName, err)
 	}
 	if len(addresses) == 0 {
-		t.Fatalf("FAIL (%s): No withdrawal addresses found: %w", t.TestName)
+		t.Fatalf("FAIL (%s): No withdrawal addresses found", t.TestName)
 	}
 	for _, addr := range addresses {
 		balanceDelta, err := getBalanceChangeDelta(client, addr, big.NewInt(int64(fromBlock)), big.NewInt(int64(toBlock)))
 		if err != nil {
-			t.Fatalf("FAIL (%s): Error trying to get balance delta of token: %v, address: %v, from block %d to block %d", t.TestName, err, addr.Hex(), fromBlock, toBlock)
+			t.Fatalf("FAIL (%s): Error getting GNO token balance delta: %v, address: %v, blocks %d-%d", t.TestName, err, addr.Hex(), fromBlock, toBlock)
 		}
 
 		withdrawalsAccumulatedDeltaMGNO := ws.WithdrawalsHistory.GetExpectedAccumulatedBalanceDelta(addr, fromBlock, toBlock)
@@ -1873,7 +1844,7 @@ func (ws *WithdrawalsExecutionLayerSpec) VerifyClaimsExecution(
 				t.TestName, addr, balanceDelta, withdrawalsDeltaGNO,
 			)
 		}
-		// if block range is >1 there will be the trasfered sum from all transfer events
+		// if block range is >1 there will be the transferred sum from all transfer events
 		// for specific address in block range
 		eventValue := transfersMap[addr.Hex()]
 		if eventValue == nil {
@@ -1943,16 +1914,14 @@ func (ws *WithdrawalsExecutionLayerSpec) Execute(t *test.Env) {
 	// 1. Produce WithdrawalsBlockCount number of blocks with withdrawals
 	// 2. Claim accumulated withdrawals and verify claims execution and balances
 	// 3. Iteratively produce block pairs (first with withdrawals and second with claim Tx)
-	//    and verify every claim execution
-	for i := 0; i < int(ws.WithdrawalsBlockCount); i++ {
-		t.CLMock.ProduceBlocks(int(ws.WithdrawalsBlockCount), clmock.BlockProcessCallbacks{
-			OnPayloadProducerSelected: func() {
-				// Send some withdrawals
-				t.CLMock.NextWithdrawals, nextIndex = ws.GenerateWithdrawalsForBlock(nextIndex, startAccount)
-				ws.WithdrawalsHistory[t.CLMock.CurrentPayloadNumber] = t.CLMock.NextWithdrawals
-			},
-		})
-	}
+	// and verify every claim execution
+	t.CLMock.ProduceBlocks(int(ws.WithdrawalsBlockCount), clmock.BlockProcessCallbacks{
+		OnPayloadProducerSelected: func() {
+			// Send some withdrawals
+			t.CLMock.NextWithdrawals, nextIndex = ws.GenerateWithdrawalsForBlock(nextIndex, startAccount)
+			ws.WithdrawalsHistory[t.CLMock.CurrentPayloadNumber] = t.CLMock.NextWithdrawals
+		},
+	})
 
 	t.CLMock.ProduceSingleBlock(clmock.BlockProcessCallbacks{
 		OnPayloadProducerSelected: func() {

@@ -54,17 +54,15 @@ func (cb *ContainerBackend) ServeAPI(ctx context.Context, h http.Handler) (libhi
 	// Now start the container.
 	info, err := cb.StartContainer(ctx, id, opts)
 	if err != nil {
-		cb.DeleteContainer(id)
+		_ = cb.DeleteContainer(id)
 		return nil, err
 	}
 
 	// Proxy server should come up.
-	select {
-	case err := <-proxyErrC:
-		if err != nil {
-			cb.DeleteContainer(id)
-			return nil, err
-		}
+	err = <-proxyErrC
+	if err != nil {
+		_ = cb.DeleteContainer(id)
+		return nil, err
 	}
 
 	// Register proxy in ContainerBackend, so it can be used for CheckLive.
@@ -112,8 +110,8 @@ func (c *proxyContainer) Close() error {
 		c.cb.proxy = nil
 
 		// Stop the container.
-		c.containerStdin.Close()
-		c.containerStdout.Close()
+		_ = c.containerStdin.Close()
+		_ = c.containerStdout.Close()
 		c.stopErr = c.cb.DeleteContainer(c.containerID)
 		c.containerWait()
 

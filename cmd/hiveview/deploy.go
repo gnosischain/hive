@@ -144,7 +144,7 @@ func (dfs *deployFS) openHTML(name string) (fs.File, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer inputFile.Close()
+	defer func() { _ = inputFile.Close() }()
 
 	inputInfo, err := inputFile.Stat()
 	if err != nil {
@@ -156,15 +156,15 @@ func (dfs *deployFS) openHTML(name string) (fs.File, error) {
 	if dfs.bundler == nil {
 		// JS bundle is disabled. To make ES module loading work without the bundle,
 		// the document needs an importmap.
-		insertAfterTag(inputFile, output, "head", importMapScript())
+		_ = insertAfterTag(inputFile, output, "head", importMapScript())
 		modTime = time.Now()
 	} else {
 		// Replace script/style references with bundle paths, if possible.
 		buildmsg, _ := dfs.rebuildBundleFS()
 		var errorShown bool
-		modifyHTML(inputFile, output, func(token *html.Token, errlog io.Writer) {
+		_ = modifyHTML(inputFile, output, func(token *html.Token, errlog io.Writer) {
 			if len(buildmsg) > 0 && !errorShown {
-				io.WriteString(errlog, "** ESBUILD ERRORS **\n\n")
+				_, _ = io.WriteString(errlog, "** ESBUILD ERRORS **\n\n")
 				renderBuildMsg(buildmsg, errlog)
 				modTime = time.Now()
 				errorShown = true
@@ -203,11 +203,11 @@ func insertAfterTag(r io.Reader, w io.Writer, tagName, content string) error {
 			}
 			return z.Err()
 		} else {
-			w.Write(z.Raw())
+			_, _ = w.Write(z.Raw())
 			if !done && tt == html.StartTagToken {
 				name, _ := z.TagName()
 				if string(name) == tagName {
-					io.WriteString(w, content)
+					_, _ = io.WriteString(w, content)
 					done = true
 				}
 			}
@@ -230,7 +230,7 @@ func modifyHTML(r io.Reader, w io.Writer, modify func(tag *html.Token, errlog io
 		case html.StartTagToken, html.SelfClosingTagToken:
 			token := z.Token()
 			modify(&token, &errlog)
-			io.WriteString(w, token.String())
+			_, _ = io.WriteString(w, token.String())
 		case html.EndTagToken:
 			// Insert the build error log at end of body.
 			tag, _ := z.TagName()
@@ -238,11 +238,11 @@ func modifyHTML(r io.Reader, w io.Writer, modify func(tag *html.Token, errlog io
 				logHTML := `<pre style="position: absolute; top: 20px; left: 20px; width: 90%; border: 4px solid black; background-color: white; padding: 1em;">`
 				logHTML += html.EscapeString(errlog.String())
 				logHTML += `</pre>`
-				io.WriteString(w, logHTML)
+				_, _ = io.WriteString(w, logHTML)
 			}
-			w.Write(z.Raw())
+			_, _ = w.Write(z.Raw())
 		default:
-			w.Write(z.Raw())
+			_, _ = w.Write(z.Raw())
 		}
 	}
 }

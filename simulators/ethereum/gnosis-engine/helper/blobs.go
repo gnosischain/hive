@@ -271,7 +271,7 @@ func (tc *BlobTransactionCreator) MakeTransaction(sender SenderAccount, nonce ui
 		return nil, errors.New("nil to address")
 	}
 
-	chain := 10202
+	chain := 10209
 	// Collect fields for transaction
 	var (
 		address = *tc.To

@@ -655,7 +655,7 @@ func (step SendBlobTransactions) Execute(t *TestContext) error {
 	for bTx := uint64(0); bTx < step.TransactionCount; bTx++ {
 		blobTxCreator := &helper.BlobTransactionCreator{
 			To:         &addr,
-			GasLimit:   t.Genesis.GasLimit,
+			GasLimit:   100000,
 			GasTip:     step.BlobTransactionGasTipCap,
 			GasFee:     step.BlobTransactionGasFeeCap,
 			BlobGasFee: step.BlobTransactionMaxBlobGasCost,

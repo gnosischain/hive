@@ -82,6 +82,7 @@ func (b *fakeBackend) ServeAPI(ctx context.Context, h http.Handler) (libhive.API
 		return nil, err
 	}
 	srv := &http.Server{Handler: h}
+	//nolint:errcheck // server runs in background until closed
 	go srv.Serve(l)
 	return apiServer{srv, l.Addr()}, nil
 }

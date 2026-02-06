@@ -78,7 +78,7 @@ func (b *Builder) BuildImage(ctx context.Context, name string, fsys fs.FS) error
 	opts := b.buildConfig(ctx, name)
 	pipeR, pipeW := io.Pipe()
 	opts.InputStream = pipeR
-	go b.archiveFS(ctx, pipeW, fsys)
+	go func() { _ = b.archiveFS(ctx, pipeW, fsys) }()
 
 	b.logger.Info("building image", "image", name, "nocache", opts.NoCache, "pull", b.config.PullEnabled)
 	if err := b.client.BuildImage(opts); err != nil {
@@ -110,7 +110,7 @@ func (b *Builder) buildConfig(ctx context.Context, name string) docker.BuildImag
 }
 
 func (b *Builder) archiveFS(ctx context.Context, out io.WriteCloser, fsys fs.FS) error {
-	defer out.Close()
+	defer func() { _ = out.Close() }()
 
 	w := tar.NewWriter(out)
 	err := fs.WalkDir(fsys, ".", func(path string, e fs.DirEntry, err error) error {
@@ -145,10 +145,10 @@ func (b *Builder) archiveFS(ctx context.Context, out io.WriteCloser, fsys fs.FS)
 				return err
 			}
 			if _, err := io.Copy(w, file); err != nil {
-				file.Close()
+				_ = file.Close()
 				return err
 			}
-			file.Close()
+			_ = file.Close()
 		}
 
 		return nil
@@ -158,9 +158,8 @@ func (b *Builder) archiveFS(ctx context.Context, out io.WriteCloser, fsys fs.FS)
 		return err
 	}
 
-	// TODO: errors
-	w.Flush()
-	w.Close()
+	_ = w.Flush()
+	_ = w.Close()
 	return nil
 }
 

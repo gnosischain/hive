@@ -131,7 +131,7 @@ func parseSuite(fsys fs.FS, path string) (*libhive.TestSuite, fs.FileInfo) {
 		log.Printf("Can't access summary file: %s", err)
 		return nil, nil
 	}
-	defer file.Close()
+	defer func() { _ = file.Close() }()
 
 	fileInfo, err := file.Stat()
 	if err != nil {

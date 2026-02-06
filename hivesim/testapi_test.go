@@ -39,7 +39,7 @@ func TestSuiteReporting(t *testing.T) {
 		t.Fatal("suite run failed:", err)
 	}
 
-	tm.Terminate()
+	_ = tm.Terminate()
 	results := tm.Results()
 	removeTimestamps(results)
 
@@ -137,7 +137,7 @@ func TestSkipping(t *testing.T) {
 		srv.Close()
 
 		// Collect names of executed test cases.
-		tm.Terminate()
+		_ = tm.Terminate()
 		results := tm.Results()
 		removeTimestamps(results)
 		var cases []string
