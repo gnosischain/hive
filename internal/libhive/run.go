@@ -139,9 +139,8 @@ func (r *Runner) RunDevMode(ctx context.Context, env SimEnv, endpoint string, hi
 		return err
 	}
 	httpsrv := &http.Server{Handler: tm.API()}
-	defer func() { _ = httpsrv.Close() }()
-	//nolint:errcheck // server error is non-fatal in dev mode
-	go func() { _ = httpsrv.Serve(listener) }()
+	defer httpsrv.Close()
+	go func() { httpsrv.Serve(listener) }()
 
 	fmt.Printf(`---
 Welcome to hive --dev mode. Run with me:
@@ -239,7 +238,7 @@ func (r *Runner) run(ctx context.Context, sim string, env SimEnv, hiveInfo HiveI
 	slogger.Debug("started simulator container")
 	defer func() {
 		slogger.Debug("deleting simulator container")
-		_ = r.container.DeleteContainer(sc.ID)
+		r.container.DeleteContainer(sc.ID)
 	}()
 
 	// Wait for simulator exit.

@@ -159,6 +159,9 @@ Otherwise, it looks for files in the $HOME directory:
 	// Handle cleanup/list operations if requested.
 	if *cleanupContainers || *listContainers {
 		dockerClient := cb.GetDockerClient()
+		if dockerClient == nil {
+			fatal("Docker client not available for cleanup operations")
+		}
 
 		client, ok := dockerClient.(*docker.Client)
 		if !ok {
@@ -239,9 +242,7 @@ Otherwise, it looks for files in the $HOME directory:
 		fatal(err)
 	}
 	if *simDevMode {
-		if err := runner.RunDevMode(ctx, env, *simDevModeAPIEndpoint, hiveInfo); err != nil {
-			fatal(err)
-		}
+		runner.RunDevMode(ctx, env, *simDevModeAPIEndpoint, hiveInfo)
 		return
 	}
 
@@ -275,7 +276,7 @@ func parseClientsFile(inv *libhive.Inventory, file string) ([]libhive.ClientDesi
 	if err != nil {
 		return nil, err
 	}
-	defer func() { _ = f.Close() }()
+	defer f.Close()
 	return libhive.ParseClientListYAML(inv, f)
 }
 

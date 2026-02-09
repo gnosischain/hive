@@ -50,13 +50,13 @@ func main() {
 		cmd := exec.Command("docker", "cp", req.ContainerID+":"+req.ContainerFilePath, req.HostFilePath)
 		err = cmd.Run()
 		if err != nil {
-			_, _ = io.WriteString(w, "Failed to copy file: "+err.Error())
+			io.WriteString(w, "Failed to copy file: "+err.Error())
 			http.Error(w, "Failed to copy file: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Respond with a success message
-		_, _ = io.WriteString(w, "File copied successfully!")
+		io.WriteString(w, "File copied successfully!")
 	})
 
 	mux.HandleFunc("/copydir", func(w http.ResponseWriter, r *http.Request) {
@@ -83,13 +83,13 @@ func main() {
 		cmd := exec.Command("docker", "cp", req.ContainerID+":"+req.ContainerFilePath, req.HostFilePath)
 		err = cmd.Run()
 		if err != nil {
-			_, _ = io.WriteString(w, "Failed to copy directory: "+err.Error())
+			io.WriteString(w, "Failed to copy directory: "+err.Error())
 			http.Error(w, "Failed to copy directory: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		// Respond with a success message
-		_, _ = io.WriteString(w, "Directory copied successfully!")
+		io.WriteString(w, "Directory copied successfully!")
 	})
 
 	stopChan := make(chan os.Signal, 1)
@@ -110,7 +110,7 @@ func main() {
 			return
 		}
 
-		_, _ = io.WriteString(w, "Server is stopping...")
+		io.WriteString(w, "Server is stopping...")
 
 		// Signal the server to shutdown
 		stopChan <- os.Interrupt

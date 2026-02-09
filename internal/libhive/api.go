@@ -180,7 +180,7 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 		serveError(w, err, http.StatusBadRequest)
 		return
 	}
-	defer func() { _ = r.MultipartForm.RemoveAll() }()
+	defer r.MultipartForm.RemoveAll()
 
 	if !r.Form.Has("config") {
 		slog.Error("API: missing 'config' parameter in node request", "error", err)
@@ -314,7 +314,7 @@ func (api *simAPI) startClient(w http.ResponseWriter, r *http.Request) {
 
 		// Register the node. This should always be done, even if starting the container
 		// failed, to ensure that the failed client log is associated with the test.
-		_ = api.tm.RegisterNode(testID, info.ID, clientInfo)
+		api.tm.RegisterNode(testID, info.ID, clientInfo)
 	}
 	if err != nil {
 		slog.Error("API: could not start client", "client", clientDef.Name, "container", containerID[:8], "error", err)
@@ -635,18 +635,18 @@ func serveJSON(w http.ResponseWriter, value interface{}) {
 	}
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = w.Write(resp)
+	w.Write(resp)
 }
 
 func serveOK(w http.ResponseWriter) {
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	_, _ = io.WriteString(w, "null")
+	io.WriteString(w, "null")
 }
 
 func serveError(w http.ResponseWriter, err error, status int) {
 	resp, _ := json.Marshal(&simapi.Error{Error: err.Error()})
 	w.Header().Set("content-type", "application/json")
 	w.WriteHeader(status)
-	_, _ = w.Write(resp)
+	w.Write(resp)
 }

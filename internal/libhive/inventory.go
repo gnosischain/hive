@@ -169,7 +169,7 @@ func loadClientMetadata(path string) (m ClientMetadata, err error) {
 	if err != nil {
 		return m, err
 	}
-	defer func() { _ = f.Close() }()
+	defer f.Close()
 
 	dec := yaml.NewDecoder(f)
 	dec.KnownFields(true)
