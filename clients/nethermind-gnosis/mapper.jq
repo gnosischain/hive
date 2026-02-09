@@ -233,5 +233,5 @@ def infix_zeros_to_length(s;l):
     "excessBlobGas": .excessBlobGas,
     "parentBeaconBlockRoot": .parentBeaconBlockRoot,
   },
-  "accounts": (.alloc|with_entries(.key|="0x"+.))
+  "accounts": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
 }|remove_empty
