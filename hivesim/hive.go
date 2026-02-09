@@ -385,10 +385,9 @@ func (setup *clientSetup) postWithFiles(url string, result interface{}) error {
 		form         = multipart.NewWriter(bufW)
 	)
 
-	//nolint:errcheck // goroutine return value is sent to pipeErrCh
 	go func() (err error) {
 		defer func() { pipeErrCh <- err }()
-		defer func() { _ = pipeW.Close() }()
+		defer pipeW.Close()
 
 		// Write 'config' parameter first.
 		fw, err := form.CreateFormField("config")
@@ -411,7 +410,7 @@ func (setup *clientSetup) postWithFiles(url string, result interface{}) error {
 				return err
 			}
 			_, copyErr := io.Copy(fw, fileReader)
-			_ = fileReader.Close()
+			fileReader.Close()
 			if copyErr != nil {
 				return copyErr
 			}
@@ -432,7 +431,7 @@ func (setup *clientSetup) postWithFiles(url string, result interface{}) error {
 	req.Header.Set("content-type", form.FormDataContentType())
 	httpErr := request(req, result)
 
-	// Wait for the uploader goroutine to finish. Goroutine return value is sent to pipeErrCh.
+	// Wait for the uploader goroutine to finish.
 	uploadErr := <-pipeErrCh
 	if httpErr == nil && uploadErr != nil {
 		return uploadErr
@@ -483,7 +482,7 @@ func request(httpReq *http.Request, result interface{}) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = resp.Body.Close() }()
+	defer resp.Body.Close()
 	dec := json.NewDecoder(resp.Body)
 
 	switch {
