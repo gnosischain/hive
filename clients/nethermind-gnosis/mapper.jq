@@ -218,36 +218,6 @@ def infix_zeros_to_length(s;l):
           "target": (if env.HIVE_AMSTERDAM_BLOB_TARGET then env.HIVE_AMSTERDAM_BLOB_TARGET|to_hex else "0x1" end),
           "max": (if env.HIVE_AMSTERDAM_BLOB_MAX then env.HIVE_AMSTERDAM_BLOB_MAX|to_hex else "0x2" end),
           "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
-      } else null end,
-      if env.HIVE_BPO1_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO1_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO1_BLOB_TARGET then env.HIVE_BPO1_BLOB_TARGET|to_hex else "0x1" end),
-          "max": (if env.HIVE_BPO1_BLOB_MAX then env.HIVE_BPO1_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
-      } else null end,
-      if env.HIVE_BPO2_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO2_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO2_BLOB_TARGET then env.HIVE_BPO2_BLOB_TARGET|to_hex else "0x1" end),
-          "max": (if env.HIVE_BPO2_BLOB_MAX then env.HIVE_BPO2_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
-      } else null end,
-      if env.HIVE_BPO3_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO3_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO3_BLOB_TARGET then env.HIVE_BPO3_BLOB_TARGET|to_hex else "0x1" end),
-          "max": (if env.HIVE_BPO3_BLOB_MAX then env.HIVE_BPO3_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
-      } else null end,
-      if env.HIVE_BPO4_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO4_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO4_BLOB_TARGET then env.HIVE_BPO4_BLOB_TARGET|to_hex else "0x1" end),
-          "max": (if env.HIVE_BPO4_BLOB_MAX then env.HIVE_BPO4_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
-      } else null end,
-      if env.HIVE_BPO5_TIMESTAMP then {
-          "timestamp": env.HIVE_BPO5_TIMESTAMP|to_hex,
-          "target": (if env.HIVE_BPO5_BLOB_TARGET then env.HIVE_BPO5_BLOB_TARGET|to_hex else "0x1" end),
-          "max": (if env.HIVE_BPO5_BLOB_MAX then env.HIVE_BPO5_BLOB_MAX|to_hex else "0x2" end),
-          "baseFeeUpdateFraction": (if env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION|to_hex else "0x10fafa" end)
       } else null end
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
