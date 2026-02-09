@@ -116,7 +116,10 @@ func (r *Runner) RunDevMode(ctx context.Context, env SimEnv, endpoint string, hi
 	if err := createWorkspace(env.LogDir); err != nil {
 		return err
 	}
-	clientDefs := append([]*ClientDefinition(nil), r.clientDefs...)
+	clientDefs := make([]*ClientDefinition, 0)
+	for _, def := range r.clientDefs {
+		clientDefs = append(clientDefs, def)
+	}
 	tm := NewTestManager(env, r.container, clientDefs, hiveInfo)
 	defer func() {
 		if err := tm.Terminate(); err != nil {

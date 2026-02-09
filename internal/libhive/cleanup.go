@@ -142,7 +142,9 @@ func ListHiveContainers(ctx context.Context, client *docker.Client, instanceID s
 		if len(container.Names) > 0 {
 			containerName = container.Names[0]
 			// Remove the leading "/" that Docker adds to container names
-			containerName = strings.TrimPrefix(containerName, "/")
+			if strings.HasPrefix(containerName, "/") {
+				containerName = containerName[1:]
+			}
 			// Truncate long names
 			if len(containerName) > 18 {
 				containerName = containerName[:18] + "..."
