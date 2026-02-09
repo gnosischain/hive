@@ -69,7 +69,7 @@ func (g *generator) writeJSON(name string, obj any) error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = out.Close() }()
+	defer out.Close()
 	_, err = out.Write(jsonData)
 	return err
 }
@@ -115,7 +115,7 @@ func (g *generator) writeChain() error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = out.Close() }()
+	defer out.Close()
 	lastBlock := g.blockchain.CurrentBlock().Number.Uint64()
 	return exportN(g.blockchain, out, 1, lastBlock)
 }
@@ -127,7 +127,7 @@ func (g *generator) writePoWChain() error {
 	if err != nil {
 		return err
 	}
-	defer func() { _ = out.Close() }()
+	defer out.Close()
 	lastBlock, ok := g.mergeBlock()
 	if !ok {
 		lastBlock = g.blockchain.CurrentBlock().Number.Uint64()

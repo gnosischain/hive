@@ -70,7 +70,7 @@ func generateCommand(args []string) {
 	flag.StringVar(&cfg.outputDir, "outdir", ".", "Destination directory")
 	flag.StringVar(&cfg.lastFork, "lastfork", "", "Name of the last fork to activate")
 	flag.BoolVar(&cfg.merged, "pos", false, "Create a PoS (merged) chain")
-	_ = flag.CommandLine.Parse(args)
+	flag.CommandLine.Parse(args)
 
 	if *outlist != "" {
 		if *outlist == "all" {
@@ -91,12 +91,12 @@ func generateCommand(args []string) {
 
 func usage() {
 	o := flag.CommandLine.Output()
-	_, _ = fmt.Fprintln(o, "Usage: hivechain generate|print [options...]")
+	fmt.Fprintln(o, "Usage: hivechain generate|print [options...]")
 	flag.PrintDefaults()
-	_, _ = fmt.Fprintln(o, "")
-	_, _ = fmt.Fprintln(o, "List of available -outputs:")
+	fmt.Fprintln(o, "")
+	fmt.Fprintln(o, "List of available -outputs:")
 	for _, name := range outputFunctionNames() {
-		_, _ = fmt.Fprintln(o, "  ", name)
+		fmt.Fprintln(o, "  ", name)
 	}
 }
 
@@ -105,7 +105,7 @@ func printCommand(args []string) {
 	var (
 		verbose = flag.Bool("v", false, "If set, all block fields are displayed")
 	)
-	_ = flag.CommandLine.Parse(args)
+	flag.CommandLine.Parse(args)
 	if flag.NArg() != 1 {
 		fatalf("Usage: hivechain print [ options ] <chain.rlp>")
 	}
@@ -114,7 +114,7 @@ func printCommand(args []string) {
 	if err != nil {
 		fatal(err)
 	}
-	defer func() { _ = file.Close() }()
+	defer file.Close()
 
 	s := rlp.NewStream(bufio.NewReader(file), 0)
 	for i := 0; ; i++ {
