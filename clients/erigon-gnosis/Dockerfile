@@ -3,9 +3,6 @@ ARG baseimage=erigontech/erigon
 ARG tag=main-latest
 
 FROM $baseimage:$tag
-ARG GOPROXY
-
-ENV GOPROXY=${GOPROXY}
 
 # The upstream erigon container uses a non-root user, but we need
 # to install additional commands, so switch back to root.

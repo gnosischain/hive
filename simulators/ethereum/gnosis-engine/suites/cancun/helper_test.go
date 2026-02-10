@@ -7,7 +7,6 @@ import (
 )
 
 func TestBeaconRootStorageIndexes(t *testing.T) {
-
 	expectedTimestampKey := common.HexToHash("0x000000000000000000000000000000000000000000000000000000000000000a")
 	expectedRootKey := common.HexToHash("0x000000000000000000000000000000000000000000000000000000000001800a")
 
