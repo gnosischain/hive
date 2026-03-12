@@ -1,10 +1,10 @@
-### Build Nethermind Locally:
-### Requires a copy of nethermind/ -> hive/clients/nethermind/
+### Build Nethermind-Gnosis Locally:
+### Requires a copy of nethermind/ -> hive/clients/nethermind-gnosis/
 
 ## Builder stage: Compiles nethermind from a local directory
 FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 
-# Default local client path: clients/nethermind/<nethermind>
+# Default local client path: clients/nethermind-gnosis/<nethermind>
 ARG local_path=nethermind
 ADD $local_path /nethermind
 
