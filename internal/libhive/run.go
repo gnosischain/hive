@@ -319,14 +319,14 @@ func createWorkspace(logdir string) error {
 
 func writeInstanceInfo(logdir string) {
 	var obj HiveInstance
-	
+
 	// Legacy fields for backward compatibility
 	obj.SourceCommit, obj.SourceDate = hiveVersion()
 	buildDate := hiveBuildTime()
 	if !buildDate.IsZero() {
 		obj.BuildDate = buildDate.Format("2006-01-02T15:04:05Z")
 	}
-	
+
 	// Enhanced version information
 	obj.HiveVersion = GetHiveVersion()
 
@@ -362,5 +362,3 @@ func hiveBuildTime() time.Time {
 	}
 	return stat.ModTime()
 }
-
-
