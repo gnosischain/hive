@@ -58,8 +58,7 @@ def infix_zeros_to_length(s;l):
           "multi": {
             "0": {
               "list": [
-                "0x14747a698Ec1227e6753026C08B29b4d5D3bC484",
-                "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"
+                "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875",
               ]
             }
           }
