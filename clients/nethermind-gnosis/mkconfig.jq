@@ -62,7 +62,6 @@ def json_rpc_config:
 def sync_config:
   {
     "Sync": {
-      "FastSync": false,
       "SnapSync": (env.HIVE_NODETYPE == "snap"),
     },
   }
@@ -73,44 +72,6 @@ def txpool_config:
     {
       "TxPool": {
         "BlobsSupport": "StorageWithReorgs"
-      }
-    }
-  else
-    {}
-  end
-;
-
-def aura_config:
-  {
-    "Init": {
-      "IsMining": true,
-      "DiscoveryEnabled": false
-    },
-    "Mining": {
-      "Enabled": true,
-      "MinGasPrice": 1
-    },
-    "KeyStore": {
-      "BlockAuthorAccount": "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875",
-      "UnlockAccounts": ["0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"],
-      "Passwords": ["gnosismerge"],
-      "KeyStoreDirectory": "/networkdata/miner_keystores"
-    },
-    "Aura": {
-      "AllowAuRaPrivateChains": true
-    },
-    "Blocks": {
-      "GenesisTimeoutMs": 120000
-    }
-  }
-;
-
-def engine_port_config:
-  if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then
-    {
-      "JsonRpc": {
-        "EnginePort": 8551,
-        "EngineHost": "0.0.0.0"
       }
     }
   else
@@ -156,4 +117,4 @@ def base_config:
 ;
 
 # This is the main expression that outputs the config.
-base_config * keystore_config * merge_config * json_rpc_config * sync_config * txpool_config * engine_port_config * aura_config
+base_config * keystore_config * merge_config * json_rpc_config * sync_config * txpool_config
