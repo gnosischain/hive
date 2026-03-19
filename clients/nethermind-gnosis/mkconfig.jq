@@ -80,7 +80,7 @@ def txpool_config:
 ;
 
 def aura_config:
-  if env.HIVE_PRAGUE_TIMESTAMP == null then
+  if env.HIVE_PRAGUE_TIMESTAMP == null and env.HIVE_MINER != null then
     {
       "Init": {
         "IsMining": true,
@@ -125,6 +125,7 @@ def base_config:
   {
     "Init": {
       "WebSocketsEnabled": true,
+      "IsMining": (env.HIVE_MINER != null),
       "UseMemDb": true,
       "ChainSpecPath": "/chainspec/test.json",
       "BaseDbPath": "nethermind_db/hive",
