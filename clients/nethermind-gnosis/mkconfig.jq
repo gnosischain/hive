@@ -62,6 +62,7 @@ def json_rpc_config:
 def sync_config:
   {
     "Sync": {
+      "FastSync": false,
       "SnapSync": (env.HIVE_NODETYPE == "snap"),
     },
   }
@@ -80,32 +81,28 @@ def txpool_config:
 ;
 
 def aura_config:
-  if env.HIVE_PRAGUE_TIMESTAMP == null and env.HIVE_MINER != null then
-    {
-      "Init": {
-        "IsMining": true,
-        "DiscoveryEnabled": false
-      },
-      "Mining": {
-        "Enabled": true,
-        "MinGasPrice": 1
-      },
-      "KeyStore": {
-        "BlockAuthorAccount": "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875",
-        "UnlockAccounts": ["0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"],
-        "Passwords": ["gnosismerge"],
-        "KeyStoreDirectory": "/networkdata/miner_keystores"
-      },
-      "Aura": {
-        "AllowAuRaPrivateChains": true
-      },
-      "Blocks": {
-        "GenesisTimeoutMs": 120000
-      }
+  {
+    "Init": {
+      "IsMining": true,
+      "DiscoveryEnabled": false
+    },
+    "Mining": {
+      "Enabled": true,
+      "MinGasPrice": 1
+    },
+    "KeyStore": {
+      "BlockAuthorAccount": "0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875",
+      "UnlockAccounts": ["0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875"],
+      "Passwords": ["gnosismerge"],
+      "KeyStoreDirectory": "/networkdata/miner_keystores"
+    },
+    "Aura": {
+      "AllowAuRaPrivateChains": true
+    },
+    "Blocks": {
+      "GenesisTimeoutMs": 120000
     }
-  else
-    {}
-  end
+  }
 ;
 
 def engine_port_config:
