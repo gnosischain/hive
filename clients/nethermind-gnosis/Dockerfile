@@ -20,7 +20,7 @@ ADD enode.sh /hive-bin/enode.sh
 # Add miner keystores
 ADD keystore-password /networkdata/keystore_password_filename
 ADD miner-0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875.json /networkdata/miner_keystores/miner-0x5cd99ac2f0f8c25a1e670f6bab19d52aad69d875.json
-ADD test.json /chainspec/test.json
+ADD test.json /configs/test.json
 
 # Set execute permissions for scripts
 RUN chmod +x /nethermind.sh /hive-bin/enode.sh
