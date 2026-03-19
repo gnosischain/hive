@@ -45,21 +45,9 @@ def infix_zeros_to_length(s;l):
   end
 ;
 
-# This gives the consensus engine definition for the clique PoA engine.
-def clique_engine:
-  {
-    "clique": {
-       "params": {
-         "period": env.HIVE_CLIQUE_PERIOD|tonumber,
-         "epoch": 30000,
-         "blockReward": "0x0"
-       }
-    }
-  }
-;
-
-def gnosis_engine:
-  {
+{
+  "version": "1",
+  "engine": {
     "authorityRound": {
       "params": {
         "stepDuration": 5,
@@ -91,12 +79,7 @@ def gnosis_engine:
         }
       }
     }
-  }
-;
-
-{
-  "version": "1",
-  "engine": (if env.HIVE_CLIQUE_PERIOD then clique_engine else gnosis_engine end),
+  },
   "params": {
     # Tangerine Whistle
     "eip150Transition": env.HIVE_FORK_TANGERINE|to_hex,
@@ -243,12 +226,6 @@ def gnosis_engine:
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
-    "seal": {
-      "authorityRound": {
-        "step": "0x0",
-        "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-      }
-    },
     "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
