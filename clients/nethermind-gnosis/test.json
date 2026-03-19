@@ -50,9 +50,7 @@
       "Net",
       "Parity",
       "Health",
-      "Admin",
-      "Rpc",
-      "Testing"
+      "Admin"
     ],
     "AdditionalRpcUrls": ["http://0.0.0.0:8550|http;ws|debug;net;eth;subscribe;engine;web3;client;admin|no-auth", "http://0.0.0.0:8551|http;ws|debug;net;eth;subscribe;engine;web3;client;admin"]
   },

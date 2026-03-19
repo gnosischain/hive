@@ -2,6 +2,9 @@
 ARG baseimage=nethermindeth/nethermind
 ARG tag=master
 FROM $baseimage:$tag
+ARG GOPROXY
+
+ENV GOPROXY=${GOPROXY}
 
 RUN apt-get update && apt-get install -y jq curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
@@ -28,6 +31,7 @@ RUN chmod +x /nethermind.sh /hive-bin/enode.sh
 # Expose networking ports
 EXPOSE 8545 8551 30303 30303/udp
 
-ENV NETHERMIND_HIVE_ENABLED=true
+ENV NETHERMIND_HIVE_ENABLED true
 ENV NETHERMIND_HIVECONFIG_ENABLED=true
+
 ENTRYPOINT ["/nethermind.sh"]
