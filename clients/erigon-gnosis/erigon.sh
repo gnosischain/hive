@@ -50,7 +50,7 @@ FLAGS="$FLAGS --fakepow"
 # Create the data directory.
 mkdir /erigon-hive-datadir
 FLAGS="$FLAGS --datadir /erigon-hive-datadir"
-FLAGS="$FLAGS --db.size.limit 2GB --sync.parallel-state-flushing=false"
+FLAGS="$FLAGS --db.size.limit 2GB"
 
 # If a specific network ID is requested, use that
 if [ "$HIVE_NETWORK_ID" != "" ]; then
@@ -68,8 +68,8 @@ if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.alloc[] | select(.balance == "0x123450000000000000000"))' /genesis.json
 else
-    echo "Supplied genesis state"
-    # cat /genesis.json
+    echo "Supplied genesis state:"
+    cat /genesis.json
 fi
 
 echo "Command flags till now:"
@@ -127,19 +127,24 @@ if [ "$HIVE_CLIQUE_PRIVATEKEY" != "" ]; then
 fi
 
 # Configure RPC.
-FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.api=admin,debug,eth,net,txpool,web3"
+FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.api=admin,debug,trace,eth,net,txpool,web3,testing"
 FLAGS="$FLAGS --ws --ws.port=8546"
 
 # Increase blob slots for tests
 FLAGS="$FLAGS --txpool.blobslots=1000 --txpool.totalblobpoollimit=10000"
+
+# Disable performance optimization incompatible with the tests
+FLAGS="$FLAGS --sync.parallel-state-flushing=false"
 
 if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
     JWT_SECRET="0x7365637265747365637265747365637265747365637265747365637265747365"
     echo -n $JWT_SECRET > /jwt.secret
     FLAGS="$FLAGS --authrpc.addr=0.0.0.0 --authrpc.jwtsecret=/jwt.secret"
 fi
+
 # Disable Caplin
 FLAGS="$FLAGS --externalcl"
+
 # Launch the main client.
 FLAGS="$FLAGS --nat=none --no-downloader"
 echo "Running erigon with flags $FLAGS"

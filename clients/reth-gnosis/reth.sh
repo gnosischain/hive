@@ -81,9 +81,6 @@ echo $FLAGS
 echo "Initializing database with genesis state..."
 $reth init $FLAGS --chain /genesis.json
 
-# Make sure pruner doesn't start
-# echo -e "[prune]\\nblock_interval = 500_000" >> $DATADIR/reth.toml
-
 # make sure we use the same genesis each time
 FLAGS="$FLAGS --chain /genesis.json"
 
@@ -100,20 +97,29 @@ fi
 
 # Load the remainder of the test chain
 echo "Loading remaining individual blocks..."
-if [ -d /blocks ]; then
-    echo "Loading remaining individual blocks..."
-    for file in $(ls /blocks | sort -n); do
-        echo "Importing " $file
-        $reth import $FLAGS /blocks/$file
-    done
+mapfile -t BLOCKS < <(ls /blocks/*.rlp 2>/dev/null | sort -n)
+
+if [[ ! -d "/blocks" || ${#BLOCKS[@]} -eq 0 ]]; then
+    echo "Warning: No blocks found."
+elif [[ ${#BLOCKS[@]} -eq 1 ]]; then
+    # Import the only existing block
+    $reth import $FLAGS "${BLOCKS[0]}"
 else
-    echo "Warning: blocks folder not found."
+    # First import as many blocks as possible, and only then import the last one.
+    # This is important because usually tests expecting a failure will assert that the last valid inserted block is at last - 1. If we attempted to import all of them the pipeline would unwind the whole range.
+    cat "${BLOCKS[@]:0:${#BLOCKS[@]}-1}" > "combined.rlp"
+
+    # Import all but the last block first
+    $reth import $FLAGS "combined.rlp"
+
+    # Import the last block separately
+    $reth import $FLAGS "${BLOCKS[-1]}"
 fi
 
 # Only set boot nodes in online steps
 # It doesn't make sense to dial out, use only a pre-set bootnode.
 if [ "$HIVE_BOOTNODE" != "" ]; then
-    FLAGS="$FLAGS --bootnodes=$HIVE_BOOTNODE"
+    FLAGS="$FLAGS --bootnodes=$HIVE_BOOTNODE --trusted-peers=$HIVE_BOOTNODE"
 fi
 
 # Configure any mining operation
@@ -147,8 +153,8 @@ if [ -n "${HIVE_CLIQUE_PRIVATEKEY}" ] || [ -n "${HIVE_CLIQUE_PERIOD}" ]; then
 fi
 
 # Configure RPC.
-FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.api=admin,debug,eth,net,web3"
-FLAGS="$FLAGS --ws --ws.addr=0.0.0.0 --ws.api=admin,debug,eth,net,web3"
+FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.api=admin,debug,trace,eth,net,txpool,web3,testing"
+FLAGS="$FLAGS --ws --ws.addr=0.0.0.0 --ws.api=admin,debug,trace,eth,net,txpool,web3,testing"
 
 if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
     JWT_SECRET="7365637265747365637265747365637265747365637265747365637265747365"
@@ -158,7 +164,7 @@ fi
 
 # Configure NAT and disable pruning
 FLAGS="$FLAGS --nat none --block-interval 500000"
-jq '(.alloc | with_entries(.key |= if (length == 40) then "0x" + . else . end)) as $new_alloc | .alloc = $new_alloc' /genesis.json > /genesis-temp.json && mv /genesis-temp.json /genesis.json
+
 # Launch the main client.
 echo "Running reth with flags: $FLAGS"
-RUST_LOG=info $reth node $FLAGS
+RUST_LOG=debug $reth node $FLAGS

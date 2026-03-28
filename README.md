@@ -17,12 +17,12 @@ Supported clients:
 
 - Nethermind (`nethermind-gnosis`)
 - Erigon (`erigon-gnosis`)
-- Geth (`geth-gnosis`)
-- Reth (`rethink-gnosis`)
+- Geth (`go-ethereum-gnosis`)
+- Reth (`reth-gnosis`)
 
 Supported simulators:
 
-- ethereum/gnosis-engine-jq
+- ethereum/gnosis-engine
 
 The above simulator contains rewritten `ethereum/engine` tests with gnosis specific libraries and configurations.
 Following suites are supported:
@@ -33,12 +33,12 @@ Following suites are supported:
 - engine-exchange-capabilities
 - engine-api
 
-- smoke/network (nethermind and reth only)
-
-Below simulators used to run EEST tests. Gnosis implementation of EEST currently in progress.
+The following simulators are used to run EEST tests:
 
 - gnosis/eest/consume-engine
 - gnosis/eest/consume-rlp
+
+The Gnosis-specific EEST implementation is currently a work in progress.
 
 ## Scripts Module
 
@@ -56,7 +56,7 @@ This script allows us to run tests and store all logs, JRPC requests, and respon
 Usage:
 
 ```bash
-./scripts/run_test.sh --test "/Blob Transaction Ordering, Single Account, Dual Blob" --exp "01" --client "nethermind-gnosis" --simulator "ethereum/gnosis-engine-jq" --proxy "192.168.3.49:8089" > ./scripts/test.log
+./scripts/run_test.sh --test "/Blob Transaction Ordering, Single Account, Dual Blob" --exp "01" --client "nethermind-gnosis" --simulator "ethereum/gnosis-engine" --proxy "192.168.3.49:8089" > ./scripts/test.log
 
 ```
 
@@ -140,7 +140,7 @@ The process is the following:
 2. Go to `sync-upstream` branch and click on `Sync fork`
 3. Create a pull request against `reflow` (`develop`) branch
 4. Resolve merge conflicts, check changes of shared code (e.g. `ethereum/engine` tests)
-5. If possible, update `gnosis-engine-jq` simulator with the changes, if not - analyze and mention in the PR description to do later
+5. If possible, update `gnosis-engine` simulator with the changes, if not - analyze and mention in the PR description to do later
 6. Run the tests against `sync-upstream` branch using `Daily run Gnosis` workflow
 7. If tests pass, merge the PR
 
