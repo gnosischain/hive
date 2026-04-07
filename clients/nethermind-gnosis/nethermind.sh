@@ -89,17 +89,20 @@ fi
 # Configure logging.
 export NO_COLOR=1
 LOG_FLAG=""
-if [ "$HIVE_LOGLEVEL" != "" ]; then
-    case "$HIVE_LOGLEVEL" in
-        0)   LOG=OFF ;;
-        1)   LOG=ERROR ;;
-        2)   LOG=WARN  ;;
-        3)   LOG=INFO  ;;
-        4)   LOG=DEBUG ;;
-        5)   LOG=TRACE ;;
-    esac
-    LOG_FLAG="--log $LOG"
+# Default to TRACE unless Hive overrides it.
+if [ "$HIVE_LOGLEVEL" = "" ]; then
+    HIVE_LOGLEVEL=5
 fi
+case "$HIVE_LOGLEVEL" in
+    0)   LOG=OFF ;;
+    1)   LOG=ERROR ;;
+    2)   LOG=WARN  ;;
+    3)   LOG=INFO  ;;
+    4)   LOG=DEBUG ;;
+    5)   LOG=TRACE ;;
+    *)   LOG=TRACE ;;
+esac
+LOG_FLAG="--log $LOG"
 
 echo "Running Nethermind..."
 /nethermind/nethermind --config /configs/test.json $LOG_FLAG

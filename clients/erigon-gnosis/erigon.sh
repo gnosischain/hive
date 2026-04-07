@@ -35,9 +35,11 @@ set -e
 
 erigon=/usr/local/bin/erigon
 
-if [ "$HIVE_LOGLEVEL" != "" ]; then
-    FLAGS="$FLAGS --log.console.verbosity=$HIVE_LOGLEVEL"
+# Default to maximum verbosity unless Hive overrides it.
+if [ "$HIVE_LOGLEVEL" = "" ]; then
+    HIVE_LOGLEVEL=5
 fi
+FLAGS="$FLAGS --log.console.verbosity=$HIVE_LOGLEVEL"
 
 if [ "$HIVE_BOOTNODE" != "" ]; then
     # Somehow the bootnodes flag is not working for erigon, only staticpeers is working for sync tests
