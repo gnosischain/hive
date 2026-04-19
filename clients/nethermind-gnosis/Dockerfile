@@ -1,7 +1,22 @@
-## Build Nethermind Via Pre-Built Image:
-ARG baseimage=nethermindeth/nethermind
-ARG tag=master
-FROM $baseimage:$tag
+### Build Nethermind From Git:
+
+## Builder stage: Compiles nethermind from a git repository
+FROM mcr.microsoft.com/dotnet/sdk:10.0-noble AS build
+
+ARG github=nethermindeth/nethermind
+ARG tag=fix-read-account-only
+
+RUN echo "Cloning: $github - $tag" && \
+    git clone -b $tag https://github.com/$github && \
+    cd /nethermind/src/Nethermind/Nethermind.Runner && \
+    dotnet build -c release
+
+## Final stage: Sets up the environment for running nethermind
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-noble
+
+# Copy compiled binary from builder
+COPY --from=build /nethermind/src/Nethermind/artifacts/bin/Nethermind.Runner/release /nethermind
+WORKDIR /nethermind
 
 RUN apt-get update && apt-get install -y jq curl && \
     apt-get clean && rm -rf /var/lib/apt/lists/*
