@@ -109,4 +109,4 @@ replace github.com/ethereum/hive/hiveproxy => ./hiveproxy
 
 tool github.com/fjl/geas/cmd/geas
 
-replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v1.17.1-gc.3
+replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v1.17.3-0.20260420205246-edf1ece153cf

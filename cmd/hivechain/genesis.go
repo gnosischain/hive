@@ -60,6 +60,8 @@ var (
 	registrarAddress             = common.HexToAddress("0x6000000000000000000000000000000000000000")
 	withdrawalContractAddress    = common.HexToAddress("0xbabe2bed00000000000000000000000000000003")
 	depositContractAddress       = common.HexToAddress("0xbabe2bed00000000000000000000000000000003")
+	blockRewardContractCode      = common.FromHex("0x608060405234801561000f575f5ffd5b5060043610610029575f3560e01c8063f91c28981461002d575b5f5ffd5b61004061003b3660046100c0565b610057565b60405161004e92919061012a565b60405180910390f35b60608060405160408152606060208201525f60408201525f6060820152608081f35b5f5f83601f840112610089575f5ffd5b5081356001600160401b0381111561009f575f5ffd5b6020830191508360208260051b85010111156100b9575f5ffd5b9250929050565b5f5f5f5f604085870312156100d3575f5ffd5b84356001600160401b038111156100e8575f5ffd5b6100f487828801610079565b90955093505060208501356001600160401b03811115610112575f5ffd5b61011e87828801610079565b95989497509550505050565b604080825283519082018190525f9060208501906060840190835b8181101561016c5783516001600160a01b0316835260209384019390920191600101610145565b5050838103602080860191909152855180835291810192508501905f5b818110156101a7578251845260209384019390920191600101610189565b5091969550505050505056fea2646970667358221220e16faf108632709dd9a4a2cec3d61ceeff2919e9ea4162aed99fe5502ef7b8c264736f6c63430008220033")
+	withdrawalContractCode       = common.FromHex("0x6080604052348015600e575f5ffd5b50600436106026575f3560e01c806379d0c0bc14602a575b5f5ffd5b603c60353660046082565b5050505050565b005b5f5f83601f840112604d575f5ffd5b5081356001600160401b038111156062575f5ffd5b6020830191508360208260051b8501011115607b575f5ffd5b9250929050565b5f5f5f5f5f606086880312156095575f5ffd5b8535945060208601356001600160401b0381111560b0575f5ffd5b60ba88828901603e565b90955093505060408601356001600160401b0381111560d7575f5ffd5b60e188828901603e565b96999598509396509294939250505056fea2646970667358221220d044cca4aa2b520b54f7d26bdd3e92395a0c5c95d868a809fc97544f0071db4064736f6c63430008220033")
 )
 
 // gnosisAuraConfig returns the AuRa consensus config for the Gnosis test chain.
@@ -89,8 +91,10 @@ func gnosisAuraConfig() *params.AuRaConfig {
 		BlockGasLimitContractTransitions: map[uint64]common.Address{
 			0: blockGasLimitContractAddress,
 		},
-		Registrar:           &registrarAddress,
-		Eip1559FeeCollector: &eip1559FeeCollectorAddress,
+		Registrar:                  &registrarAddress,
+		Eip1559FeeCollector:        &eip1559FeeCollectorAddress,
+		BlockRewardContractAddress: &blockRewardContractAddress,
+		WithdrawalContractAddress:  &withdrawalContractAddress,
 	}
 }
 
@@ -201,6 +205,7 @@ func (cfg *generatorConfig) createGenesis() *core.Genesis {
 	addPragueSystemContracts(g.Alloc)
 	addSnapTestContract(g.Alloc)
 	addModContracts(g.Alloc)
+	addGnosisSystemContracts(g.Alloc)
 
 	return &g
 }
@@ -246,6 +251,18 @@ func addModContracts(ga types.GenesisAlloc) {
 	ga[common.HexToAddress(largeLogsAddr)] = types.Account{
 		Code:    modLargeReceiptCode,
 		Balance: new(big.Int),
+	}
+}
+
+// addGnosisSystemContracts adds the system contracts used by Gnosis.
+func addGnosisSystemContracts(ga types.GenesisAlloc) {
+	ga[blockRewardContractAddress] = types.Account{
+		Balance: big.NewInt(1),
+		Code:    blockRewardContractCode,
+	}
+	ga[withdrawalContractAddress] = types.Account{
+		Balance: big.NewInt(1),
+		Code:    withdrawalContractCode,
 	}
 }
 
