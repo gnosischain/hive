@@ -51,6 +51,49 @@ var (
 	}
 )
 
+// Gnosis-specific AuRa addresses
+var (
+	eip1559FeeCollectorAddress   = common.HexToAddress("0x1559000000000000000000000000000000000000")
+	blockRewardContractAddress   = common.HexToAddress("0x2000000000000000000000000000000000000001")
+	randomnessContractAddress    = common.HexToAddress("0x3000000000000000000000000000000000000001")
+	blockGasLimitContractAddress = common.HexToAddress("0x4000000000000000000000000000000000000001")
+	registrarAddress             = common.HexToAddress("0x6000000000000000000000000000000000000000")
+	withdrawalContractAddress    = common.HexToAddress("0xbabe2bed00000000000000000000000000000003")
+	depositContractAddress       = common.HexToAddress("0xbabe2bed00000000000000000000000000000003")
+)
+
+// gnosisAuraConfig returns the AuRa consensus config for the Gnosis test chain.
+func gnosisAuraConfig() *params.AuRaConfig {
+	var (
+		stepDuration            = uint64(5)
+		blockReward             = uint64(0)
+		maxUncleCountTransition = uint64(0)
+		maxUncleCount           = uint(0)
+		posdaoTransition        = uint64(0)
+	)
+
+	dummyValidator := common.HexToAddress("0x7435ed30A8b4AEb0877CEf0c6E8cFFe834eb865f")
+	return &params.AuRaConfig{
+		StepDuration:                &stepDuration,
+		BlockReward:                 &blockReward,
+		MaximumUncleCountTransition: &maxUncleCountTransition,
+		MaximumUncleCount:           &maxUncleCount,
+
+		Validators: &params.ValidatorSetJson{
+			List: []common.Address{dummyValidator},
+		},
+		RandomnessContractAddress: map[uint64]common.Address{
+			0: randomnessContractAddress,
+		},
+		PosdaoTransition: &posdaoTransition,
+		BlockGasLimitContractTransitions: map[uint64]common.Address{
+			0: blockGasLimitContractAddress,
+		},
+		Registrar:           &registrarAddress,
+		Eip1559FeeCollector: &eip1559FeeCollectorAddress,
+	}
+}
+
 // createChainConfig creates a chain configuration.
 func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 	chaincfg := new(params.ChainConfig)
@@ -59,7 +102,10 @@ func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 	chaincfg.ChainID = chainid
 
 	// Set consensus algorithm.
-	chaincfg.Ethash = new(params.EthashConfig)
+	chaincfg.Aura = gnosisAuraConfig()
+
+	// Set deposit contract address.
+	chaincfg.DepositContractAddress = depositContractAddress
 
 	// Apply forks.
 	forks := cfg.forkBlocks()
@@ -125,6 +171,9 @@ func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 }
 
 func (cfg *generatorConfig) genesisDifficulty() *big.Int {
+	if cfg.merged {
+		return big.NewInt(0)
+	}
 	return new(big.Int).Set(params.MinimumDifficulty)
 }
 
