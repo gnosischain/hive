@@ -2,7 +2,7 @@
 FROM golang:1-alpine as builder
 ARG GOPROXY
 ENV GOPROXY=${GOPROXY}
-ARG branch=testing
+ARG branch=main
 ENV GIT_REF=${branch}
 
 RUN apk add --update git ca-certificates gcc musl-dev linux-headers

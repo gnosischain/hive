@@ -34,7 +34,7 @@ func loadTestFile(name string, r io.Reader) (rpcTest, error) {
 		inHeader = true
 		test     = rpcTest{name: name}
 	)
-	scan.Buffer(buf, 1024*1024)
+	scan.Buffer(buf, 256*1024*1024)
 	for scan.Scan() {
 		line := strings.TrimSpace(scan.Text())
 		switch {
