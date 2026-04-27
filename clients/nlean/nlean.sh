@@ -33,6 +33,16 @@ if [ ! -f "$ASSET_ROOT/annotated_validators.yaml" ]; then
     exit 1
 fi
 
+if [ ! -f "$ASSET_ROOT/validator-config.yaml" ]; then
+    echo "Missing prepared Lean validator config at $ASSET_ROOT/validator-config.yaml" >&2
+    exit 1
+fi
+
+if [ ! -f "$ASSET_ROOT/config.yaml" ]; then
+    echo "Missing prepared Lean network config at $ASSET_ROOT/config.yaml" >&2
+    exit 1
+fi
+
 if [ ! -d "$ASSET_ROOT/hash-sig-keys" ]; then
     echo "Missing hash-sig-keys directory at $ASSET_ROOT/hash-sig-keys" >&2
     exit 1
@@ -55,7 +65,9 @@ else
 fi
 
 FLAGS=(
+    --validator-config "$ASSET_ROOT/validator-config.yaml"
     --annotated-validators "$ASSET_ROOT/annotated_validators.yaml"
+    --hash-sig-key-dir "$ASSET_ROOT/hash-sig-keys"
     --node "$NODE_ID"
     --data-dir /data
     --fork-digest "$FORK_DIGEST"
@@ -63,7 +75,6 @@ FLAGS=(
     --socket-port 9000
     --metrics-address 0.0.0.0
     --metrics-port 8080
-    --hash-sig-key-dir "$ASSET_ROOT/hash-sig-keys"
     --api-port 5052
 )
 
