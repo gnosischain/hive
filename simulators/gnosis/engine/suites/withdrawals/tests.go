@@ -1072,11 +1072,11 @@ func (ws *WithdrawalsBaseSpec) sendPayloadTransactions(t *test.Env) {
 	for i := uint64(0); i < ws.GetTransactionCountPerPayload(); i++ {
 		var destAddr = TX_CONTRACT_ADDRESSES[int(i)%len(TX_CONTRACT_ADDRESSES)]
 
-		// TODO: found test accounts list during load
-		sender := globals.NewTestAccount(globals.VaultKey, &globals.VaultAccountAddress, 0)
+		sender := globals.TestAccounts[0]
 
-		_, err := helper.SendNextTransactionWithAccount(
+		_, err := t.SendTransaction(
 			t.TestContext,
+			sender,
 			t.CLMock.NextBlockProducer,
 			&helper.BaseTransactionCreator{
 				Recipient: &destAddr,
@@ -1087,7 +1087,6 @@ func (ws *WithdrawalsBaseSpec) sendPayloadTransactions(t *test.Env) {
 				TxType:     t.TestTransactionType,
 				ForkConfig: t.ForkConfig,
 			},
-			sender,
 		)
 
 		if err != nil {
@@ -1329,12 +1328,11 @@ func (ws *WithdrawalsBaseSpec) Execute(t *test.Env) {
 }
 
 func getClient(t *test.Env) *ethclient.Client {
-	url, _ := t.CLMock.EngineClients[0].Url()
-	client, err := ethclient.Dial(url)
-	if err != nil {
+	if t.HiveEngine.Client == nil {
 		return nil
 	}
-	return client
+
+	return t.HiveEngine.Client
 }
 
 // getBalanceChangeDelta calls balanceOf for fromBlock and toBlock heights and returns balance delta
@@ -1794,10 +1792,11 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 		t.Fatalf("FAIL (%s): Can't create claimWithdrawals transaction payload: %v", t.TestName, err)
 	}
 
-	sender := globals.NewTestAccount(globals.GnoVaultVaultKey, &globals.GnoVaultAccountAddress, 0)
+	sender := globals.TestAccounts[0]
 
-	_, err = helper.SendNextTransactionWithAccount(
+	_, err = t.SendTransaction(
 		t.TestContext,
+		sender,
 		t.CLMock.NextBlockProducer,
 		&helper.BaseTransactionCreator{
 			Recipient:  &libgno.WithdrawalsContractAddress,
@@ -1807,7 +1806,6 @@ func (ws *WithdrawalsBaseSpec) ClaimWithdrawals(t *test.Env) {
 			GasLimit:   10000000,
 			ForkConfig: t.ForkConfig,
 		},
-		sender,
 	)
 	if err != nil {
 		t.Fatalf("FAIL (%s): Error trying to send claim transaction: %v", t.TestName, err)
