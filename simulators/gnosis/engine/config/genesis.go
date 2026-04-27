@@ -9,6 +9,7 @@ import (
 )
 
 func (f *ForkConfig) ConfigGenesis(genesis *core.Genesis) error {
+	genesis.Config.LondonBlock = big.NewInt(0)
 	genesis.Config.TerminalTotalDifficulty = genesis.Difficulty
 	genesis.Config.MergeNetsplitBlock = big.NewInt(0)
 	if f.ShanghaiTimestamp != nil {
