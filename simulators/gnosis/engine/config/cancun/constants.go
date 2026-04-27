@@ -21,7 +21,6 @@ var (
 
 	BLOB_COMMITMENT_VERSION_KZG = byte(0x01)
 
-	// FIXME: make compliant with gnosis values
 	// EIP 4788
 	BEACON_ROOTS_ADDRESS  = common.HexToAddress("0x000F3df6D732807Ef1319fB7B8bB8522d0Beac02")
 	HISTORY_BUFFER_LENGTH = uint64(8191)
