@@ -7,8 +7,9 @@ import (
 )
 
 func TestBeaconRootStorageIndexes(t *testing.T) {
+
 	expectedTimestampKey := common.HexToHash("0x000000000000000000000000000000000000000000000000000000000000000a")
-	expectedRootKey := common.HexToHash("0x000000000000000000000000000000000000000000000000000000000001800a")
+	expectedRootKey := common.HexToHash("0x0000000000000000000000000000000000000000000000000000000000002009")
 
 	gotTimestampKey, gotRootKey := BeaconRootStorageIndexes(0xa)
 
