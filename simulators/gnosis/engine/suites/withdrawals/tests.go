@@ -1128,7 +1128,16 @@ func (ws *WithdrawalsBaseSpec) Execute(t *test.Env) {
 	Requested "latest" block expecting genesis to contain
 	withdrawalRoot=nil, because genesis.timestamp < shanghaiTime
 	`
-	r.ExpectWithdrawalsRoot(nil)
+	expectedGenesisWithdrawalsRoot := (*common.Hash)(nil)
+	if t.Genesis.Timestamp >= shangaiTime {
+		emptyRoot := helper.ComputeWithdrawalsRoot(types.Withdrawals{})
+		expectedGenesisWithdrawalsRoot = &emptyRoot
+		r.ExpectationDescription = `
+	Requested "latest" block expecting genesis to contain
+	withdrawalRoot=emptyRoot, because genesis.timestamp >= shanghaiTime
+	`
+	}
+	r.ExpectWithdrawalsRoot(expectedGenesisWithdrawalsRoot)
 
 	// Produce any blocks necessary to reach withdrawals fork
 	t.CLMock.ProduceBlocks(int(ws.GetPreWithdrawalsBlockCount()), clmock.BlockProcessCallbacks{
@@ -1872,7 +1881,16 @@ func (ws *WithdrawalsExecutionLayerSpec) Execute(t *test.Env) {
 	Requested "latest" block expecting genesis to contain
 	withdrawalRoot=nil, because genesis.timestamp < shanghaiTime
 	`
-	r.ExpectWithdrawalsRoot(nil)
+	expectedGenesisWithdrawalsRoot := (*common.Hash)(nil)
+	if t.Genesis.Timestamp >= shangaiTime {
+		emptyRoot := helper.ComputeWithdrawalsRoot(types.Withdrawals{})
+		expectedGenesisWithdrawalsRoot = &emptyRoot
+		r.ExpectationDescription = `
+	Requested "latest" block expecting genesis to contain
+	withdrawalRoot=emptyRoot, because genesis.timestamp >= shanghaiTime
+	`
+	}
+	r.ExpectWithdrawalsRoot(expectedGenesisWithdrawalsRoot)
 	ws.waitForSetup(t)
 	// Produce any blocks necessary to reach withdrawals fork
 	t.CLMock.ProduceBlocks(int(ws.GetPreWithdrawalsBlockCount()), clmock.BlockProcessCallbacks{
