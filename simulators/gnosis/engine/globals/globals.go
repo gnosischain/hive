@@ -7,9 +7,8 @@ import (
 	"math/big"
 	"time"
 
-	"github.com/ethereum/go-ethereum/crypto"
-
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/params"
 	"github.com/ethereum/hive/hivesim"
 )
@@ -18,15 +17,6 @@ type TestAccount struct {
 	key     *ecdsa.PrivateKey
 	address *common.Address
 	index   uint64
-}
-
-// NewTestAccount creates a new test account with a deterministic address and private key.
-func NewTestAccount(key *ecdsa.PrivateKey, address *common.Address, index uint64) *TestAccount {
-	return &TestAccount{
-		key:     key,
-		address: address,
-		index:   index,
-	}
 }
 
 func (a *TestAccount) GetKey() *ecdsa.PrivateKey {
@@ -67,12 +57,6 @@ var (
 	DefaultJwtTokenSecretBytes = []byte("secretsecretsecretsecretsecretse") // secretsecretsecretsecretsecretse
 	MaxTimeDriftSeconds        = int64(60)
 
-	// This is the account that sends vault funding transactions.
-	VaultAccountAddress    = common.HexToAddress("0x59f80ed315477f9f0059D862713A7b082A599217")
-	VaultKey, _            = crypto.HexToECDSA("ff804d09c833619af673fa99c92ae506d30ff60f37ad41a3d098dcf714db1e4a")
-	GnoVaultAccountAddress = common.HexToAddress("0xcC4e00A72d871D6c328BcFE9025AD93d0a26dF51")
-	GnoVaultVaultKey, _    = crypto.HexToECDSA("82fcff5c93519f3615d6a92a5a7d146ee305082d3d768d63eb1b45f11f419346")
-
 	// Accounts used for testing
 	TestAccountCount = uint64(20)
 	TestAccounts     []*TestAccount
@@ -110,13 +94,9 @@ var (
 )
 
 func init() {
-	TestAccounts = make([]*TestAccount, TestAccountCount)
-
-	TestAccounts[0] = NewTestAccount(GnoVaultVaultKey, &GnoVaultAccountAddress, 0)
-	TestAccounts[1] = NewTestAccount(VaultKey, &VaultAccountAddress, 0)
-
 	// Fill the test accounts with deterministic addresses
-	for i := uint64(2); i < TestAccountCount; i++ {
+	TestAccounts = make([]*TestAccount, TestAccountCount)
+	for i := uint64(0); i < TestAccountCount; i++ {
 		bs := make([]byte, 8)
 		binary.BigEndian.PutUint64(bs, uint64(i))
 		b := sha256.Sum256(bs)
