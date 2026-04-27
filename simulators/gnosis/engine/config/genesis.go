@@ -9,6 +9,15 @@ import (
 )
 
 func (f *ForkConfig) ConfigGenesis(genesis *core.Genesis) error {
+	genesis.Config.HomesteadBlock = big.NewInt(0)
+	genesis.Config.EIP150Block = big.NewInt(0)
+	genesis.Config.EIP155Block = big.NewInt(0)
+	genesis.Config.EIP158Block = big.NewInt(0)
+	genesis.Config.ByzantiumBlock = big.NewInt(0)
+	genesis.Config.ConstantinopleBlock = big.NewInt(0)
+	genesis.Config.PetersburgBlock = big.NewInt(0)
+	genesis.Config.IstanbulBlock = big.NewInt(0)
+	genesis.Config.BerlinBlock = big.NewInt(0)
 	genesis.Config.LondonBlock = big.NewInt(0)
 	genesis.Config.TerminalTotalDifficulty = genesis.Difficulty
 	genesis.Config.MergeNetsplitBlock = big.NewInt(0)
