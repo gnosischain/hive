@@ -335,7 +335,7 @@ func (v *validator) ValidateWitness(witness *stateless.Witness, receiptRoot comm
 
 type processor struct{}
 
-func (p *processor) Process(block *types.Block, statedb *state.StateDB, cfg vm.Config) (*core.ProcessResult, error) {
+func (p *processor) Process(ctx context.Context, block *types.Block, statedb *state.StateDB, cfg vm.Config) (*core.ProcessResult, error) {
 	return &core.ProcessResult{GasUsed: 21000}, nil
 }
 
@@ -380,12 +380,12 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 		lastErr          error
 	)
 	for _, candidateRoot := range candidateRoots {
-		statedb, err := state.New(candidateRoot, bc.StateCache())
+		statedb, err := bc.StateAt(candidateRoot)
 		if err != nil {
 			lastErr = errors.Wrapf(err, "failed to create state db from parent root %s", candidateRoot)
 			continue
 		}
-		result, err = n.eth.BlockChain().Processor().Process(block, statedb, *n.eth.BlockChain().GetVMConfig())
+		result, err = n.eth.BlockChain().Processor().Process(context.Background(), block, statedb, *n.eth.BlockChain().GetVMConfig())
 		failedProcessing = err != nil || result == nil
 		root, err = statedb.Commit(block.NumberU64(), false, false)
 		if err != nil {
@@ -405,7 +405,7 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 
 	// If node is running in path mode, skip explicit gc operation
 	// which is unnecessary in this mode.
-	if triedb := bc.StateCache().TrieDB(); triedb.Scheme() != rawdb.PathScheme {
+	if triedb := bc.TrieDB(); triedb.Scheme() != rawdb.PathScheme {
 		if err := triedb.Commit(block.Root(), true); err != nil {
 			return errors.Wrapf(err, "failed to commit block trie, pathScheme=%v", triedb.Scheme())
 		}
@@ -453,7 +453,7 @@ func (n *GethNode) NewPayloadV1(ctx context.Context, pl *typ.ExecutableData) (be
 	if err != nil {
 		return beacon.PayloadStatusV1{}, err
 	}
-	resp, err := n.api.NewPayloadV1(edConverted)
+	resp, err := n.api.NewPayloadV1(ctx, edConverted)
 	n.latestPayloadStatusReponse = &resp
 	return resp, err
 }
@@ -464,7 +464,7 @@ func (n *GethNode) NewPayloadV2(ctx context.Context, pl *typ.ExecutableData) (be
 	if err != nil {
 		return beacon.PayloadStatusV1{}, err
 	}
-	resp, err := n.api.NewPayloadV2(ed)
+	resp, err := n.api.NewPayloadV2(ctx, ed)
 	n.latestPayloadStatusReponse = &resp
 	return resp, err
 }
@@ -478,7 +478,7 @@ func (n *GethNode) NewPayloadV3(ctx context.Context, pl *typ.ExecutableData) (be
 	if pl.VersionedHashes == nil {
 		return beacon.PayloadStatusV1{}, fmt.Errorf("versioned hashes are nil")
 	}
-	resp, err := n.api.NewPayloadV3(ed, *pl.VersionedHashes, pl.ParentBeaconBlockRoot)
+	resp, err := n.api.NewPayloadV3(ctx, ed, *pl.VersionedHashes, pl.ParentBeaconBlockRoot)
 	n.latestPayloadStatusReponse = &resp
 	return resp, err
 }
@@ -512,7 +512,7 @@ func GethPayloadAttributes(payload *typ.PayloadAttributes) *beacon.PayloadAttrib
 func (n *GethNode) ForkchoiceUpdatedV1(ctx context.Context, fcs *beacon.ForkchoiceStateV1, payload *typ.PayloadAttributes) (beacon.ForkChoiceResponse, error) {
 	n.latestFcUStateSent = fcs
 	n.latestPAttrSent = payload
-	fcr, err := n.api.ForkchoiceUpdatedV1(*fcs, GethPayloadAttributes(payload))
+	fcr, err := n.api.ForkchoiceUpdatedV1(ctx, *fcs, GethPayloadAttributes(payload))
 	n.latestFcUResponse = &fcr
 	return fcr, err
 }
@@ -520,7 +520,7 @@ func (n *GethNode) ForkchoiceUpdatedV1(ctx context.Context, fcs *beacon.Forkchoi
 func (n *GethNode) ForkchoiceUpdatedV2(ctx context.Context, fcs *beacon.ForkchoiceStateV1, payload *typ.PayloadAttributes) (beacon.ForkChoiceResponse, error) {
 	n.latestFcUStateSent = fcs
 	n.latestPAttrSent = payload
-	fcr, err := n.api.ForkchoiceUpdatedV2(*fcs, GethPayloadAttributes(payload))
+	fcr, err := n.api.ForkchoiceUpdatedV2(ctx, *fcs, GethPayloadAttributes(payload))
 	n.latestFcUResponse = &fcr
 	return fcr, err
 }
@@ -528,7 +528,7 @@ func (n *GethNode) ForkchoiceUpdatedV2(ctx context.Context, fcs *beacon.Forkchoi
 func (n *GethNode) ForkchoiceUpdatedV3(ctx context.Context, fcs *beacon.ForkchoiceStateV1, payload *typ.PayloadAttributes) (beacon.ForkChoiceResponse, error) {
 	n.latestFcUStateSent = fcs
 	n.latestPAttrSent = payload
-	fcr, err := n.api.ForkchoiceUpdatedV3(*fcs, GethPayloadAttributes(payload))
+	fcr, err := n.api.ForkchoiceUpdatedV3(ctx, *fcs, GethPayloadAttributes(payload))
 	n.latestFcUResponse = &fcr
 	return fcr, err
 }
@@ -672,7 +672,7 @@ func (n *GethNode) getStateDB(ctx context.Context, blockNumber *big.Int) (*state
 	if err != nil {
 		return nil, err
 	}
-	return state.New(b.Root(), n.eth.BlockChain().StateCache())
+	return n.eth.BlockChain().StateAt(b.Root())
 }
 
 func (n *GethNode) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
