@@ -78,8 +78,8 @@ github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08 h1:f6D9Hr8x
 github.com/gballet/go-libpcsclite v0.0.0-20191108122812-4678299bea08/go.mod h1:x7DCsMOv1taUwEWCzT4cmDeAkigA5/QCwUodaVOe8Ww=
 github.com/getsentry/sentry-go v0.27.0 h1:Pv98CIbtB3LkMWmXi4Joa5OOcwbmnX88sF5qbK3r3Ps=
 github.com/getsentry/sentry-go v0.27.0/go.mod h1:lc76E2QywIyW8WuBnwl8Lc4bkmQH4+w1gwTf25trprY=
-github.com/gnosischain/go-ethereum v1.17.2-gc h1:AgrDyhsFt5UWKUisDwcklKbjq9IpDzxPPZo9zXTs+Zs=
-github.com/gnosischain/go-ethereum v1.17.2-gc/go.mod h1:vWgQd6wRW4su1Ywz+ojwY6EqdoVku2m5QBLiJ0mZttI=
+github.com/gnosischain/go-ethereum v0.0.0-20260423161943-e187c5183cc3 h1:Dc1VgyOEC6fXqudxWocpOtoihCLQYTKj+Z06SXR0aPc=
+github.com/gnosischain/go-ethereum v0.0.0-20260423161943-e187c5183cc3/go.mod h1:vWgQd6wRW4su1Ywz+ojwY6EqdoVku2m5QBLiJ0mZttI=
 github.com/go-errors/errors v1.4.2 h1:J6MZopCL4uSllY1OfXM374weqZFFItUbrImctkmUxIA=
 github.com/go-errors/errors v1.4.2/go.mod h1:sIVyrIiJhuEF+Pj9Ebtd6P/rEYROXFi3BopGUQ5a5Og=
 github.com/go-logr/logr v1.2.2/go.mod h1:jdQByPbusPIv2/zmleS9BjJVeZ6kBagPoEUsqbVz/1A=
