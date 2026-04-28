@@ -55,7 +55,6 @@ func (b BadHashOnNewPayload) GetName() string {
 }
 
 func (b BadHashOnNewPayload) Execute(t *test.Env) {
-
 	// Produce blocks before starting the test
 	t.CLMock.ProduceBlocks(5, clmock.BlockProcessCallbacks{})
 
