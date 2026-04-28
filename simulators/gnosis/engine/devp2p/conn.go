@@ -20,9 +20,12 @@ import (
 	"crypto/ecdsa"
 	"errors"
 	"fmt"
+	"math/big"
 	"reflect"
 	"time"
 
+	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/eth/protocols/eth"
 	"github.com/ethereum/go-ethereum/p2p"
@@ -85,13 +88,16 @@ func (msg Pong) Code() int     { return 0x03 }
 func (msg Pong) ReqID() uint64 { return 0 }
 
 // Status is the network packet for the status message for eth/64 and later.
-type Status eth.StatusPacket69
+type Status eth.StatusPacket
 
 func (msg Status) Code() int     { return 16 }
 func (msg Status) ReqID() uint64 { return 0 }
 
 // NewBlockHashes is the network packet for the block announcements.
-type NewBlockHashes eth.NewBlockHashesPacket
+type NewBlockHashes []struct {
+	Hash   common.Hash
+	Number uint64
+}
 
 func (msg NewBlockHashes) Code() int     { return 17 }
 func (msg NewBlockHashes) ReqID() uint64 { return 0 }
@@ -125,7 +131,10 @@ func (msg BlockBodies) Code() int     { return 22 }
 func (msg BlockBodies) ReqID() uint64 { return msg.RequestId }
 
 // NewBlock is the network packet for the block propagation message.
-type NewBlock eth.NewBlockPacket
+type NewBlock struct {
+	Block *types.Block
+	TD    *big.Int
+}
 
 func (msg NewBlock) Code() int     { return 23 }
 func (msg NewBlock) ReqID() uint64 { return 0 }
@@ -417,9 +426,13 @@ func (c *Conn) readAndServe(timeout time.Duration) (Message, error) {
 			if err != nil {
 				return nil, errorf("could not get headers for inbound header request: %v", err)
 			}
+			headerList, err := rlp.EncodeToRawList(headers)
+			if err != nil {
+				return nil, errorf("could not encode headers: %v", err)
+			}
 			resp := &BlockHeaders{
-				RequestId:           msg.ReqID(),
-				BlockHeadersRequest: eth.BlockHeadersRequest(headers),
+				RequestId: msg.ReqID(),
+				List:      headerList,
 			}
 			if _, err := c.Write(resp); err != nil {
 				return nil, errorf("could not write to connection: %v", err)
