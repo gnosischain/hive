@@ -193,6 +193,8 @@ def infix_zeros_to_length(s;l):
     "eip7843TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7928TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7954TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip7976TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip7981TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip8024TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip8037TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
 

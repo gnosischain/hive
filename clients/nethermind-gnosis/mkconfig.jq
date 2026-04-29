@@ -53,7 +53,7 @@ def json_rpc_config:
   else
     {
       "JsonRpc": {
-        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin", "Testing"],
+        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin", "Testing"]
       }
     }
   end
