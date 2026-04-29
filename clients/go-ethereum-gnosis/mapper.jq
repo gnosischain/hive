@@ -114,7 +114,7 @@ end |
     }
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
-  "difficulty": "0x00",
+  "difficulty": .difficulty,
   "gasLimit": .gasLimit,
   "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
 }
