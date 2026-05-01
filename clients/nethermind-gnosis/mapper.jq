@@ -173,7 +173,6 @@ def infix_zeros_to_length(s;l):
     "eip7685TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
-    "eip7692TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
 
@@ -194,11 +193,14 @@ def infix_zeros_to_length(s;l):
     "eip7843TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7928TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7954TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip7976TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip7981TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip8024TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip8037TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
 
     # Other chain parameters
-    "chainID": (if env.HIVE_CHAIN_ID then env.HIVE_CHAIN_ID|to_hex else "0x64" end),
+    "networkID": env.HIVE_NETWORK_ID|to_hex,
+    "chainID": env.HIVE_CHAIN_ID|to_hex,
 
     "blobSchedule": [
       if env.HIVE_CANCUN_TIMESTAMP then {

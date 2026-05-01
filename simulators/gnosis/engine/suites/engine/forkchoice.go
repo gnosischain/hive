@@ -38,7 +38,6 @@ func (tc InconsistentForkchoiceTest) GetName() string {
 
 // Send an inconsistent ForkchoiceState with a known payload that belongs to a side chain as head, safe or finalized.
 func (tc InconsistentForkchoiceTest) Execute(t *test.Env) {
-
 	canonicalPayloads := make([]*typ.ExecutableData, 0)
 	alternativePayloads := make([]*typ.ExecutableData, 0)
 	// Produce blocks before starting the test
@@ -102,7 +101,6 @@ func (tc ForkchoiceUpdatedUnknownBlockHashTest) GetName() string {
 
 // Send an inconsistent ForkchoiceState with a known payload that belongs to a side chain as head, safe or finalized.
 func (tc ForkchoiceUpdatedUnknownBlockHashTest) Execute(t *test.Env) {
-
 	// Produce blocks before starting the test
 	t.CLMock.ProduceBlocks(5, clmock.BlockProcessCallbacks{})
 
