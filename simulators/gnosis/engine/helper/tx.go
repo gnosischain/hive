@@ -258,8 +258,6 @@ type TransactionCreator interface {
 	MakeTransaction(sender SenderAccount, nonce uint64, blockTimestamp uint64) (typ.Transaction, error)
 }
 
-const BLOBS_PER_SENDER_ACCOUNT = 10000
-
 type BaseTransactionCreator struct {
 	Recipient  *common.Address
 	GasFee     *big.Int
@@ -267,6 +265,7 @@ type BaseTransactionCreator struct {
 	GasLimit   uint64
 	BlobGasFee *big.Int
 	BlobCount  *big.Int
+	BlobID     BlobID
 	Amount     *big.Int
 	Payload    []byte
 	AccessList types.AccessList
@@ -373,8 +372,8 @@ func (tc *BaseTransactionCreator) MakeTransaction(sender SenderAccount, nonce ui
 		}
 
 		// Need tx wrap data that will pass blob verification
-		blobID := BlobID((nonce * cancun.MAX_BLOBS_PER_BLOCK) + (sender.GetIndex() * BLOBS_PER_SENDER_ACCOUNT))
-		hashes, blobData, err := BlobDataGenerator(blobID, blobCount)
+		hashes, blobData, err := BlobDataGenerator(tc.BlobID, blobCount)
+		tc.BlobID += BlobID(blobCount)
 		if err != nil {
 			return nil, err
 		}
@@ -408,9 +407,7 @@ func (tc *BaseTransactionCreator) MakeTransaction(sender SenderAccount, nonce ui
 
 	tx := types.NewTx(newTxData)
 	key := sender.GetKey()
-	// TODO: load chain ID from genesis
-	// TOOD: remove hardcode
-	return types.SignTx(tx, types.NewCancunSigner(big.NewInt(10209)), key)
+	return types.SignTx(tx, types.NewCancunSigner(globals.ChainID), key)
 }
 
 // Create a contract filled with zeros without going over the specified GasLimit
@@ -541,7 +538,7 @@ func (txSender *TransactionSender) SendTransaction(testCtx context.Context, acco
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting header")
 	}
-	nonce, err := txSender.GetNextNonce(testCtx, node, account, &header.Header)
+	nonce, err := txSender.GetNextNonce(testCtx, node, account, header)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting next account nonce")
 	}
@@ -593,7 +590,7 @@ func (txSender *TransactionSender) SendNextTransactions(testCtx context.Context,
 		sender := txSender.Accounts[txSender.transactionsSent%len(txSender.Accounts)]
 		go func(sender SenderAccount) {
 			defer wg.Done()
-			nonce, err := txSender.GetNextNonce(testCtx, node, sender, &header.Header)
+			nonce, err := txSender.GetNextNonce(testCtx, node, sender, header)
 			if err != nil {
 				errs <- errors.Wrap(err, "error getting next account nonce")
 				return
@@ -647,7 +644,7 @@ func (txSender *TransactionSender) SendNextTransactionsBatch(testCtx context.Con
 
 	for i := range txs {
 		nextAccount := txSender.Accounts[txSender.transactionsSent%len(txSender.Accounts)]
-		nonce, err := txSender.GetNextNonce(testCtx, node, nextAccount, &header.Header)
+		nonce, err := txSender.GetNextNonce(testCtx, node, nextAccount, header)
 		if err != nil {
 			return nil, errors.Wrap(err, "error getting next account nonce")
 		}
@@ -673,7 +670,7 @@ func (txSender *TransactionSender) ReplaceTransaction(testCtx context.Context, a
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting header")
 	}
-	nonce, err := txSender.GetLastNonce(testCtx, node, account, &header.Header)
+	nonce, err := txSender.GetLastNonce(testCtx, node, account, header)
 	if err != nil {
 		return nil, errors.Wrap(err, "error getting last account nonce")
 	}

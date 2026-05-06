@@ -39,12 +39,10 @@ func (s ForkIDSpec) GetForkConfig() *config.ForkConfig {
 	if forkConfig == nil {
 		return nil
 	}
-
 	return forkConfig
 }
 
 func (ft ForkIDSpec) Execute(t *test.Env) {
-
 	// Produce blocks before starting the test if required
 	t.CLMock.ProduceBlocks(ft.ProduceBlocksBeforePeering, clmock.BlockProcessCallbacks{})
 
