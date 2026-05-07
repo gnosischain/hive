@@ -58,8 +58,8 @@ end |
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
     },
-    "terminalTotalDifficulty": 0,
-    "terminalTotalDifficultyPassed": true,
+    "terminalTotalDifficulty": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int else 1 end),
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
