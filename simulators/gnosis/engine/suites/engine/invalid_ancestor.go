@@ -52,7 +52,6 @@ func (tc InvalidMissingAncestorReOrgTest) GetName() string {
 }
 
 func (tc InvalidMissingAncestorReOrgTest) Execute(t *test.Env) {
-
 	// Produce blocks before starting the test
 	t.CLMock.ProduceBlocks(5, clmock.BlockProcessCallbacks{})
 
@@ -226,16 +225,14 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 		secondaryClient *node.GethNode
 	)
 	// To allow having the invalid payload delivered via P2P, we need a second client to serve the payload
-	//starter := node.GethNodeEngineStarter{
-	//	Config: node.GethNodeTestConfiguration{},
-	//}
+	starter := node.GethNodeEngineStarter{
+		Config: node.GethNodeTestConfiguration{},
+	}
 	if tc.ReOrgFromCanonical {
 		// If we are doing a re-org from canonical, we can add both nodes as peers from the start
-		// TODO: fix secondary client
-		//secondaryClient, err = starter.StartGethNode(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
+		secondaryClient, err = starter.StartGethNode(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles, t.Engine)
 	} else {
-		// TODO: fix secondary client
-		//secondaryClient, err = starter.StartGethNode(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles)
+		secondaryClient, err = starter.StartGethNode(t.T, t.TestContext, t.Genesis, t.ClientParams, t.ClientFiles)
 	}
 	if err != nil {
 		t.Fatalf("FAIL (%s): Unable to spawn a secondary client: %v", t.TestName, err)
@@ -471,7 +468,7 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 						if err != nil {
 							t.Fatalf("FAIL (%s): Unable to get block %d: %v", t.TestName, k, err)
 						}
-						js, _ := json.MarshalIndent(latestBlock.Header, "", "  ")
+						js, _ := json.MarshalIndent(latestBlock.Header(), "", "  ")
 						t.Logf("INFO (%s): Block %d: %s", t.TestName, k, js)
 					}
 
@@ -486,12 +483,23 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 				}
 			}
 
-			if !tc.ReOrgFromCanonical {
-				// We need to send the canonical chain to the main client here
-				for i := t.CLMock.FirstPoSBlockNumber.Uint64(); i <= t.CLMock.LatestExecutedPayload.Number; i++ {
-					if payload, ok := t.CLMock.ExecutedPayloadHistory[i]; ok {
+			t.Logf("INFO (%s): Sending canonical chain back to the all clients", t.TestName)
+			for i := t.CLMock.FirstPoSBlockNumber.Uint64(); i <= t.CLMock.LatestExecutedPayload.Number; i++ {
+				if payload, ok := t.CLMock.ExecutedPayloadHistory[i]; ok {
+					if !tc.ReOrgFromCanonical {
+						// We need to send the canonical chain to the main client here
 						r := t.TestEngine.TestEngineNewPayload(payload)
 						r.ExpectStatus(test.Valid)
+					}
+					if previousPayload, ok := t.CLMock.ExecutedPayloadHistory[i-1]; ok {
+						block, err := typ.ExecutableDataToBlock(*payload)
+						if err != nil {
+							t.Fatalf("FAIL (%s): TEST ISSUE - Failed to create block from payload: %v", t.TestName, err)
+						}
+
+						if err := secondaryClient.SetBlock(block, previousPayload.Number, previousPayload.StateRoot); err != nil {
+							t.Fatalf("FAIL (%s): TEST ISSUE - Failed to reset to valid chain block: %v", t.TestName, err)
+						}
 					}
 				}
 			}
@@ -499,6 +507,7 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 			// Resend the latest correct fcU
 			r := t.TestEngine.TestEngineForkchoiceUpdated(&t.CLMock.LatestForkchoice, nil, t.CLMock.LatestPayloadBuilt.Timestamp)
 			r.ExpectNoError()
+			t.Logf("INFO (%s): Finished test, the CL Mock will send the next payload of the canonical chain", t.TestName)
 			// After this point, the CL Mock will send the next payload of the canonical chain
 		},
 	})

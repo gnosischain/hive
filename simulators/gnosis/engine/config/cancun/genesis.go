@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/params"
 )
 
 // ConfigGenesis configures the genesis block for the Cancun fork.
@@ -17,6 +18,13 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 	genesis.Config.CancunTime = &forkTimestamp
 	if *genesis.Config.ShanghaiTime > forkTimestamp {
 		return fmt.Errorf("cancun fork must be after shanghai fork")
+	}
+	genesis.Config.BlobScheduleConfig = &params.BlobScheduleConfig{
+		Cancun: &params.BlobConfig{
+			Target:         1,
+			Max:            2,
+			UpdateFraction: 1112826,
+		},
 	}
 	if genesis.Timestamp >= forkTimestamp {
 		if genesis.BlobGasUsed == nil {
@@ -30,8 +38,8 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 	// Add bytecode pre deploy to the EIP-4788 address.
 	genesis.Alloc[BEACON_ROOTS_ADDRESS] = types.Account{
 		Balance: common.Big0,
-		// Nonce:   1,
-		Code: common.Hex2Bytes("3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500"),
+		Nonce:   1,
+		Code:    common.Hex2Bytes("3373fffffffffffffffffffffffffffffffffffffffe14604d57602036146024575f5ffd5b5f35801560495762001fff810690815414603c575f5ffd5b62001fff01545f5260205ff35b5f5ffd5b62001fff42064281555f359062001fff015500"),
 	}
 
 	return nil

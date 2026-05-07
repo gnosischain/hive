@@ -11,8 +11,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/consensus"
+	"github.com/ethereum/go-ethereum/consensus/aura"
 	"github.com/ethereum/go-ethereum/consensus/beacon"
-	"github.com/ethereum/go-ethereum/consensus/ethash"
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/rawdb"
 	"github.com/ethereum/go-ethereum/core/types"
@@ -113,7 +113,11 @@ func (cfg *generatorConfig) createBlockModifiers() (list []*modifierInstance) {
 // run produces a chain and writes it.
 func (g *generator) run() error {
 	db := rawdb.NewMemoryDatabase()
-	engine := beacon.New(ethash.NewFaker())
+	auraEngine, err := aura.NewAuRa(g.genesis.Config.Aura, db)
+	if err != nil {
+		return fmt.Errorf("can't create AuRa engine: %v", err)
+	}
+	engine := beacon.New(auraEngine)
 
 	// Init genesis block.
 	trieconfig := *triedb.HashDefaults

@@ -7,8 +7,6 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum/core"
-	_ "github.com/ethereum/hive/simulators/ethereum/engine/client"
-
 	"github.com/ethereum/hive/simulators/ethereum/engine/clmock"
 	"github.com/ethereum/hive/simulators/ethereum/engine/config"
 	"github.com/ethereum/hive/simulators/ethereum/engine/globals"
@@ -38,8 +36,6 @@ type Spec interface {
 	GetTestTransactionType() helper.TestTransactionType
 	// Get the maximum execution time until a timeout is raised
 	GetTimeout() int
-	GetPreShapellaBlockCount() int
-	GetBlockTimeIncrements() uint64
 	// Get whether mining is disabled for this test
 	IsMiningDisabled() bool
 }
@@ -234,10 +230,6 @@ func (s BaseSpec) GetTimeout() int {
 
 func (s BaseSpec) IsMiningDisabled() bool {
 	return s.DisableMining
-}
-
-func (s BaseSpec) GetPreShapellaBlockCount() int {
-	return 0
 }
 
 var LatestFork = config.ForkConfig{

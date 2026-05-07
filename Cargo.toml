@@ -1,0 +1,8 @@
+[workspace]
+members = ["hivesim-rs", "simulators/lean"]
+exclude = ["simulators/portal"]
+default-members = ["simulators/lean"]
+resolver = "2"
+
+[workspace.dependencies]
+hivesim = { path = "hivesim-rs" }
