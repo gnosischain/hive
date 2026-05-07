@@ -1,4 +1,4 @@
-ARG baseimage=ethereum/client-go
+ARG baseimage=ghcr.io/gnosischain/geth
 ARG tag=latest
 
 FROM $baseimage:$tag as builder
