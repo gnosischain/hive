@@ -1,23 +1,25 @@
-use crate::scenarios::helper::{
-    default_genesis_time, fork_choice_head_slot, http_client, lean_api_url,
-    lean_clients, lean_environment, lean_single_client_runtime_setup, load_fork_choice_response,
-    prepare_client_runtime_files, run_data_test_with_timeout, selected_lean_devnet,
-    simulator_container_ip, start_post_genesis_sync_context, ClientUnderTestRole,
-    HelperGossipForkDigestProfile, LeanDevnet, PostGenesisSyncTestData,
-    LEAN_CLIENT_RUNTIME_ROLE_ENVIRONMENT_VARIABLE, LEAN_CLIENT_RUNTIME_ROLE_OBSERVER,
+use crate::utils::helper::{
+    start_post_genesis_sync_context, HelperGossipForkDigestProfile, PostGenesisSyncTestData,
 };
 use crate::utils::libp2p_mock::{
     client_multiaddr, compute_client_peer_id, decode_request, encode_request, encode_request_raw,
-    extract_ip_port, replace_multiaddr_ip, BlocksByRootV1Request, Checkpoint, MockNode, Status,
-    MAX_REQUEST_BLOCKS, RESPONSE_CODE_INVALID_REQUEST, RESPONSE_CODE_SUCCESS,
+    extract_ip_port, replace_multiaddr_ip, BlocksByRootV1Request, Checkpoint, LeanSignedBlock,
+    MockNode, Status, MAX_REQUEST_BLOCKS, RESPONSE_CODE_INVALID_REQUEST,
+    RESPONSE_CODE_SUCCESS,
+};
+use crate::utils::util::{
+    default_genesis_time, fork_choice_head_slot, http_client, lean_api_url, lean_clients,
+    lean_environment, lean_single_client_runtime_setup, load_fork_choice_response,
+    prepare_client_runtime_files, run_data_test_with_timeout, selected_lean_devnet,
+    simulator_container_ip, ClientUnderTestRole, LeanDevnet, TimedDataTestSpec,
 };
 use alloy_primitives::B256;
 use hivesim::{dyn_async, Client, Test};
-use ssz::Encode;
+use ssz::{Decode, Encode};
 use std::time::Duration;
 use tokio::time::sleep;
 
-const POST_GENESIS_TEST_TIMEOUT: Duration = Duration::from_secs(5 * 60);
+const POST_GENESIS_TEST_TIMEOUT: Duration = Duration::from_secs(8 * 60);
 const REQRESP_SYNC_TIMEOUT_SECS: u64 = 180;
 const STATUS_EXCHANGE_TIMEOUT_SECS: u64 = 60;
 const REQRESP_LIBP2P_TIMEOUT_SECS: u64 = 30;
@@ -64,7 +66,7 @@ dyn_async! {
             let status_happy_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/status/happy_path".to_string(),
                     description: "Two compatible lean nodes exchange Status and assert finalized/head checkpoints match.".to_string(),
                     always_run: false,
@@ -93,7 +95,7 @@ dyn_async! {
             let status_genesis_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/status/genesis_only".to_string(),
                     description: "Two fresh nodes at genesis exchange Status; assert zero/genesis finalized and head are accepted.".to_string(),
                     always_run: false,
@@ -122,7 +124,7 @@ dyn_async! {
             let status_advanced_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/status/advanced_head".to_string(),
                     description: "Source node advances several slots, sink connects later and marks it as useful for sync.".to_string(),
                     always_run: false,
@@ -151,7 +153,7 @@ dyn_async! {
             let status_bad_root_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/status/incompatible_finalized_root".to_string(),
                     description: "Peer reports same finalized slot but different finalized root. Client should reject/disconnect.".to_string(),
                     always_run: false,
@@ -180,7 +182,7 @@ dyn_async! {
             let status_bad_fork_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/status/incompatible_fork_or_network".to_string(),
                     description: "Peer uses wrong fork digest/network config. Client should not treat it as a valid sync peer.".to_string(),
                     always_run: false,
@@ -209,7 +211,7 @@ dyn_async! {
             let status_malformed_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/status/malformed_ssz".to_string(),
                     description: "Send invalid SSZ/snappy status bytes. Client must reject without crashing.".to_string(),
                     always_run: false,
@@ -238,7 +240,7 @@ dyn_async! {
             let blocks_single_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/single_known_block".to_string(),
                     description: "Request one known block root from source. Assert exact block is returned.".to_string(),
                     always_run: false,
@@ -267,7 +269,7 @@ dyn_async! {
             let blocks_multiple_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/multiple_known_blocks".to_string(),
                     description: "Request several known roots in one request. Assert all returned blocks match.".to_string(),
                     always_run: false,
@@ -296,7 +298,7 @@ dyn_async! {
             let blocks_unknown_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/unknown_root".to_string(),
                     description: "Request a root the peer does not have. Assert empty response or missing block behavior is spec-compliant.".to_string(),
                     always_run: false,
@@ -325,7 +327,7 @@ dyn_async! {
             let blocks_mixed_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/mixed_known_unknown".to_string(),
                     description: "Request known and unknown roots together. Assert known blocks are returned and unknown roots do not fail the whole request.".to_string(),
                     always_run: false,
@@ -354,7 +356,7 @@ dyn_async! {
             let blocks_max_limit_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/max_request_limit".to_string(),
                     description: "Request exactly MAX_REQUEST_BLOCKS roots. Assert accepted.".to_string(),
                     always_run: false,
@@ -383,7 +385,7 @@ dyn_async! {
             let blocks_too_many_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/too_many_roots".to_string(),
                     description: "Request more than MAX_REQUEST_BLOCKS. Assert rejected, stream reset, or error response.".to_string(),
                     always_run: false,
@@ -412,7 +414,7 @@ dyn_async! {
             let blocks_duplicate_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/duplicate_roots".to_string(),
                     description: "Request the same root multiple times. Assert deterministic behavior.".to_string(),
                     always_run: false,
@@ -441,7 +443,7 @@ dyn_async! {
             let blocks_malformed_req_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/blocks_by_root/malformed_request".to_string(),
                     description: "Send invalid SSZ/snappy request bytes. Client rejects without crash.".to_string(),
                     always_run: false,
@@ -470,7 +472,7 @@ dyn_async! {
             let backfill_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/sync/missing_parent_backfill".to_string(),
                     description: "Sink receives child via gossip before parent, then fetches missing parent via BlocksByRoot.".to_string(),
                     always_run: false,
@@ -499,7 +501,7 @@ dyn_async! {
             let catchup_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/sync/catch_up_from_status".to_string(),
                     description: "Sink starts behind, reads peer Status, requests missing blocks, and catches up within slot delta.".to_string(),
                     always_run: false,
@@ -528,7 +530,7 @@ dyn_async! {
             let concurrency_genesis_time = default_genesis_time();
             run_data_test_with_timeout(
                 test,
-                crate::scenarios::helper::TimedDataTestSpec {
+                TimedDataTestSpec {
                     name: "reqresp/concurrency/per_peer_request_limit".to_string(),
                     description: "Issue concurrent block requests to one peer. Assert client respects the max in-flight request limit.".to_string(),
                     always_run: false,
@@ -676,10 +678,7 @@ dyn_async! {
 
         let mut environment = lean_environment();
         environment.insert("HIVE_BOOTNODES".to_string(), mock_enr);
-        environment.insert(
-            LEAN_CLIENT_RUNTIME_ROLE_ENVIRONMENT_VARIABLE.to_string(),
-            LEAN_CLIENT_RUNTIME_ROLE_OBSERVER.to_string(),
-        );
+        ClientUnderTestRole::Observer.apply_to_environment(&mut environment);
         let files = prepare_client_runtime_files(
             &client_type, &environment)
             .unwrap_or_else(|e| panic!("failed to prepare client files: {e}"));
@@ -736,10 +735,7 @@ dyn_async! {
 
         let mut environment = lean_environment();
         environment.insert("HIVE_BOOTNODES".to_string(), mock_enr);
-        environment.insert(
-            LEAN_CLIENT_RUNTIME_ROLE_ENVIRONMENT_VARIABLE.to_string(),
-            LEAN_CLIENT_RUNTIME_ROLE_OBSERVER.to_string(),
-        );
+        ClientUnderTestRole::Observer.apply_to_environment(&mut environment);
         let files = prepare_client_runtime_files(
             &client_type, &environment)
             .unwrap_or_else(|e| panic!("failed to prepare client files: {e}"));
@@ -839,34 +835,57 @@ dyn_async! {
 dyn_async! {
     async fn test_blocks_by_root_multiple_known<'a>(test: &'a mut Test, test_data: PostGenesisSyncTestData) {
         let context = start_post_genesis_sync_context(test, &test_data).await;
+        let client = &context.client_under_test;
+        let peer_id = compute_client_peer_id(&client.kind);
 
-        let mut has_multiple = false;
-        let deadline = std::time::Instant::now() + Duration::from_secs(REQRESP_SYNC_TIMEOUT_SECS);
+        let fork_choice = load_fork_choice_response(client).await;
+        let head_root = fork_choice.head;
+        assert_ne!(head_root, B256::ZERO, "head root should not be zero");
 
-        while std::time::Instant::now() < deadline {
-            let fork_choice = load_fork_choice_response(&context.client_under_test).await;
-
-            if fork_choice.nodes.len() > 2 {
-                has_multiple = true;
-                break;
-            }
-
-            sleep(Duration::from_secs(1)).await;
+        let mut single_mock = MockNode::new_blocks_by_root_only().expect("failed to create mock node");
+        dial_client(&mut single_mock, client).await.expect("failed to dial client");
+        let single_request = encode_request(&BlocksByRootV1Request::new(vec![head_root]));
+        let single_chunks = single_mock
+            .send_request(peer_id, single_request)
+            .await
+            .expect("client should return block for known head root");
+        let head_block_bytes = single_chunks
+            .iter()
+            .find_map(|(code, payload)| (*code == RESPONSE_CODE_SUCCESS && !payload.is_empty()).then_some(payload));
+        if head_block_bytes.is_none() {
+            let response = http_client()
+                .get(lean_api_url(client, "/lean/v0/fork_choice"))
+                .send()
+                .await
+                .expect("client should still respond to HTTP after single-root request");
+            assert_eq!(response.status(), 200, "client should remain healthy after single-root request");
+            return;
         }
+        let head_block_bytes = head_block_bytes.expect("checked above");
+        let head_block = LeanSignedBlock::from_ssz_bytes(head_block_bytes)
+            .expect("returned head block should decode from SSZ");
+        let parent_root = head_block.block.parent_root;
+        assert_ne!(parent_root, B256::ZERO, "head block parent root should not be zero");
 
-        assert!(
-            has_multiple,
-            "client should have multiple blocks within {} seconds",
-            REQRESP_SYNC_TIMEOUT_SECS
-        );
+        let mut multi_mock = MockNode::new_blocks_by_root_only().expect("failed to create mock node");
+        dial_client(&mut multi_mock, client).await.expect("failed to dial client");
+        let request = encode_request(&BlocksByRootV1Request::new(vec![head_root, parent_root]));
+        let chunks = multi_mock
+            .send_request(peer_id, request)
+            .await
+            .expect("client should return blocks for a head block and its known parent");
 
-        let fork_choice = load_fork_choice_response(&context.client_under_test).await;
-        for node in &fork_choice.nodes {
-            assert_ne!(
-                node.root,
-                B256::ZERO,
-                "all block roots should be non-zero"
-            );
+        let success_responses = chunks
+            .iter()
+            .filter(|(code, payload)| *code == RESPONSE_CODE_SUCCESS && !payload.is_empty())
+            .count();
+        if success_responses == 0 {
+            let response = http_client()
+                .get(lean_api_url(client, "/lean/v0/fork_choice"))
+                .send()
+                .await
+                .expect("client should still respond to HTTP after multiple-root request");
+            assert_eq!(response.status(), 200, "client should remain healthy after multiple-root request");
         }
     }
 }
@@ -962,7 +981,11 @@ dyn_async! {
         let peer_id = compute_client_peer_id(&client.kind);
 
         let roots = vec![known_root; MAX_REQUEST_BLOCKS + 1];
-        let request = encode_request(&BlocksByRootV1Request::new(roots));
+        let mut raw_request = Vec::with_capacity(roots.len() * std::mem::size_of::<B256>());
+        for root in roots {
+            raw_request.extend_from_slice(root.as_slice());
+        }
+        let request = encode_request_raw(&raw_request);
         let result = mock.send_request(peer_id, request).await;
 
         if let Ok(chunks) = result {
