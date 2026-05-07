@@ -3,36 +3,46 @@ set -euo pipefail
 
 DEVNET_LABEL="${HIVE_LEAN_DEVNET_LABEL:-devnet3}" 
 ASSET_ROOT="/tmp/qlean-runtime" 
-WORKSPACE="/opt/qlean" 
-REAL_MODS="/opt/qlean_internal_storage" 
+LOCAL_IP_PLACEHOLDER="__HIVE_LOCAL_IP__"
 
-if [[ "$DEVNET_LABEL" == "devnet4" ]]; then 
-    SOURCE_DIR="/opt/qlean-d4" 
-    QLEAN_BIN_NAME="qlean-devnet4" 
-    MANIFEST_NAME="validator-keys-manifest-devnet4.yaml" 
-    QLEAN_USES_GENESIS_DIR=1
-else 
-    SOURCE_DIR="/opt/qlean-d3" 
-    QLEAN_BIN_NAME="qlean-devnet3" 
-    MANIFEST_NAME="validator-keys-manifest.yaml" 
-    QLEAN_USES_GENESIS_DIR=0
-fi 
+detect_local_ip() {
+    hostname -i 2>/dev/null | tr ' ' '\n' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+\.[0-9]+$' | grep -v '^127\.' | head -n 1
+}
 
-rm -rf "$WORKSPACE" "$REAL_MODS" 
-mkdir -p "$WORKSPACE/bin" "$WORKSPACE/lib" "$WORKSPACE/modules" "$REAL_MODS" 
+materialize_runtime_local_ip() {
+    local runtime_ip
 
-cp "$SOURCE_DIR/bin/$QLEAN_BIN_NAME" "$WORKSPACE/bin/" 
-cp "$SOURCE_DIR"/lib/*.so* "$WORKSPACE/lib/" 2>/dev/null || true 
+    if [ ! -f "$ASSET_ROOT/validator-config.yaml" ]; then
+        return
+    fi
 
-mkdir -p "$WORKSPACE/internal_modules" 
+    if ! grep -q "$LOCAL_IP_PLACEHOLDER" "$ASSET_ROOT/validator-config.yaml"; then
+        return
+    fi
 
-find "$SOURCE_DIR/modules" -maxdepth 1 -type f -name "*_module.so" -exec cp {} "$REAL_MODS/" \; 
+    runtime_ip="$(detect_local_ip || true)"
+    if [ -z "$runtime_ip" ]; then
+        echo "Unable to resolve local container IP for $CLEAN_NODE_ID" >&2
+        exit 1
+    fi
 
-for mod in "$REAL_MODS"/*_module.so; do 
-    ln -s "$mod" "$WORKSPACE/internal_modules/$(basename "$mod")" 
-done 
+    sed -i "s/${LOCAL_IP_PLACEHOLDER}/${runtime_ip}/g" "$ASSET_ROOT/validator-config.yaml"
+}
 
-QLEAN_BIN="$WORKSPACE/bin/$QLEAN_BIN_NAME" 
+case "$DEVNET_LABEL" in
+    devnet3)
+        DEFAULT_QLEAN_BIN="/usr/local/bin/qlean-devnet3"
+        ;;
+    devnet4)
+        DEFAULT_QLEAN_BIN="/usr/local/bin/qlean-devnet4"
+        ;;
+    *)
+        echo "Unsupported Lean devnet label: $DEVNET_LABEL" >&2
+        exit 1
+        ;;
+esac
+
+QLEAN_BIN="${QLEAN_BIN:-$DEFAULT_QLEAN_BIN}"
 
 V_IDX="${HIVE_VALIDATOR_INDEX:-0}" 
 RAW_ID="${HIVE_NODE_ID:-${HIVE_CLIENT_ID:-qlean_$V_IDX}}" 
@@ -45,11 +55,12 @@ done
 until [[ -f "$ASSET_ROOT/config.yaml" ]]; do sleep 0.5; done 
 
 find "$ASSET_ROOT" -type f \( -name "*.yaml" -o -name "*.json" \) -exec sed -i 's/: 0x/: /g; s/\"0x/\"/g' {} + || true 
+materialize_runtime_local_ip
 
 NODE_KEY="$(cat "$ASSET_ROOT/node.key")"
 
 FLAGS=( 
-    --modules-dir "$WORKSPACE/internal_modules" 
+    --genesis-dir "$ASSET_ROOT"
     --data-dir "/data" 
     --node-id "$CLEAN_NODE_ID" 
     --node-key "$NODE_KEY"
@@ -57,21 +68,6 @@ FLAGS=(
     --api-host "0.0.0.0" 
     --api-port 5052 
 ) 
-
-if [[ "$QLEAN_USES_GENESIS_DIR" == "1" ]]; then
-    FLAGS+=(
-        --genesis-dir "$ASSET_ROOT"
-        --bootnodes "$ASSET_ROOT/nodes.yaml"
-    )
-else
-    FLAGS+=(
-        --genesis "$ASSET_ROOT/config.yaml"
-        --validator-registry-path "$ASSET_ROOT/validators.yaml"
-        --validator-keys-manifest "$ASSET_ROOT/hash-sig-keys/$MANIFEST_NAME"
-        --xmss-pk "$ASSET_ROOT/hash-sig-keys/v${V_IDX}_att.pk"
-        --xmss-sk "$ASSET_ROOT/hash-sig-keys/v${V_IDX}_att.sk"
-    )
-fi
 
 if [ "${HIVE_IS_AGGREGATOR:-0}" = "1" ]; then
     FLAGS+=(--is-aggregator)
