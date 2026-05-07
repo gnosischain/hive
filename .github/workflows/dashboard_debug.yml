@@ -6,13 +6,13 @@ on:
       client:
         description: "Client"
         required: true
-        default: "nethermind-gnosis"
+        default: "nethermind"
         type: choice
         options:
-          - nethermind-gnosis
-          - erigon-gnosis
-          - reth-gnosis
-          - go-ethereum-gnosis
+          - nethermind
+          - erigon
+          - reth
+          - go-ethereum
       suite:
         description: "Suite to run"
         required: true
