@@ -29,10 +29,6 @@ type Config struct {
 	ContainerOutput io.Writer
 	BuildOutput     io.Writer
 
-	// This tells the docker client whether to authenticate requests with credential helper
-	UseCredentialHelper bool
-	// This tells the docker client whether to build a debug container with delve for attaching debugger
-	OverrideDockerfile string
 	// This tells the docker client whether to authenticate requests
 	UseAuthentication bool
 }

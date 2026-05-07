@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"math/big"
 	"math/rand"
 	"os"
 	"strconv"
@@ -19,8 +18,6 @@ import (
 	suite_withdrawals "github.com/ethereum/hive/simulators/ethereum/engine/suites/withdrawals"
 	"github.com/ethereum/hive/simulators/ethereum/engine/test"
 )
-
-const setupTime = time.Minute
 
 var (
 	engine = hivesim.Suite{
@@ -92,21 +89,6 @@ func main() {
 	hivesim.MustRunSuite(simulator, cancun)
 }
 
-func getTimestamp(spec test.Spec) uint64 {
-	now := time.Now()
-
-	preShapellaBlock := spec.GetPreShapellaBlockCount()
-	if preShapellaBlock == 0 {
-		preShapellaBlock = 1
-	}
-
-	preShapellaTime := time.Duration(uint64(preShapellaBlock)*spec.GetBlockTimeIncrements()) * time.Second
-
-	// After setup wait chain will produce blocks in preShapellaTime and then shapella happens.
-	shanghaiTimestamp := now.Add(setupTime).Add(preShapellaTime)
-	return uint64(shanghaiTimestamp.Unix())
-}
-
 func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 	return func(t *hivesim.T) {
 		parallelism := 16
@@ -144,13 +126,6 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 		for _, currentTest := range tests {
 			currentTest := currentTest
 			currentTestName := fmt.Sprintf("%s (%s)", currentTest.GetName(), currentTest.GetMainFork())
-
-			// Get the timestamp for the test
-			timestamp := new(big.Int).SetUint64(getTimestamp(currentTest))
-			if currentTest.GetMainFork() != "Cancun" {
-				globals.GenesisTimestamp = timestamp.Uint64()
-			}
-
 			// Load the genesis file specified and dynamically bundle it.
 			genesis := currentTest.GetGenesis()
 			forkConfig := currentTest.GetForkConfig()
@@ -159,34 +134,17 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 				fmt.Printf("skipping test \"%s\" because fork configuration is not possible\n", currentTestName)
 				continue
 			}
-
-			// Set the timestamps for the forks
-			shanghaiTimestamp := new(big.Int).Add(timestamp, big.NewInt(-1000000))
-			cancunTimestamp := new(big.Int).Add(timestamp, big.NewInt(0))
-			forkConfig.CancunTimestamp = cancunTimestamp
-
-			if currentTest.GetMainFork() == "Cancun" {
-				shanghaiTimestamp = forkConfig.CancunTimestamp
-			}
-
-			forkConfig.ShanghaiTimestamp = shanghaiTimestamp
-
-			// Configure the genesis file
 			forkConfig.ConfigGenesis(genesis)
-
-			// Get the genesis start option
 			genesisStartOption, err := helper.GenesisStartOption(genesis)
 			if err != nil {
 				panic("unable to inject genesis")
 			}
 
-			// Configure the parameters for the clients
-			newParams := globals.DefaultClientEnv
-			newParams = newParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED", "1")
+			// Configure Forks.
+			// Note merge is hard-coded at genesis.
+			newParams := globals.DefaultClientEnv.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED", "1")
 			newParams = newParams.Set("HIVE_TERMINAL_TOTAL_DIFFICULTY", fmt.Sprintf("%d", genesis.Difficulty))
 			newParams = newParams.Set("HIVE_MERGE_BLOCK_ID", "0")
-
-			// Configure the timestamps for the forks
 			if forkConfig.ShanghaiTimestamp != nil {
 				newParams = newParams.Set("HIVE_SHANGHAI_TIMESTAMP", fmt.Sprintf("%d", forkConfig.ShanghaiTimestamp))
 				if forkConfig.CancunTimestamp != nil {
@@ -194,6 +152,7 @@ func makeRunner(tests []test.Spec, nodeType string) func(t *hivesim.T) {
 				}
 			}
 
+			// Configure node type.
 			if nodeType != "" {
 				newParams = newParams.Set("HIVE_NODETYPE", nodeType)
 			}
