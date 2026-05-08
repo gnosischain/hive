@@ -127,7 +127,19 @@ end |
     }
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
-  "difficulty": "0x00",
+  "difficulty": .difficulty,
   "gasLimit": .gasLimit,
+  "seal": (
+    if (.difficulty // "0x0") | test("^0x0*$") then
+      null
+    else
+      {
+        "authorityRound": {
+          "step": "0x0",
+          "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    end
+  ),
   "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
-}
+}|remove_empty
