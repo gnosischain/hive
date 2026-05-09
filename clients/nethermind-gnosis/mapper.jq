@@ -230,6 +230,18 @@ def infix_zeros_to_length(s;l):
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
+    "seal": (
+      if (.difficulty // "0x0") | test("^0x0*$") then
+        null
+      else
+        {
+          "authorityRound": {
+            "step": "0x0",
+            "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      end
+    ),
     "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
