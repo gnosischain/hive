@@ -98,8 +98,6 @@ def infix_zeros_to_length(s;l):
     "maxCodeSizeTransitionTimestamp": "0x0",
     "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_hex,
     "registrar": "0x6000000000000000000000000000000000000000",
-    "transactionPermissionContract": "0x4000000000000000000000000000000000000001",
-    "transactionPermissionContractTransition": "0x0",
     "feeCollector": "0x1559000000000000000000000000000000000000",
     "eip1559FeeCollectorTransition": 0,
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
