@@ -52,6 +52,7 @@ end |
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
     },
+    "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
     "terminalTotalDifficulty": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int else 1 end),
     "terminalTotalDifficultyPassed": true,
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
