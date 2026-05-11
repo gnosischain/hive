@@ -29,12 +29,17 @@ const LEAN_GENESIS_VALIDATORS_ENVIRONMENT_VARIABLE: &str = "HIVE_LEAN_GENESIS_VA
 const LEAN_GENESIS_VALIDATOR_ENTRIES_ENVIRONMENT_VARIABLE: &str =
     "HIVE_LEAN_GENESIS_VALIDATOR_ENTRIES";
 const NODE_ID_ENVIRONMENT_VARIABLE: &str = "HIVE_NODE_ID";
+const CLIENT_PRIVATE_KEY_ENVIRONMENT_VARIABLE: &str = "HIVE_CLIENT_PRIVATE_KEY";
 const IS_AGGREGATOR_ENVIRONMENT_VARIABLE: &str = "HIVE_IS_AGGREGATOR";
 const LEAN_GENESIS_TIME_ENVIRONMENT_VARIABLE: &str = "HIVE_LEAN_GENESIS_TIME";
 const LEAN_VALIDATOR_INDICES_ENVIRONMENT_VARIABLE: &str = "HIVE_LEAN_VALIDATOR_INDICES";
 const LEAN_RUNTIME_ASSET_ROOT_ENVIRONMENT_VARIABLE: &str = "LEAN_RUNTIME_ASSET_ROOT";
 const LEAN_SPEC_SOURCE_NODE_ID: &str = "lean_spec_0";
 const LEAN_SPEC_SOURCE_VALIDATORS: &str = "0,1,2";
+/// Helper validator subset that excludes V0, used by tests where the
+/// client-under-test owns V0 itself. Keep in sync with
+/// [`LEAN_SPEC_SOURCE_VALIDATORS`] if the validator count ever changes.
+pub(crate) const LEAN_SPEC_SOURCE_VALIDATORS_EXCLUDING_V0: &str = "1,2";
 const LEAN_SPEC_SOURCE_PEER_ID: &str = "16Uiu2HAmHzBkRq62mG95vsjKMuYQBezZCtjPXYWUoyVxMxi71aB3";
 const DEFAULT_HELPER_GOSSIP_FORK_DIGEST: &str = "devnet0";
 const DEFAULT_HELPER_P2P_PORT: u16 = 9001;
@@ -887,6 +892,13 @@ fn client_under_test_environment(
         LEAN_GENESIS_TIME_ENVIRONMENT_VARIABLE.to_string(),
         genesis_time.to_string(),
     );
+    // Pin the libp2p peer id to the value `compute_client_peer_id` derives,
+    // so MockNode dials the client at its actual peer id instead of an
+    // unrelated one (which surfaces as `Outbound failure: DialFailure`).
+    environment.insert(
+        CLIENT_PRIVATE_KEY_ENVIRONMENT_VARIABLE.to_string(),
+        crate::utils::libp2p_mock::deterministic_client_private_key_hex(client_type),
+    );
     if source_genesis_validator_entries
         .iter()
         .all(|entry| entry.proposal_public_key.is_some())
@@ -984,8 +996,7 @@ async fn start_client_under_test_attempt(
             handle.abort();
             handle.await.ok();
             Err(format!(
-                "startup attempt exceeded {} seconds",
-                CLIENT_UNDER_TEST_STARTUP_ATTEMPT_TIMEOUT_SECS
+                "startup attempt exceeded {CLIENT_UNDER_TEST_STARTUP_ATTEMPT_TIMEOUT_SECS} seconds"
             ))
         }
     }
@@ -1017,16 +1028,14 @@ async fn start_client_under_test_with_retry(
             Ok(client) => return client,
             Err(message) if attempt < CLIENT_UNDER_TEST_STARTUP_ATTEMPTS => {
                 eprintln!(
-                    "Retrying client-under-test startup for {} after attempt {} failed: {}",
-                    client_type, attempt, message
+                    "Retrying client-under-test startup for {client_type} after attempt {attempt} failed: {message}"
                 );
                 last_error = Some(message);
                 sleep(Duration::from_secs(1)).await;
             }
             Err(message) => {
                 panic!(
-                    "Unable to start client under test {} after {} attempts: {}",
-                    client_type, CLIENT_UNDER_TEST_STARTUP_ATTEMPTS, message
+                    "Unable to start client under test {client_type} after {CLIENT_UNDER_TEST_STARTUP_ATTEMPTS} attempts: {message}"
                 );
             }
         }
@@ -1253,8 +1262,7 @@ async fn wait_for_checkpoint_slot_with_retry(
 
     Err(last_error.unwrap_or_else(|| {
         format!(
-            "{LOCAL_HELPER_KIND} never reached finalized slot {} after {} attempts",
-            minimum_slot, LOCAL_HELPER_STARTUP_ATTEMPTS
+            "{LOCAL_HELPER_KIND} never reached finalized slot {minimum_slot} after {LOCAL_HELPER_STARTUP_ATTEMPTS} attempts"
         )
     }))
 }
@@ -1620,8 +1628,7 @@ async fn start_local_lean_spec_helper_with_genesis_metadata(
 
     Err(last_error.unwrap_or_else(|| {
         format!(
-            "Unable to start {LOCAL_HELPER_KIND} after {} attempts",
-            LOCAL_HELPER_STARTUP_ATTEMPTS
+            "Unable to start {LOCAL_HELPER_KIND} after {LOCAL_HELPER_STARTUP_ATTEMPTS} attempts"
         )
     }))
 }
@@ -1669,10 +1676,7 @@ fn start_local_lean_spec_helper(
     command.env(LEAN_RUNTIME_ASSET_ROOT_ENVIRONMENT_VARIABLE, &asset_root);
 
     let child = command.spawn().unwrap_or_else(|err| {
-        panic!(
-            "Unable to start local LeanSpec helper from {}: {err}",
-            LOCAL_HELPER_ENTRYPOINT
-        )
+        panic!("Unable to start local LeanSpec helper from {LOCAL_HELPER_ENTRYPOINT}: {err}")
     });
 
     RunningLocalLeanSpecHelper {
