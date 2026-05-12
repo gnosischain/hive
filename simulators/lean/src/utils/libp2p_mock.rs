@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::io::{self, Cursor, Write};
 use std::time::Duration;
 
@@ -9,7 +9,7 @@ use futures::prelude::*;
 use libp2p::{
     gossipsub::{
         Behaviour as GossipsubBehaviour, Config as GossipsubConfig, Event as GossipsubEvent,
-        IdentTopic, MessageAuthenticity,
+        IdentTopic, MessageAuthenticity, TopicHash,
     },
     request_response::{
         self, Behaviour as RequestResponseBehaviour, Codec, Event as ReqRespEvent,
@@ -38,22 +38,9 @@ pub fn lean_block_topic(fork_digest: &str) -> IdentTopic {
     IdentTopic::new(format!("/leanconsensus/{fork_digest}/block/ssz_snappy"))
 }
 
-pub fn lean_attestation_topic(fork_digest: &str, subnet_id: u64) -> IdentTopic {
-    IdentTopic::new(format!(
-        "/leanconsensus/{fork_digest}/attestation_{subnet_id}/ssz_snappy"
-    ))
-}
-
-pub fn lean_aggregation_topic(fork_digest: &str) -> IdentTopic {
-    IdentTopic::new(format!(
-        "/leanconsensus/{fork_digest}/aggregated_attestation/ssz_snappy"
-    ))
-}
-
 // Response codes
 pub const RESPONSE_CODE_SUCCESS: u8 = 0;
 pub const RESPONSE_CODE_INVALID_REQUEST: u8 = 1;
-pub const RESPONSE_CODE_SERVER_ERROR: u8 = 2;
 pub const RESPONSE_CODE_RESOURCE_UNAVAILABLE: u8 = 3;
 
 /// Maximum number of block roots in a BlocksByRoot request.
@@ -98,13 +85,22 @@ impl BlocksByRootV1Request {
 
 // === Block / Attestation SSZ Types ===
 
-/// 3112-byte post-quantum signature placeholder.
+/// Fixed-size XMSS signature bytes.
+///
+/// This matches leanSpec's `TARGET_CONFIG.SIGNATURE_LEN_BYTES` for the devnet4
+/// production XMSS parameters:
+/// 32 path siblings * 8 field elements * 4 bytes
+/// + 7 randomness field elements * 4 bytes
+/// + 46 hashes * 8 field elements * 4 bytes
+/// + 3 SSZ offsets * 4 bytes.
+pub const LEAN_SIGNATURE_SIZE: usize = 2536;
+
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct LeanSignature(pub [u8; 3112]);
+pub struct LeanSignature(pub [u8; LEAN_SIGNATURE_SIZE]);
 
 impl Default for LeanSignature {
     fn default() -> Self {
-        Self([0u8; 3112])
+        Self([0u8; LEAN_SIGNATURE_SIZE])
     }
 }
 
@@ -113,13 +109,13 @@ impl ssz::Encode for LeanSignature {
         true
     }
     fn ssz_fixed_len() -> usize {
-        3112
+        LEAN_SIGNATURE_SIZE
     }
     fn ssz_append(&self, buf: &mut Vec<u8>) {
         buf.extend_from_slice(&self.0);
     }
     fn ssz_bytes_len(&self) -> usize {
-        3112
+        LEAN_SIGNATURE_SIZE
     }
 }
 
@@ -128,16 +124,16 @@ impl ssz::Decode for LeanSignature {
         true
     }
     fn ssz_fixed_len() -> usize {
-        3112
+        LEAN_SIGNATURE_SIZE
     }
     fn from_ssz_bytes(bytes: &[u8]) -> Result<Self, ssz::DecodeError> {
-        if bytes.len() != 3112 {
+        if bytes.len() != LEAN_SIGNATURE_SIZE {
             return Err(ssz::DecodeError::InvalidByteLength {
                 len: bytes.len(),
-                expected: 3112,
+                expected: LEAN_SIGNATURE_SIZE,
             });
         }
-        let mut arr = [0u8; 3112];
+        let mut arr = [0u8; LEAN_SIGNATURE_SIZE];
         arr.copy_from_slice(bytes);
         Ok(Self(arr))
     }
@@ -149,24 +145,6 @@ pub struct LeanAttestationData {
     pub head: Checkpoint,
     pub target: Checkpoint,
     pub source: Checkpoint,
-}
-
-#[derive(Debug, Default, Clone, PartialEq, Eq, SszEncodeDerive, SszDecodeDerive)]
-pub struct LeanSignedAttestation {
-    pub validator_id: u64,
-    pub data: LeanAttestationData,
-    pub signature: LeanSignature,
-}
-
-impl LeanSignedAttestation {
-    /// Build a signed attestation with the given data and a zero signature.
-    pub fn build_unsigned(validator_id: u64, data: LeanAttestationData) -> Self {
-        Self {
-            validator_id,
-            data,
-            signature: LeanSignature::default(),
-        }
-    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, SszEncodeDerive, SszDecodeDerive)]
@@ -234,39 +212,50 @@ impl LeanSignedBlock {
     }
 }
 
-/// Build a response chunk for a successful BlocksByRoot response.
-pub fn build_block_response_chunk(block: &LeanSignedBlock) -> Vec<u8> {
-    let ssz_bytes = block.as_ssz_bytes();
-    let mut encoder = FrameEncoder::new(Vec::new());
-    encoder.write_all(&ssz_bytes).unwrap();
-    encoder.flush().unwrap();
-    let compressed = encoder.into_inner().unwrap();
-
-    let mut result = encode_varint_usize(ssz_bytes.len());
-    result.extend_from_slice(&compressed);
-    result
-}
-
 /// Encode data for gossipsub: snappy-compressed SSZ bytes (no varint prefix).
 pub fn encode_gossip_data<T: Encode>(item: &T) -> Vec<u8> {
     let ssz_bytes = item.as_ssz_bytes();
     let mut encoder = FrameEncoder::new(Vec::new());
-    encoder.write_all(&ssz_bytes).unwrap();
-    encoder.flush().unwrap();
-    encoder.into_inner().unwrap()
+    encoder
+        .write_all(&ssz_bytes)
+        .expect("failed to snappy-compress gossip bytes");
+    encoder
+        .flush()
+        .expect("failed to flush gossip snappy encoder");
+    encoder
+        .into_inner()
+        .expect("failed to finish gossip snappy encoder")
 }
 
 // === Peer ID Computation ===
 
-/// Compute the deterministic PeerId for a lean client based on its name.
-/// This matches the logic in `prepare_lean_client_assets.py`:
-///   key = sha256(f"{client_kind}:{node_id}:node").hexdigest()
-/// where NODE_ID defaults to "{client_kind}_0".
-pub fn compute_client_peer_id(client_name: &str) -> PeerId {
-    let base_name = client_name.split('_').next().unwrap_or(client_name);
-    let label = format!("{}:{}_0:node", base_name, base_name);
+/// Resolve the canonical lean client kind from a hive client type string.
+/// Falls back to the raw input when the client is not in the supported set so
+/// out-of-tree client kinds still get a stable derivation.
+fn client_kind_label(client_name: &str) -> String {
+    crate::utils::util::lean_client_kind(client_name)
+        .map(|kind| kind.to_string())
+        .unwrap_or_else(|_| client_name.to_string())
+}
+
+/// Hex-encoded deterministic secp256k1 secret for a lean client, matching
+/// `prepare_lean_client_assets.py::deterministic_private_key`:
+///   key = sha256(f"{client_kind}:{client_kind}_0:node").hexdigest()
+///
+/// Inject this as `HIVE_CLIENT_PRIVATE_KEY` when starting the client so the
+/// libp2p peer id matches what `compute_client_peer_id` expects.
+pub fn deterministic_client_private_key_hex(client_name: &str) -> String {
+    let kind = client_kind_label(client_name);
+    let label = format!("{kind}:{kind}_0:node");
     let hash = Sha256::digest(label.as_bytes());
-    let mut key_bytes = hash.to_vec();
+    alloy_primitives::hex::encode(hash)
+}
+
+/// Compute the deterministic PeerId for a lean client based on its name.
+pub fn compute_client_peer_id(client_name: &str) -> PeerId {
+    let hex = deterministic_client_private_key_hex(client_name);
+    let mut key_bytes =
+        alloy_primitives::hex::decode(&hex).expect("derived private key hex is valid");
 
     let secret_key = SecretKey::try_from_bytes(&mut key_bytes)
         .expect("Failed to create secp256k1 secret key from deterministic bytes");
@@ -332,9 +321,15 @@ fn decode_varint_usize(buf: &[u8]) -> io::Result<(usize, &[u8])> {
 pub fn encode_request<T: Encode>(item: &T) -> Vec<u8> {
     let ssz_bytes = item.as_ssz_bytes();
     let mut encoder = FrameEncoder::new(Vec::new());
-    encoder.write_all(&ssz_bytes).unwrap();
-    encoder.flush().unwrap();
-    let compressed = encoder.into_inner().unwrap();
+    encoder
+        .write_all(&ssz_bytes)
+        .expect("failed to snappy-compress request bytes");
+    encoder
+        .flush()
+        .expect("failed to flush request snappy encoder");
+    let compressed = encoder
+        .into_inner()
+        .expect("failed to finish request snappy encoder");
 
     let mut result = encode_varint_usize(ssz_bytes.len());
     result.extend_from_slice(&compressed);
@@ -344,9 +339,15 @@ pub fn encode_request<T: Encode>(item: &T) -> Vec<u8> {
 /// Encode raw bytes with snappy compression for a request payload.
 pub fn encode_request_raw(bytes: &[u8]) -> Vec<u8> {
     let mut encoder = FrameEncoder::new(Vec::new());
-    encoder.write_all(bytes).unwrap();
-    encoder.flush().unwrap();
-    let compressed = encoder.into_inner().unwrap();
+    encoder
+        .write_all(bytes)
+        .expect("failed to snappy-compress raw request bytes");
+    encoder
+        .flush()
+        .expect("failed to flush raw request snappy encoder");
+    let compressed = encoder
+        .into_inner()
+        .expect("failed to finish raw request snappy encoder");
 
     let mut result = encode_varint_usize(bytes.len());
     result.extend_from_slice(&compressed);
@@ -457,9 +458,18 @@ impl Codec for LeanReqRespCodec {
             io.write_all(&encode_varint_usize(data.len())).await?;
 
             let mut encoder = FrameEncoder::new(Vec::new());
-            encoder.write_all(&data).unwrap();
-            encoder.flush().unwrap();
-            io.write_all(&encoder.into_inner().unwrap()).await?;
+            encoder
+                .write_all(&data)
+                .expect("failed to snappy-compress response bytes");
+            encoder
+                .flush()
+                .expect("failed to flush response snappy encoder");
+            io.write_all(
+                &encoder
+                    .into_inner()
+                    .expect("failed to finish response snappy encoder"),
+            )
+            .await?;
         }
         io.flush().await?;
         Ok(())
@@ -476,14 +486,18 @@ pub struct MockBehaviour {
     pub ping: libp2p::ping::Behaviour,
 }
 
+type PendingRequestSender = tokio::sync::oneshot::Sender<Result<Vec<(u8, Vec<u8>)>, String>>;
+
 pub struct MockNode {
     pub swarm: Swarm<MockBehaviour>,
-    pending_requests: HashMap<
-        OutboundRequestId,
-        tokio::sync::oneshot::Sender<Result<Vec<(u8, Vec<u8>)>, String>>,
-    >,
+    pending_requests: HashMap<OutboundRequestId, PendingRequestSender>,
     gossip_messages: Vec<(PeerId, IdentTopic, Vec<u8>)>,
     secret_key_bytes: Option<[u8; 32]>,
+    /// Gossipsub Subscribed events captured while draining events for other
+    /// purposes (e.g. during `wait_for_request`). Tests that look for a peer
+    /// subscription check this set first so they don't miss events that
+    /// arrived before the test loop started.
+    pub seen_subscriptions: HashMap<TopicHash, HashSet<PeerId>>,
 }
 
 impl MockNode {
@@ -526,7 +540,11 @@ impl MockNode {
             .build();
 
         swarm
-            .listen_on("/ip4/0.0.0.0/udp/0/quic-v1".parse().unwrap())
+            .listen_on(
+                "/ip4/0.0.0.0/udp/0/quic-v1"
+                    .parse()
+                    .expect("valid mock node listen multiaddr"),
+            )
             .map_err(|e| format!("Failed to listen: {e}"))?;
 
         Ok(MockNode {
@@ -534,6 +552,7 @@ impl MockNode {
             pending_requests: HashMap::new(),
             gossip_messages: Vec::new(),
             secret_key_bytes: Some(secret_key_bytes),
+            seen_subscriptions: HashMap::new(),
         })
     }
 
@@ -653,6 +672,12 @@ impl MockNode {
     }
 
     /// Wait for an incoming request and return it along with the response channel.
+    ///
+    /// Gossipsub `Subscribed` events that arrive while waiting are buffered
+    /// into `self.seen_subscriptions` so that tests can check them
+    /// retroactively.  Without this, clients that send their gossipsub
+    /// SUBSCRIBE before the reqresp Status handshake completes would have
+    /// their subscription silently dropped.
     pub async fn wait_for_request(
         &mut self,
     ) -> Option<(
@@ -676,6 +701,14 @@ impl MockNode {
                     },
                 ))) => {
                     return Some((peer, request_id, request, channel));
+                }
+                Some(SwarmEvent::Behaviour(MockBehaviourEvent::Gossipsub(
+                    GossipsubEvent::Subscribed { peer_id, topic },
+                ))) => {
+                    self.seen_subscriptions
+                        .entry(topic)
+                        .or_default()
+                        .insert(peer_id);
                 }
                 Some(_) => continue,
                 None => return None,
@@ -803,40 +836,6 @@ impl MockNode {
                 }
                 Ok(_) => continue,
                 Err(_) => return None,
-            }
-        }
-    }
-
-    /// Drain all received gossip messages.
-    pub fn drain_gossip_messages(&mut self) -> Vec<(PeerId, IdentTopic, Vec<u8>)> {
-        std::mem::take(&mut self.gossip_messages)
-    }
-
-    /// Wait for a gossip message and return it.
-    pub async fn wait_for_gossip_message(&mut self) -> Option<(PeerId, IdentTopic, Vec<u8>)> {
-        loop {
-            match self.swarm.next().await {
-                Some(SwarmEvent::Behaviour(MockBehaviourEvent::Gossipsub(
-                    GossipsubEvent::Message {
-                        propagation_source,
-                        message,
-                        ..
-                    },
-                ))) => {
-                    let topic_str = message.topic.into_string();
-                    let topic = IdentTopic::new(topic_str);
-                    return Some((propagation_source, topic, message.data));
-                }
-                Some(SwarmEvent::Behaviour(MockBehaviourEvent::Gossipsub(_))) => continue,
-                Some(SwarmEvent::Behaviour(MockBehaviourEvent::Reqresp(
-                    ReqRespEvent::Message { .. },
-                ))) => continue,
-                Some(SwarmEvent::Behaviour(MockBehaviourEvent::Reqresp(
-                    ReqRespEvent::OutboundFailure { .. },
-                ))) => continue,
-                Some(SwarmEvent::NewListenAddr { .. }) => continue,
-                Some(_) => continue,
-                None => return None,
             }
         }
     }
