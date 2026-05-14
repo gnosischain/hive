@@ -32,6 +32,7 @@ use tokio::time::timeout;
 // Protocol strings for lean reqresp
 pub const LEAN_STATUS_PROTOCOL: &str = "/leanconsensus/req/status/1/ssz_snappy";
 pub const LEAN_BLOCKS_BY_ROOT_PROTOCOL: &str = "/leanconsensus/req/blocks_by_root/1/ssz_snappy";
+pub const LEAN_BLOCKS_BY_RANGE_PROTOCOL: &str = "/leanconsensus/req/blocks_by_range/1/ssz_snappy";
 
 // Gossip topic helpers
 pub fn lean_block_topic(fork_digest: &str) -> IdentTopic {
@@ -78,6 +79,18 @@ impl BlocksByRootV1Request {
         }
     }
 
+    pub fn from_ssz_bytes(bytes: &[u8]) -> Result<Self, ssz::DecodeError> {
+        ssz::Decode::from_ssz_bytes(bytes)
+    }
+}
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, SszEncodeDerive, SszDecodeDerive)]
+pub struct BlocksByRangeV1Request {
+    pub start_slot: u64,
+    pub count: u64,
+}
+
+impl BlocksByRangeV1Request {
     pub fn from_ssz_bytes(bytes: &[u8]) -> Result<Self, ssz::DecodeError> {
         ssz::Decode::from_ssz_bytes(bytes)
     }
@@ -157,7 +170,6 @@ pub struct LeanAggregatedAttestation {
 pub struct LeanAggregatedSignatureProof {
     pub participants: BitList<U4096>,
     pub proof_data: VariableList<u8, U1048576>,
-    pub bytecode_point: Option<VariableList<u8, U1048576>>,
 }
 
 #[derive(Debug, Default, Clone, PartialEq, Eq, SszEncodeDerive, SszDecodeDerive)]
@@ -570,6 +582,13 @@ impl MockNode {
         )])
     }
 
+    pub fn new_blocks_by_range_only() -> Result<Self, String> {
+        Self::with_protocols(vec![(
+            StreamProtocol::new(LEAN_BLOCKS_BY_RANGE_PROTOCOL),
+            ProtocolSupport::Full,
+        )])
+    }
+
     pub fn new() -> Result<Self, String> {
         Self::with_protocols(vec![
             (
@@ -578,6 +597,10 @@ impl MockNode {
             ),
             (
                 StreamProtocol::new(LEAN_BLOCKS_BY_ROOT_PROTOCOL),
+                ProtocolSupport::Full,
+            ),
+            (
+                StreamProtocol::new(LEAN_BLOCKS_BY_RANGE_PROTOCOL),
                 ProtocolSupport::Full,
             ),
         ])
@@ -780,6 +803,14 @@ impl MockNode {
                         }
                         // Try to decode as BlocksByRoot and respond with resource unavailable.
                         if BlocksByRootV1Request::from_ssz_bytes(&decompressed).is_ok() {
+                            let _ = self.send_response(
+                                channel,
+                                vec![(RESPONSE_CODE_RESOURCE_UNAVAILABLE, vec![])],
+                            );
+                            continue;
+                        }
+                        // Try to decode as BlocksByRange and respond with resource unavailable.
+                        if BlocksByRangeV1Request::from_ssz_bytes(&decompressed).is_ok() {
                             let _ = self.send_response(
                                 channel,
                                 vec![(RESPONSE_CODE_RESOURCE_UNAVAILABLE, vec![])],
