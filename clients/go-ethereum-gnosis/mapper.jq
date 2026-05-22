@@ -83,6 +83,7 @@ end |
       }
     },
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "maxBlobsPerTransaction": 2,
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
     "targetBlobGasPerBlock": 131072,
