@@ -76,6 +76,18 @@ jobs:
             simulator: 'gnosis/engine'
             suite: 'engine-auth'
             parallelism: 1
+          - client: erigon
+            simulator: 'gnosis/engine'
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: reth
+            simulator: 'gnosis/engine'
+            suite: 'engine-auth'
+            parallelism: 1
+          - client: go-ethereum
+            simulator: 'gnosis/engine'
+            suite: 'engine-auth'
+            parallelism: 1
           - client: nethermind
             simulator: 'gnosis/engine'
             suite: 'engine-exchange-capabilities'
