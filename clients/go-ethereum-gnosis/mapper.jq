@@ -53,8 +53,8 @@ end |
       "0": "0x1559000000000000000000000000000000000000"
     },
     "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
-    "terminalTotalDifficulty": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int else 0 end),
-    "terminalTotalDifficultyPassed": true,
+    "terminalTotalDifficulty": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int else 9223372036854775807 end),
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
@@ -124,16 +124,11 @@ end |
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": .difficulty,
   "gasLimit": .gasLimit,
-  "seal": (
+  "auraSeal": (
     if (.difficulty // "0x0") | test("^0x0*$") then
       null
     else
-      {
-        "authorityRound": {
-          "step": "0x0",
-          "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-        }
-      }
+      "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     end
   ),
   "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
