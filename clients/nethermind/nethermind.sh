@@ -57,7 +57,7 @@ fi
 mkdir -p /chainspec
 jq -f /mapper.jq /genesis.json > /chainspec/test.json
 
-# Dump genesis. 
+# Dump genesis.
 if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.accounts[] | select(.balance == "0x123450000000000000000" or has("builtin")))' /chainspec/test.json
