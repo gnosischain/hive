@@ -59,6 +59,12 @@ struct ClientInteropTopologySpec {
     topology: Vec<ClientDefinition>,
 }
 
+struct ClientInteropTopologySpec {
+    left_name: String,
+    right_name: String,
+    topology: Vec<ClientDefinition>,
+}
+
 struct RunningInteropClient {
     node_id: String,
     client_kind: String,

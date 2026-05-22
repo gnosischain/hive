@@ -1283,7 +1283,6 @@ async def run() -> None:
         logger.info("Disabling local validator service for passive helper")
         node.validator_service = None
 
-    published_blocks: dict[Bytes32, object] = {}
     _BLOCK_CACHE_BY_SYNC_SERVICE[id(node.sync_service)] = published_blocks
     _SYNC_EVENT_CONTEXT[id(node.sync_service)] = (event_source, node)
     _BLOCK_CACHE_BY_REQRESP_CLIENT[id(event_source.reqresp_client)] = published_blocks
