@@ -87,6 +87,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 2,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -116,6 +117,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: false,
                         client_role: ClientUnderTestRole::Observer,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -144,10 +146,11 @@ dyn_async! {
                         use_checkpoint_sync: true,
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
-                        // Helper owns V1+V2 so client (default V0) has exclusive proposer slots; see #1470.
+                        // Helper owns V1+V2+V3 so client (default V0) has exclusive proposer slots; see #1470.
                         source_helper_validator_indices: Some(
                             LEAN_SPEC_SOURCE_VALIDATORS_EXCLUDING_V0.to_string(),
                         ),
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 2,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -177,6 +180,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -206,6 +210,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -235,6 +240,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -264,6 +270,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: false,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -293,6 +300,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: false,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -322,6 +330,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: false,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -351,6 +360,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: false,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -380,6 +390,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -409,6 +420,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -438,6 +450,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -467,6 +480,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -476,6 +490,126 @@ dyn_async! {
                     },
                 },
                 test_blocks_by_root_malformed_request,
+            ).await;
+
+
+            let range_single_genesis_time = default_genesis_time();
+            run_data_test_with_timeout(
+                test,
+                TimedDataTestSpec {
+                    name: "reqresp/blocks_by_range/single_known_block".to_string(),
+                    description: "Request one known slot by range. Assert exact block is returned.".to_string(),
+                    always_run: false,
+                    client_name: client.name.clone(),
+                    timeout_duration: POST_GENESIS_TEST_TIMEOUT,
+                    test_data: PostGenesisSyncTestData {
+                        client_under_test: client.clone(),
+                        genesis_time: range_single_genesis_time,
+                        wait_for_client_justified_checkpoint: false,
+                        use_checkpoint_sync: true,
+                        connect_client_to_lean_spec_mesh: false,
+                        client_role: ClientUnderTestRole::Validator,
+                        source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
+                        helper_peer_count: 1,
+                        helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
+                            HelperGossipForkDigestProfile::SelectedDevnet
+                        } else {
+                            HelperGossipForkDigestProfile::LegacyDevnet0
+                        },
+                    },
+                },
+                test_blocks_by_range_single_known,
+            ).await;
+
+
+            let range_multiple_genesis_time = default_genesis_time();
+            run_data_test_with_timeout(
+                test,
+                TimedDataTestSpec {
+                    name: "reqresp/blocks_by_range/multiple_known_blocks".to_string(),
+                    description: "Request a slot range with known blocks. Assert returned blocks are ordered and in range.".to_string(),
+                    always_run: false,
+                    client_name: client.name.clone(),
+                    timeout_duration: POST_GENESIS_TEST_TIMEOUT,
+                    test_data: PostGenesisSyncTestData {
+                        client_under_test: client.clone(),
+                        genesis_time: range_multiple_genesis_time,
+                        wait_for_client_justified_checkpoint: false,
+                        use_checkpoint_sync: true,
+                        connect_client_to_lean_spec_mesh: false,
+                        client_role: ClientUnderTestRole::Validator,
+                        source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
+                        helper_peer_count: 1,
+                        helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
+                            HelperGossipForkDigestProfile::SelectedDevnet
+                        } else {
+                            HelperGossipForkDigestProfile::LegacyDevnet0
+                        },
+                    },
+                },
+                test_blocks_by_range_multiple_known,
+            ).await;
+
+
+            let range_zero_count_genesis_time = default_genesis_time();
+            run_data_test_with_timeout(
+                test,
+                TimedDataTestSpec {
+                    name: "reqresp/blocks_by_range/zero_count".to_string(),
+                    description: "Request BlocksByRange with count zero. Client must reject the invalid request.".to_string(),
+                    always_run: false,
+                    client_name: client.name.clone(),
+                    timeout_duration: POST_GENESIS_TEST_TIMEOUT,
+                    test_data: PostGenesisSyncTestData {
+                        client_under_test: client.clone(),
+                        genesis_time: range_zero_count_genesis_time,
+                        wait_for_client_justified_checkpoint: false,
+                        use_checkpoint_sync: true,
+                        connect_client_to_lean_spec_mesh: true,
+                        client_role: ClientUnderTestRole::Validator,
+                        source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
+                        helper_peer_count: 1,
+                        helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
+                            HelperGossipForkDigestProfile::SelectedDevnet
+                        } else {
+                            HelperGossipForkDigestProfile::LegacyDevnet0
+                        },
+                    },
+                },
+                test_blocks_by_range_zero_count,
+            ).await;
+
+
+            let range_too_many_genesis_time = default_genesis_time();
+            run_data_test_with_timeout(
+                test,
+                TimedDataTestSpec {
+                    name: "reqresp/blocks_by_range/too_many_blocks".to_string(),
+                    description: "Request more than MAX_REQUEST_BLOCKS by range. Client must reject the invalid count.".to_string(),
+                    always_run: false,
+                    client_name: client.name.clone(),
+                    timeout_duration: POST_GENESIS_TEST_TIMEOUT,
+                    test_data: PostGenesisSyncTestData {
+                        client_under_test: client.clone(),
+                        genesis_time: range_too_many_genesis_time,
+                        wait_for_client_justified_checkpoint: false,
+                        use_checkpoint_sync: true,
+                        connect_client_to_lean_spec_mesh: true,
+                        client_role: ClientUnderTestRole::Validator,
+                        source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
+                        helper_peer_count: 1,
+                        helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
+                            HelperGossipForkDigestProfile::SelectedDevnet
+                        } else {
+                            HelperGossipForkDigestProfile::LegacyDevnet0
+                        },
+                    },
+                },
+                test_blocks_by_range_too_many,
             ).await;
 
 
@@ -496,6 +630,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 2,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -525,6 +660,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 2,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -554,6 +690,7 @@ dyn_async! {
                         connect_client_to_lean_spec_mesh: true,
                         client_role: ClientUnderTestRole::Validator,
                         source_helper_validator_indices: None,
+                        split_helper_validators_across_mesh: false,
                         helper_peer_count: 1,
                         helper_fork_digest_profile: if selected_lean_devnet() == LeanDevnet::Devnet4 {
                             HelperGossipForkDigestProfile::SelectedDevnet
@@ -645,7 +782,7 @@ dyn_async! {
 
         // Compare against the helper's *live* head re-fetched each iteration
         // rather than a single T+10s snapshot. The helper keeps producing
-        // blocks (it's still aggregating V1+V2) so a frozen snapshot becomes
+        // blocks (it's still aggregating V1+V2+V3) so a frozen snapshot becomes
         // unreachable as soon as the helper moves on; equality with a moving
         // target is the right invariant for "client has caught up".
         let mut caught_up = false;
@@ -1077,6 +1214,170 @@ dyn_async! {
             .await
             .expect("client should still respond to HTTP after malformed request");
         assert_eq!(response.status(), 200, "client should remain healthy");
+    }
+}
+
+// === BLOCKS BY RANGE TESTS ===
+
+dyn_async! {
+    async fn test_blocks_by_range_single_known<'a>(test: &'a mut Test, test_data: PostGenesisSyncTestData) {
+        let context = start_post_genesis_sync_context(test, &test_data).await;
+        let client = &context.client_under_test;
+        let peer_id = compute_client_peer_id(&client.kind);
+
+        wait_for_client_blocks(client).await;
+        let fork_choice = load_fork_choice_response(client).await;
+        let expected_node = fork_choice
+            .nodes
+            .iter()
+            .filter(|node| node.slot > 0 && node.root != B256::ZERO)
+            .max_by_key(|node| node.slot)
+            .expect("client should expose a non-genesis block");
+
+        let mut mock = MockNode::new_blocks_by_range_only().expect("failed to create mock node");
+        dial_client(&mut mock, client).await.expect("failed to dial client");
+        let request = encode_request(&BlocksByRangeV1Request {
+            start_slot: expected_node.slot,
+            count: 1,
+        });
+        let chunks = mock
+            .send_request(peer_id, request)
+            .await
+            .expect("client should return block for known range slot");
+        let success_payloads = chunks
+            .iter()
+            .filter_map(|(code, payload)| (*code == RESPONSE_CODE_SUCCESS && !payload.is_empty()).then_some(payload))
+            .collect::<Vec<_>>();
+        assert_eq!(success_payloads.len(), 1, "client should return exactly one known range block");
+
+        let signed_block = LeanSignedBlock::from_ssz_bytes(success_payloads[0])
+            .expect("returned range block should decode from SSZ");
+        assert_eq!(signed_block.block.slot, expected_node.slot, "returned range block slot should match requested slot");
+        assert_eq!(signed_block.block.parent_root, expected_node.parent_root, "returned range block parent should match fork_choice node");
+        assert_eq!(signed_block.block.proposer_index, expected_node.proposer_index, "returned range block proposer should match fork_choice node");
+    }
+}
+
+dyn_async! {
+    async fn test_blocks_by_range_multiple_known<'a>(test: &'a mut Test, test_data: PostGenesisSyncTestData) {
+        let context = start_post_genesis_sync_context(test, &test_data).await;
+        let client = &context.client_under_test;
+        let peer_id = compute_client_peer_id(&client.kind);
+
+        let deadline = std::time::Instant::now() + Duration::from_secs(REQRESP_SYNC_TIMEOUT_SECS);
+        let known_nodes = loop {
+            let fork_choice = load_fork_choice_response(client).await;
+            let mut known_nodes = fork_choice
+                .nodes
+                .iter()
+                .filter(|node| node.slot > 0 && node.root != B256::ZERO)
+                .cloned()
+                .collect::<Vec<_>>();
+            known_nodes.sort_by_key(|node| node.slot);
+            if known_nodes.len() >= 2 {
+                break known_nodes;
+            }
+
+            if std::time::Instant::now() >= deadline {
+                panic!(
+                    "client should expose at least two non-genesis fork-choice blocks within {REQRESP_SYNC_TIMEOUT_SECS} seconds"
+                );
+            }
+
+            sleep(Duration::from_secs(1)).await;
+        };
+
+        let start_slot = known_nodes.first().expect("known nodes should not be empty").slot;
+        let end_slot = known_nodes.last().expect("known nodes should not be empty").slot;
+        let count = end_slot - start_slot + 1;
+
+        let mut mock = MockNode::new_blocks_by_range_only().expect("failed to create mock node");
+        dial_client(&mut mock, client).await.expect("failed to dial client");
+        let request = encode_request(&BlocksByRangeV1Request { start_slot, count });
+        let chunks = mock
+            .send_request(peer_id, request)
+            .await
+            .expect("client should return blocks for known slot range");
+        let success_payloads = chunks
+            .iter()
+            .filter_map(|(code, payload)| (*code == RESPONSE_CODE_SUCCESS && !payload.is_empty()).then_some(payload))
+            .collect::<Vec<_>>();
+        assert!(
+            success_payloads.len() >= 2,
+            "client should return multiple known blocks for slot range"
+        );
+
+        let mut previous_slot = None;
+        for payload in success_payloads {
+            let signed_block = LeanSignedBlock::from_ssz_bytes(payload)
+                .expect("returned range block should decode from SSZ");
+            assert!(
+                signed_block.block.slot >= start_slot && signed_block.block.slot < start_slot + count,
+                "returned range block slot should be inside requested range"
+            );
+            if let Some(previous_slot) = previous_slot {
+                assert!(
+                    signed_block.block.slot > previous_slot,
+                    "BlocksByRange responses should be strictly increasing by slot"
+                );
+            }
+            if let Some(expected_node) = known_nodes
+                .iter()
+                .find(|node| node.slot == signed_block.block.slot)
+            {
+                assert_eq!(signed_block.block.parent_root, expected_node.parent_root, "returned range block parent should match fork_choice node");
+                assert_eq!(signed_block.block.proposer_index, expected_node.proposer_index, "returned range block proposer should match fork_choice node");
+            }
+            previous_slot = Some(signed_block.block.slot);
+        }
+    }
+}
+
+dyn_async! {
+    async fn test_blocks_by_range_zero_count<'a>(test: &'a mut Test, test_data: PostGenesisSyncTestData) {
+        let context = start_post_genesis_sync_context(test, &test_data).await;
+        let client = &context.client_under_test;
+
+        let mut mock = MockNode::new_blocks_by_range_only().expect("failed to create mock node");
+        dial_client(&mut mock, client).await.expect("failed to dial client");
+        let peer_id = compute_client_peer_id(&client.kind);
+
+        let request = encode_request(&BlocksByRangeV1Request {
+            start_slot: 0,
+            count: 0,
+        });
+        let chunks = mock
+            .send_request(peer_id, request)
+            .await
+            .expect("client should send invalid-request response for zero count");
+        assert!(
+            !chunks.is_empty() && chunks[0].0 == RESPONSE_CODE_INVALID_REQUEST,
+            "client should reject BlocksByRange zero count with INVALID_REQUEST"
+        );
+    }
+}
+
+dyn_async! {
+    async fn test_blocks_by_range_too_many<'a>(test: &'a mut Test, test_data: PostGenesisSyncTestData) {
+        let context = start_post_genesis_sync_context(test, &test_data).await;
+        let client = &context.client_under_test;
+
+        let mut mock = MockNode::new_blocks_by_range_only().expect("failed to create mock node");
+        dial_client(&mut mock, client).await.expect("failed to dial client");
+        let peer_id = compute_client_peer_id(&client.kind);
+
+        let request = encode_request(&BlocksByRangeV1Request {
+            start_slot: 0,
+            count: MAX_REQUEST_BLOCKS as u64 + 1,
+        });
+        let chunks = mock
+            .send_request(peer_id, request)
+            .await
+            .expect("client should send invalid-request response for too-large count");
+        assert!(
+            !chunks.is_empty() && chunks[0].0 == RESPONSE_CODE_INVALID_REQUEST,
+            "client should reject BlocksByRange count exceeding max block count with INVALID_REQUEST"
+        );
     }
 }
 
