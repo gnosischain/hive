@@ -41,7 +41,7 @@ var (
 	InvalidParamsError          = -32602
 	MAX_INITCODE_SIZE           = 49152
 
-	MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK uint64 = 16
+	MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK uint64 = 8
 
 	WARM_COINBASE_ADDRESS = common.HexToAddress("0x0101010101010101010101010101010101010101")
 	PUSH0_ADDRESS         = common.HexToAddress("0x0202020202020202020202020202020202020202")
@@ -363,7 +363,7 @@ var Tests = []test.Spec{
 				TimeoutSeconds:   300,
 			},
 			WithdrawalsForkHeight: 1, // Genesis is Pre-Withdrawals
-			WithdrawalsBlockCount: MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK,
+			WithdrawalsBlockCount: 16,
 			WithdrawalsPerBlock:   MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK,
 		},
 		ReOrgBlockCount: 8,
@@ -382,7 +382,7 @@ var Tests = []test.Spec{
 				TimeoutSeconds:   300,
 			},
 			WithdrawalsForkHeight: 1, // Genesis is Pre-Withdrawals
-			WithdrawalsBlockCount: MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK,
+			WithdrawalsBlockCount: 16,
 			WithdrawalsPerBlock:   MAINNET_MAX_WITHDRAWAL_COUNT_PER_BLOCK,
 		},
 		ReOrgBlockCount: 8,
@@ -629,7 +629,7 @@ var Tests = []test.Spec{
 				Count: 2,
 			},
 			GetPayloadBodyRequestByRange{
-				Start: 31,
+				Start: 22,
 				Count: 3,
 			},
 			GetPayloadBodyRequestByHashIndex{
@@ -642,11 +642,11 @@ var Tests = []test.Spec{
 			},
 			GetPayloadBodyRequestByHashIndex{ // Existing+Random hashes
 				BlockNumbers: []uint64{
-					32,
+					24,
 					1000,
-					31,
+					23,
 					1000,
-					30,
+					22,
 					1000,
 				},
 			},
@@ -674,11 +674,11 @@ var Tests = []test.Spec{
 		GenerateSidechain: true,
 		GetPayloadBodiesRequests: []GetPayloadBodyRequest{
 			GetPayloadBodyRequestByRange{
-				Start: 33,
+				Start: 25,
 				Count: 1,
 			},
 			GetPayloadBodyRequestByRange{
-				Start: 32,
+				Start: 24,
 				Count: 2,
 			},
 		},
@@ -744,15 +744,15 @@ var Tests = []test.Spec{
 			},
 			GetPayloadBodyRequestByHashIndex{
 				Start: 1,
-				End:   32,
+				End:   24,
 			},
 			GetPayloadBodyRequestByHashIndex{ // Existing+Random hashes
 				BlockNumbers: []uint64{
-					32,
+					24,
 					1000,
-					31,
+					23,
 					1000,
-					30,
+					22,
 					1000,
 				},
 			},
@@ -839,7 +839,7 @@ var Tests = []test.Spec{
 			},
 			WithdrawalsForkHeight: 1,
 			WithdrawalsBlockCount: 1,
-			WithdrawalsPerBlock:   16,
+			WithdrawalsPerBlock:   8,
 			TimeIncrements:        5,
 		},
 		ClaimBlocksCount: 1,
@@ -881,7 +881,7 @@ var Tests = []test.Spec{
 			},
 			WithdrawalsForkHeight: 2,
 			WithdrawalsBlockCount: 2,
-			WithdrawalsPerBlock:   16,
+			WithdrawalsPerBlock:   8,
 			TimeIncrements:        5,
 		},
 		ClaimBlocksCount: 2,
