@@ -274,14 +274,14 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				BlobTransactionMaxBlobGasCost: big.NewInt(1e11),
 				AccountIndex:                  0,
 			},
 			// Then send the single-blob transactions from account B
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				BlobTransactionMaxBlobGasCost: big.NewInt(1e11),
 				AccountIndex:                  1,
 			},
 
@@ -332,7 +332,7 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK - 1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1200000000),
+				BlobTransactionMaxBlobGasCost: big.NewInt(1e11),
 				AccountIndex:                  0,
 				ClientIndex:                   0,
 			},
@@ -341,7 +341,7 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              5,
 				BlobsPerTransaction:           1,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				BlobTransactionMaxBlobGasCost: big.NewInt(1e11),
 				AccountIndex:                  1,
 				ClientIndex:                   1,
 			},
@@ -687,7 +687,7 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              1,
 				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				BlobTransactionMaxBlobGasCost: big.NewInt(1e11),
 			},
 			NewPayloads{
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
@@ -700,7 +700,7 @@ var Tests = []test.Spec{
 			SendBlobTransactions{
 				TransactionCount:              1,
 				BlobsPerTransaction:           cancun.MAX_BLOBS_PER_BLOCK,
-				BlobTransactionMaxBlobGasCost: big.NewInt(1000000000),
+				BlobTransactionMaxBlobGasCost: big.NewInt(1e11),
 			},
 			NewPayloads{
 				ExpectedIncludedBlobCount: cancun.MAX_BLOBS_PER_BLOCK,
