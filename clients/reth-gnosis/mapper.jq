@@ -37,11 +37,12 @@ end |
 # Replace config in input.
 . + {
   "config": {
-    "chainId": (if env.HIVE_CHAIN_ID then env.HIVE_CHAIN_ID|to_int else 100 end),
+    "chainId": env.HIVE_CHAIN_ID|to_int,
     "consensus": "aura",
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "eip150Block": env.HIVE_FORK_TANGERINE|to_int,
     "eip155Block": env.HIVE_FORK_SPURIOUS|to_int,
+    "eip158Block": env.HIVE_FORK_SPURIOUS|to_int,
     "byzantiumBlock": env.HIVE_FORK_BYZANTIUM|to_int,
     "constantinopleBlock": env.HIVE_FORK_CONSTANTINOPLE|to_int,
     "petersburgBlock": env.HIVE_FORK_PETERSBURG|to_int,
@@ -51,8 +52,9 @@ end |
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
     },
-    "terminalTotalDifficulty": 0,
-    "terminalTotalDifficultyPassed": true,
+    "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
+    "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int,
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
@@ -94,7 +96,7 @@ end |
         "multi": {
           "0": {
             "list": [
-              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
+              "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B"
             ]
           }
         }
@@ -119,7 +121,19 @@ end |
     "depositContractAddress": "0xbabe2bed00000000000000000000000000000003"
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
-  "difficulty": "0x00",
+  "difficulty": .difficulty,
   "gasLimit": .gasLimit,
+  "seal": (
+    if (.difficulty // "0x0") | test("^0x0*$") then
+      null
+    else
+      {
+        "authorityRound": {
+          "step": "0x0",
+          "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    end
+  ),
   "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
-}
+}|remove_empty
