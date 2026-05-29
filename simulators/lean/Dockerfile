@@ -2,7 +2,7 @@ FROM rust:bookworm AS rust-builder
 
 WORKDIR /workspace
 
-ENV RUST_MIN_STACK=16777216
+ENV RUST_MIN_STACK=33554432
 
 COPY ./Cargo.toml ./Cargo.toml
 COPY ./Cargo.lock ./Cargo.lock
@@ -76,7 +76,9 @@ ARG devnet3_tag=be853180d21aa36d6401b8c1541aa6fcaad5008d
 ARG devnet4_tag=main
 ARG devnet3_keys_tag=leanSpec-ad9a3226
 ARG devnet4_keys_tag=latest
+ARG lean_spec_fixtures_tag=latest
 ARG RUST_NIGHTLY_TOOLCHAIN=nightly-2026-04-12
+ENV LEAN_SPEC_FIXTURES_METADATA_URL=https://api.github.com/repos/${helper_github}/releases/tags/${lean_spec_fixtures_tag}
 ENV LEAN_SPEC_DEVNET4_KEYS_METADATA_URL=https://api.github.com/repos/leanEthereum/leansig-test-keys/releases/tags/${devnet4_keys_tag}
 
 RUN rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* \
@@ -111,7 +113,9 @@ ENV LEAN_ENV=prod \
     LEAN_SPEC_DEVNET3_ROOT=/app/devnet3 \
     LEAN_SPEC_DEVNET4_ROOT=/app/devnet4 \
     LEAN_SPEC_DEVNET3_KEYS_DIR=/app/hive/prod_scheme_devnet3 \
-    LEAN_SPEC_DEVNET4_KEYS_DIR=/app/hive/prod_scheme_devnet4
+    LEAN_SPEC_DEVNET4_KEYS_DIR=/app/hive/prod_scheme_devnet4 \
+    PYTHONFAULTHANDLER=1 \
+    RUST_MIN_STACK=33554432
 
 COPY ./simulators/lean/helper/leanspec-client.sh /app/hive/leanspec-client.sh
 COPY ./simulators/lean/helper/lean_spec_client_runner.py /app/hive/lean_spec_client_runner.py
@@ -119,9 +123,18 @@ COPY ./clients/lean-spec-client/lean_spec_runtime.py /app/hive/lean_spec_runtime
 COPY ./simulators/lean/helper/prepare_lean_client_assets.py /app/hive/prepare_lean_client_assets.py
 COPY ./simulators/lean/config/lean-devnets.txt /app/hive/lean-devnets.txt
 
+ADD ${LEAN_SPEC_FIXTURES_METADATA_URL} /tmp/lean-spec-fixtures-release.json
 ADD ${LEAN_SPEC_DEVNET4_KEYS_METADATA_URL} /tmp/devnet4-keys-release.json
 
-RUN mkdir -p /app/hive/prod_scheme_devnet3 /app/hive/prod_scheme_devnet4 /tmp/leansig \
+RUN mkdir -p /app/hive/prod_scheme_devnet3 /app/hive/prod_scheme_devnet4 /app/hive/lean-spec-tests /tmp/lean-spec-fixtures /tmp/leansig \
+    && curl -4 -fsSL \
+        https://github.com/${helper_github}/releases/download/${lean_spec_fixtures_tag}/fixtures-prod-scheme.tar.gz \
+        -o /tmp/lean-spec-fixtures/fixtures-prod-scheme.tar.gz \
+    && curl -4 -fsSL \
+        https://github.com/${helper_github}/releases/download/${lean_spec_fixtures_tag}/fixtures-prod-scheme.tar.gz.sha256 \
+        -o /tmp/lean-spec-fixtures/fixtures-prod-scheme.tar.gz.sha256 \
+    && (cd /tmp/lean-spec-fixtures && sha256sum -c fixtures-prod-scheme.tar.gz.sha256) \
+    && tar --warning=no-unknown-keyword -xzf /tmp/lean-spec-fixtures/fixtures-prod-scheme.tar.gz --strip-components=1 -C /app/hive/lean-spec-tests \
     && curl -4 -fsSL \
         https://github.com/leanEthereum/leansig-test-keys/releases/download/${devnet3_keys_tag}/prod_scheme.tar.gz \
         -o /tmp/leansig/prod_scheme_devnet3.tar.gz \
@@ -129,6 +142,9 @@ RUN mkdir -p /app/hive/prod_scheme_devnet3 /app/hive/prod_scheme_devnet4 /tmp/le
         prod_scheme/0.json \
         prod_scheme/1.json \
         prod_scheme/2.json \
+        prod_scheme/3.json \
+        prod_scheme/4.json \
+        prod_scheme/5.json \
     && cp /tmp/leansig/prod_scheme/*.json /app/hive/prod_scheme_devnet3/ \
     && rm -rf /tmp/leansig/prod_scheme \
     && curl -4 -fsSL \
@@ -138,15 +154,19 @@ RUN mkdir -p /app/hive/prod_scheme_devnet3 /app/hive/prod_scheme_devnet4 /tmp/le
         prod_scheme/0.json \
         prod_scheme/1.json \
         prod_scheme/2.json \
+        prod_scheme/3.json \
+        prod_scheme/4.json \
+        prod_scheme/5.json \
     && cp /tmp/leansig/prod_scheme/*.json /app/hive/prod_scheme_devnet4/ \
     && DEVNET3_COMMIT="$(cat /app/devnet3/.git-commit)" \
     && DEVNET4_COMMIT="$(cat /app/devnet4/.git-commit)" \
-    && rm -rf /tmp/leansig /tmp/devnet4-keys-release.json \
+    && rm -rf /tmp/lean-spec-fixtures /tmp/lean-spec-fixtures-release.json /tmp/leansig /tmp/devnet4-keys-release.json \
     && chmod +x /app/hive/leanspec-client.sh \
-    && printf "lean-sim\nhelper repo: %s\nhelper devnet3: %s\nhelper devnet4: %s\nrust toolchain: %s\n" \
+    && printf "lean-sim\nhelper repo: %s\nhelper devnet3: %s\nhelper devnet4: %s\nfixtures release: %s\nrust toolchain: %s\n" \
         "$helper_github" \
         "$DEVNET3_COMMIT" \
         "$DEVNET4_COMMIT" \
+        "$lean_spec_fixtures_tag" \
         "$RUST_NIGHTLY_TOOLCHAIN" > /version.txt
 
 # Fix missing IdentityKeypair.from_bytes in lean_spec

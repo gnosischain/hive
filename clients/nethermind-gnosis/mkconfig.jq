@@ -37,26 +37,21 @@ def merge_config:
       } | remove_empty
     }
   else
-    {}
+    { "Merge": { 
+      "Enabled": true 
+      } 
+    }
   end
 ;
 
 def json_rpc_config:
-  if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then
-    {
-      "JsonRpc": {
-        "JwtSecretFile": "/jwt.secret",
-        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin", "Testing"],
-        "AdditionalRpcUrls": ["http://0.0.0.0:8550|http;ws|debug;net;eth;subscribe;engine;web3;client;admin|no-auth", "http://0.0.0.0:8551|http;ws|debug;net;eth;subscribe;engine;web3;client;admin"]
-      }
+  {
+    "JsonRpc": {
+      "JwtSecretFile": "/jwt.secret",
+      "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin", "Testing"],
+      "AdditionalRpcUrls": ["http://0.0.0.0:8550|http;ws|debug;net;eth;subscribe;engine;web3;client;admin|no-auth", "http://0.0.0.0:8551|http;ws|debug;net;eth;subscribe;engine;web3;client;admin"]
     }
-  else
-    {
-      "JsonRpc": {
-        "EnabledModules": ["Debug", "Eth", "Subscribe", "Trace", "TxPool", "Web3", "Personal", "Proof", "Net", "Parity", "Health", "Admin", "Testing"]
-      }
-    }
-  end
+  }
 ;
 
 def sync_config:

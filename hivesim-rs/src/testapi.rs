@@ -130,7 +130,7 @@ impl Test {
             )
             .await;
 
-        let rpc_url = format!("http://{}:8545", ip);
+        let rpc_url = format!("http://{ip}:8545");
 
         let rpc_client = HttpClientBuilder::default()
             .build(rpc_url)
@@ -154,6 +154,32 @@ impl Test {
     /// Runs a subtest of this test.
     pub async fn run(&self, spec: impl Testable) {
         spec.run_test(self.sim.clone(), self.suite_id, self.suite.clone())
+            .await
+    }
+}
+
+impl Client {
+    /// Stops the client container.
+    pub async fn stop(&self) -> Result<(), String> {
+        self.test
+            .sim
+            .stop_client(self.test.suite_id, self.test.test_id, &self.container)
+            .await
+    }
+
+    /// Pauses the client container.
+    pub async fn pause(&self) -> Result<(), String> {
+        self.test
+            .sim
+            .pause_client(self.test.suite_id, self.test.test_id, &self.container)
+            .await
+    }
+
+    /// Unpauses the client container.
+    pub async fn unpause(&self) -> Result<(), String> {
+        self.test
+            .sim
+            .unpause_client(self.test.suite_id, self.test.test_id, &self.container)
             .await
     }
 }
@@ -517,7 +543,7 @@ async fn run_shared_client_test<T: Clone + Send + Sync + 'static>(
                     container: container_for_spawn,
                     ip,
                     rpc: HttpClientBuilder::default()
-                        .build(format!("http://{}:8545", ip))
+                        .build(format!("http://{ip}:8545"))
                         .expect("Failed to build rpc_client"),
                     test: Test {
                         sim: host_for_spawn,

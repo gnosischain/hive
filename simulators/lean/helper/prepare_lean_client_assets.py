@@ -73,8 +73,29 @@ def parse_runtime_validator_indices() -> list[int] | None:
     return [int(value) for value in raw_indices.split(",") if value.strip()]
 
 
+def attestation_committee_count() -> int:
+    value = int(os.environ.get("HIVE_ATTESTATION_COMMITTEE_COUNT", "1"))
+    if value < 1:
+        raise ValueError("HIVE_ATTESTATION_COMMITTEE_COUNT must be >= 1")
+    return value
+
+
+def genesis_validator_count() -> int:
+    value = int(os.environ.get("HIVE_LEAN_VALIDATOR_COUNT", "3"))
+    if value < 0:
+        raise ValueError("HIVE_LEAN_VALIDATOR_COUNT must be non-negative")
+    return value
+
+
 def load_source_validator(index: int) -> dict[str, str]:
     validator = json.loads((SOURCE_KEYS_DIR / f"{index}.json").read_text(encoding="utf-8"))
+    if {"attestation_keypair", "proposal_keypair"}.issubset(validator):
+        return {
+            "attestation_public": validator["attestation_keypair"]["public_key"],
+            "attestation_secret": validator["attestation_keypair"]["secret_key"],
+            "proposal_public": validator["proposal_keypair"]["public_key"],
+            "proposal_secret": validator["proposal_keypair"]["secret_key"],
+        }
     if {
         "attestation_public",
         "attestation_secret",
@@ -110,7 +131,7 @@ def parse_override_entries() -> list[tuple[str, str]] | None:
 
 def load_validators() -> list[dict[str, str]]:
     override_entries = parse_override_entries()
-    count = len(override_entries) if override_entries is not None else 3
+    count = len(override_entries) if override_entries is not None else genesis_validator_count()
     validators = [load_source_validator(index) for index in range(count)]
     if override_entries is not None:
         for validator, (attestation, proposal) in zip(validators, override_entries):
@@ -195,6 +216,7 @@ def format_genesis_pubkey(value: str) -> str:
 
 def render_config(validators: list[dict[str, str]]) -> str:
     lines = [f"GENESIS_TIME: {GENESIS_TIME}"]
+    committee_count = attestation_committee_count()
     if CLIENT_KIND == "ream":
         lines.extend(
             [
@@ -205,7 +227,7 @@ def render_config(validators: list[dict[str, str]]) -> str:
     else:
         lines.extend(
             [
-                "ATTESTATION_COMMITTEE_COUNT: 1",
+                f"ATTESTATION_COMMITTEE_COUNT: {committee_count}",
                 "MAX_ATTESTATIONS_DATA: 16",
                 f"NUM_VALIDATORS: {len(validators)}",
                 f"VALIDATOR_COUNT: {len(validators)}",

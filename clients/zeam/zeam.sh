@@ -56,12 +56,12 @@ materialize_runtime_local_ip
 
 FLAGS=(
     node
-    --custom_genesis "$ASSET_ROOT"
-    --validator_config "$ASSET_ROOT"
+    --custom-genesis "$ASSET_ROOT"
+    --validator-config "$ASSET_ROOT"
     --data-dir /data
     --node-id "$NODE_ID"
     --api-port 5052
-    --metrics_enable
+    --metrics-enable
     --metrics-port 8080
     --node-key "$ASSET_ROOT/node.key"
 )
@@ -72,6 +72,10 @@ fi
 
 if [ "${HIVE_IS_AGGREGATOR:-0}" = "1" ]; then
     FLAGS+=(--is-aggregator)
+fi
+
+if [ -n "${HIVE_ATTESTATION_COMMITTEE_COUNT:-}" ] && [ "$HIVE_ATTESTATION_COMMITTEE_COUNT" != "1" ]; then
+    FLAGS+=(--attestation-committee-count "$HIVE_ATTESTATION_COMMITTEE_COUNT")
 fi
 
 export RUST_LOG="${RUST_LOG:-info}"
