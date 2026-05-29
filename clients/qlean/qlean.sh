@@ -1,8 +1,8 @@
-#!/bin/bash 
-set -euo pipefail 
+#!/bin/bash
+set -euo pipefail
 
-DEVNET_LABEL="${HIVE_LEAN_DEVNET_LABEL:-devnet3}" 
-ASSET_ROOT="/tmp/qlean-runtime" 
+DEVNET_LABEL="${HIVE_LEAN_DEVNET_LABEL:-devnet4}"
+ASSET_ROOT="/tmp/qlean-runtime"
 LOCAL_IP_PLACEHOLDER="__HIVE_LOCAL_IP__"
 
 detect_local_ip() {
@@ -30,11 +30,11 @@ materialize_runtime_local_ip() {
 }
 
 case "$DEVNET_LABEL" in
-    devnet3)
-        DEFAULT_QLEAN_BIN="/usr/local/bin/qlean-devnet3"
-        ;;
     devnet4)
         DEFAULT_QLEAN_BIN="/usr/local/bin/qlean-devnet4"
+        ;;
+    devnet5)
+        DEFAULT_QLEAN_BIN="/usr/local/bin/qlean-devnet5"
         ;;
     *)
         echo "Unsupported Lean devnet label: $DEVNET_LABEL" >&2
