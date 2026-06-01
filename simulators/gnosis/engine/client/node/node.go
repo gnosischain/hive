@@ -373,6 +373,9 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 		candidateRoots = append(candidateRoots, fallbackRoot)
 	}
 
+	// Fetch the parent header once
+	parentHeader := bc.GetHeaderByHash(block.ParentHash())
+
 	var (
 		failedProcessing bool
 		result           *core.ProcessResult
@@ -380,7 +383,12 @@ func (n *GethNode) SetBlock(block *types.Block, parentNumber uint64, parentRoot 
 		lastErr          error
 	)
 	for _, candidateRoot := range candidateRoots {
-		statedb, err := bc.StateAt(candidateRoot)
+		stateHeader := &types.Header{Root: candidateRoot}
+		if parentHeader != nil {
+			stateHeader.Number = parentHeader.Number
+			stateHeader.Time = parentHeader.Time
+		}
+		statedb, err := bc.StateAt(stateHeader)
 		if err != nil {
 			lastErr = errors.Wrapf(err, "failed to create state db from parent root %s", candidateRoot)
 			continue
@@ -672,7 +680,7 @@ func (n *GethNode) getStateDB(ctx context.Context, blockNumber *big.Int) (*state
 	if err != nil {
 		return nil, err
 	}
-	return n.eth.BlockChain().StateAt(b.Root())
+	return n.eth.BlockChain().StateAt(b.Header())
 }
 
 func (n *GethNode) BalanceAt(ctx context.Context, account common.Address, blockNumber *big.Int) (*big.Int, error) {
