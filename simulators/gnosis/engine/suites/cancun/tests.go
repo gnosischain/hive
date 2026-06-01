@@ -1265,7 +1265,7 @@ var Tests = []test.Spec{
 					PayloadCustomizer: &helper.CustomPayloadData{
 						VersionedHashesCustomizer: &VersionedHashes{
 							Blobs:        helper.GetBlobList(0, cancun.TARGET_BLOBS_PER_BLOCK),
-							HashVersions: []byte{cancun.BLOB_COMMITMENT_VERSION_KZG + 1},
+							HashVersions: []byte{cancun.BLOB_COMMITMENT_VERSION_KZG, cancun.BLOB_COMMITMENT_VERSION_KZG + 1},
 						},
 					},
 					ExpectInvalidStatus: true,
@@ -1599,7 +1599,7 @@ var Tests = []test.Spec{
 					PayloadCustomizer: &helper.CustomPayloadData{
 						VersionedHashesCustomizer: &VersionedHashes{
 							Blobs:        helper.GetBlobList(0, cancun.TARGET_BLOBS_PER_BLOCK),
-							HashVersions: []byte{cancun.BLOB_COMMITMENT_VERSION_KZG + 1},
+							HashVersions: []byte{cancun.BLOB_COMMITMENT_VERSION_KZG, cancun.BLOB_COMMITMENT_VERSION_KZG + 1},
 						},
 					},
 					ExpectInvalidStatus: true,
