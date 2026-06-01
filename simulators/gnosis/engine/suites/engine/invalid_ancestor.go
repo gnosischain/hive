@@ -97,10 +97,12 @@ func (tc InvalidMissingAncestorReOrgTest) Execute(t *test.Env) {
 				sidePayload *typ.ExecutableData
 				err         error
 			)
-			// Insert extraData to ensure we deviate from the main payload, which contains empty extradata
+			// Increase gas limit by 1 to differentiate the side chain from the canonical chain
+			// without affecting state root computation.
+			sideGasLimit := t.CLMock.LatestPayloadBuilt.GasLimit + 1
 			customizer := &helper.CustomPayloadData{
 				ParentHash: &altChainPayloads[len(altChainPayloads)-1].BlockHash,
-				ExtraData:  &([]byte{0x01}),
+				GasLimit:   &sideGasLimit,
 			}
 			sidePayload, err = customizer.CustomizePayload(t.Rand, &t.CLMock.LatestPayloadBuilt)
 			if err != nil {
@@ -308,11 +310,13 @@ func (tc InvalidMissingAncestorReOrgSyncTest) Execute(t *test.Env) {
 				sidePayload *typ.ExecutableData
 				err         error
 			)
-			// Insert extraData to ensure we deviate from the main payload, which contains empty extradata
+			// Increase gas limit by 1 to differentiate the side chain from the canonical chain
+			// without affecting state root computation.
 			pHash := altChainPayloads[len(altChainPayloads)-1].BlockHash
+			sideGasLimit := t.CLMock.LatestPayloadBuilt.GasLimit + 1
 			customizer := &helper.CustomPayloadData{
 				ParentHash: &pHash,
-				ExtraData:  &([]byte{0x01}),
+				GasLimit:   &sideGasLimit,
 			}
 			sidePayload, err = customizer.CustomizePayload(t.Rand, &t.CLMock.LatestPayloadBuilt)
 			if err != nil {
