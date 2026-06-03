@@ -53,7 +53,7 @@ def infix_zeros_to_length(s;l):
           "multi": {
             "0": {
               "list": [
-                "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
+                "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B"
               ]
             }
           }
@@ -83,8 +83,6 @@ def infix_zeros_to_length(s;l):
     "maxCodeSizeTransitionTimestamp": "0x0",
     "terminalTotalDifficulty": "0x0",
     "registrar": "0x6000000000000000000000000000000000000000",
-    "transactionPermissionContract": "0x4000000000000000000000000000000000000001",
-    "transactionPermissionContractTransition": "0x0",
     "feeCollector": "0x1559000000000000000000000000000000000000",
     "eip1559FeeCollectorTransition": 0,
     "eip1559BaseFeeMaxChangeDenominator": "0x8",
@@ -224,6 +222,18 @@ def infix_zeros_to_length(s;l):
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
+    "seal": (
+      if (.difficulty // "0x0") | test("^0x0*$") then
+        null
+      else
+        {
+          "authorityRound": {
+            "step": "0x0",
+            "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      end
+    ),
     "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
