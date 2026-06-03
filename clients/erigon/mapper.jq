@@ -109,7 +109,7 @@ end |
         "multi": {
           "0": {
             "list": [
-              "0x14747a698Ec1227e6753026C08B29b4d5D3bC484"
+              "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B"
             ]
           }
         }
@@ -136,5 +136,17 @@ end |
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": .difficulty,
   "gasLimit": .gasLimit,
+  "seal": (
+    if (.difficulty // "0x0") | test("^0x0*$") then
+      null
+    else
+      {
+        "authorityRound": {
+          "step": "0x0",
+          "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    end
+  ),
   "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
-}
+}|remove_empty

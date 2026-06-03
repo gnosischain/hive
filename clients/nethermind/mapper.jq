@@ -77,9 +77,9 @@ def infix_zeros_to_length(s;l):
   },
   "params": {
     "gasLimitBoundDivisor": "0x400",
-    "maxCodeSize": "0x6000",
     "minGasLimit": "0x1388",
     "maximumExtraDataSize": "0x20",
+    "maxCodeSize": "0x6000",
     "maxCodeSizeTransitionTimestamp": "0x0",
     "terminalTotalDifficulty": "0x0",
     "registrar": "0x6000000000000000000000000000000000000000",
@@ -99,8 +99,6 @@ def infix_zeros_to_length(s;l):
     "eip161dTransition": env.HIVE_FORK_SPURIOUS|to_hex,
     "eip155Transition": env.HIVE_FORK_SPURIOUS|to_hex,
     "maxCodeSizeTransition": env.HIVE_FORK_SPURIOUS|to_hex,
-    "maxCodeSize": 24576,
-    "maximumExtraDataSize": "0x400",
 
     # Byzantium
     "eip140Transition": env.HIVE_FORK_BYZANTIUM|to_hex,
