@@ -37,8 +37,8 @@ end |
 # Replace config in input.
 . + {
   "config": {
-    "chainId": (if env.HIVE_CHAIN_ID == null then 100 else env.HIVE_CHAIN_ID|to_int end),
     "consensus": "aura",
+    "chainId": (if env.HIVE_CHAIN_ID == null then 100 else env.HIVE_CHAIN_ID|to_int end),
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "daoForkBlock": env.HIVE_FORK_DAO_BLOCK|to_int,
     "daoForkSupport": env.HIVE_FORK_DAO_VOTE|to_bool,
@@ -60,7 +60,7 @@ end |
       "0": "0x1559000000000000000000000000000000000000"
     },
     "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int,
-    "terminalTotalDifficultyPassed": env.HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED|to_bool,
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
