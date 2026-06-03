@@ -81,7 +81,7 @@ def infix_zeros_to_length(s;l):
     "maximumExtraDataSize": "0x20",
     "maxCodeSize": "0x6000",
     "maxCodeSizeTransitionTimestamp": "0x0",
-    "terminalTotalDifficulty": "0x0",
+    "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_hex,
     "registrar": "0x6000000000000000000000000000000000000000",
     "feeCollector": "0x1559000000000000000000000000000000000000",
     "eip1559FeeCollectorTransition": 0,

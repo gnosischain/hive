@@ -45,7 +45,7 @@ end |
 . + {
   "config": {
     "consensus": "aura",
-    "chainId": (if env.HIVE_CHAIN_ID == null then 100 else env.HIVE_CHAIN_ID|to_int end),
+    "chainId": env.HIVE_CHAIN_ID|to_int,
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "daoForkBlock": env.HIVE_FORK_DAO_BLOCK|to_int,
     "daoForkSupport": env.HIVE_FORK_DAO_VOTE|to_bool,
@@ -62,12 +62,12 @@ end |
     "londonBlock": env.HIVE_FORK_LONDON|to_int,
     "arrowGlacierBlock": env.HIVE_FORK_ARROW_GLACIER|to_int,
     "grayGlacierBlock": env.HIVE_FORK_GRAY_GLACIER|to_int,
-    "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
     },
+    "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
     "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int,
-    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED == null then true else env.HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED|to_bool end),
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,

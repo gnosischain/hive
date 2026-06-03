@@ -55,17 +55,17 @@ end |
     "londonBlock": env.HIVE_FORK_LONDON|to_int,
     "arrowGlacierBlock": env.HIVE_FORK_ARROW_GLACIER|to_int,
     "grayGlacierBlock": env.HIVE_FORK_GRAY_GLACIER|to_int,
-    "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
     "burntContract": {
       "0": "0x1559000000000000000000000000000000000000"
     },
-    "terminalTotalDifficulty": (env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int // 9223372036854775807),
+    "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
+    "terminalTotalDifficulty": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int else 9223372036854775807 end),
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
     "osakaTime": env.HIVE_OSAKA_TIMESTAMP|to_int,
     "amsterdamTime": env.HIVE_AMSTERDAM_TIMESTAMP|to_int,
-    "terminalTotalDifficultyPassed": true,
     "blobSchedule": {
       "cancun": {
         "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
