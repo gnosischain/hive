@@ -1,5 +1,5 @@
-ARG baseimage=ghcr.io/chetna-mittal/geth
-ARG tag=latest
+ARG baseimage=ghcr.io/adityasripal/geth
+ARG tag=v1.17.3-rc2
 
 FROM $baseimage:$tag as builder
 

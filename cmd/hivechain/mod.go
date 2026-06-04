@@ -73,11 +73,12 @@ func (ctx *genBlockContext) TxCreateIntrinsicGas(data []byte) uint64 {
 	isHomestead := genesis.Config.IsHomestead(ctx.block.Number())
 	isEIP2028 := genesis.Config.IsIstanbul(ctx.block.Number())
 	isEIP3860 := genesis.Config.IsShanghai(ctx.block.Number(), ctx.block.Timestamp())
-	igas, err := core.IntrinsicGas(data, nil, nil, true, isHomestead, isEIP2028, isEIP3860)
+	isAmsterdam := genesis.Config.IsAmsterdam(ctx.block.Number(), ctx.block.Timestamp())
+	igas, err := core.IntrinsicGas(data, nil, nil, true, isHomestead, isEIP2028, isEIP3860, isAmsterdam)
 	if err != nil {
 		panic(err)
 	}
-	return igas
+	return igas.Sum()
 }
 
 // TxGasFeeCap returns the minimum gasprice that should be used for transactions.
