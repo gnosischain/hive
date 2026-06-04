@@ -14,7 +14,7 @@ use crate::scenarios::spec_assets::{
 use crate::scenarios::sync::run_sync_lean_test_suite;
 use crate::scenarios::validation::run_validation_lean_test_suite;
 use crate::utils::util::{resolve_selected_lean_devnet, set_selected_lean_devnet};
-use hivesim::{run_suite, Simulation, Suite, TestSpec};
+use hivesim::{run_suite, PlannedTestSpec, Simulation, Suite};
 
 #[tokio::main]
 async fn main() {
@@ -31,7 +31,7 @@ async fn main() {
         tests: vec![],
     };
 
-    rpc_compat.add(TestSpec {
+    rpc_compat.add(PlannedTestSpec {
         name: "rpc-compat: client launch".to_string(),
         description: "This test launches the client and collects its logs.".to_string(),
         always_run: true,
@@ -47,7 +47,7 @@ async fn main() {
         tests: vec![],
     };
 
-    sync.add(TestSpec {
+    sync.add(PlannedTestSpec {
         name: "sync: client launch".to_string(),
         description: "This test launches the client and collects its logs.".to_string(),
         always_run: true,
@@ -58,15 +58,15 @@ async fn main() {
     let mut client_interop = Suite {
         name: "client-interop".to_string(),
         description: format!(
-            "Runs Lean client interoperability tests across every selected client pair and each selected client by itself, including majority-aggregator, minority-aggregator, and two-subnet matrices, using the {devnet} profile."
+            "Runs Lean client interoperability tests across every selected client pair and each selected client by itself, including single-subnet and two-subnet majority/minority aggregator matrices, using the {devnet} profile."
         ),
         tests: vec![],
     };
 
-    client_interop.add(TestSpec {
+    client_interop.add(PlannedTestSpec {
         name: "client-interop: matrix".to_string(),
         description:
-            "Runs every selected Lean client against itself and every other selected Lean client in both 2:1 topologies with majority and minority aggregator placements, then runs the two-subnet minority/majority matrix."
+            "Runs every selected Lean client against itself and every other selected Lean client in both 2:1 topologies with majority and minority aggregator placements, then runs the two-subnet topology matrix with majority and minority aggregator placements."
                 .to_string(),
         always_run: true,
         run: run_client_interop_lean_test_suite,
@@ -81,7 +81,7 @@ async fn main() {
         tests: vec![],
     };
 
-    validation.add(TestSpec {
+    validation.add(PlannedTestSpec {
         name: "validation: client launch".to_string(),
         description: "This test launches the client and runs validation scenarios.".to_string(),
         always_run: true,
@@ -97,7 +97,7 @@ async fn main() {
         tests: vec![],
     };
 
-    gossip.add(TestSpec {
+    gossip.add(PlannedTestSpec {
         name: "gossip: client launch".to_string(),
         description: "This test launches the client and runs gossip scenarios.".to_string(),
         always_run: true,
@@ -113,7 +113,7 @@ async fn main() {
         tests: vec![],
     };
 
-    reqresp.add(TestSpec {
+    reqresp.add(PlannedTestSpec {
         name: "reqresp: client launch".to_string(),
         description: "This test launches the client and runs req/resp scenarios.".to_string(),
         always_run: true,
@@ -129,7 +129,7 @@ async fn main() {
         tests: vec![],
     };
 
-    spec_assets_fork_choice.add(TestSpec {
+    spec_assets_fork_choice.add(PlannedTestSpec {
         name: "lean-spec-tests-fork-choice: fixture loader".to_string(),
         description:
             "Loads Lean fork-choice spec-test fixture files and runs each fixture as a distinct Hive test."
@@ -147,7 +147,7 @@ async fn main() {
         tests: vec![],
     };
 
-    spec_assets_state_transition.add(TestSpec {
+    spec_assets_state_transition.add(PlannedTestSpec {
         name: "lean-spec-tests-state-transition: fixture loader".to_string(),
         description:
             "Loads Lean state-transition spec-test fixture files and runs each fixture as a distinct Hive test."
@@ -165,7 +165,7 @@ async fn main() {
         tests: vec![],
     };
 
-    spec_assets_verify_signatures.add(TestSpec {
+    spec_assets_verify_signatures.add(PlannedTestSpec {
         name: "lean-spec-tests-verify-signatures: fixture loader".to_string(),
         description:
             "Loads Lean signature-verification spec-test fixture files and runs each fixture as a distinct Hive test."

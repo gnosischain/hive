@@ -2,14 +2,14 @@
 
 set -euo pipefail
 
-DEVNET_LABEL="${HIVE_LEAN_DEVNET_LABEL:-devnet3}"
+DEVNET_LABEL="${HIVE_LEAN_DEVNET_LABEL:-devnet4}"
 
 case "$DEVNET_LABEL" in
-    devnet3)
-        LEAN_SPEC_APP_ROOT="${LEAN_SPEC_DEVNET3_ROOT:-/app/devnet3}"
-        ;;
     devnet4)
         LEAN_SPEC_APP_ROOT="${LEAN_SPEC_DEVNET4_ROOT:-/app/devnet4}"
+        ;;
+    devnet5)
+        LEAN_SPEC_APP_ROOT="${LEAN_SPEC_DEVNET5_ROOT:-/app/devnet5}"
         ;;
     *)
         echo "Unsupported Lean devnet label: $DEVNET_LABEL" >&2
@@ -19,6 +19,7 @@ esac
 
 export VIRTUAL_ENV="${LEAN_SPEC_APP_ROOT}/.venv"
 export PATH="${VIRTUAL_ENV}/bin:${PATH}"
+ulimit -s unlimited 2>/dev/null || ulimit -s 32768 2>/dev/null || true
 
 cd "$LEAN_SPEC_APP_ROOT"
 
