@@ -3,7 +3,7 @@
 # Default values
 TEST_NAME="/Blob Transaction Ordering, Single Account, Dual Blob"
 EXPERIMENT="debug"
-CLIENT="nethermind-gnosis"
+CLIENT="nethermind"
 SIMULATOR="gnosis/engine"
 SIMULATOR_LOG_LEVEL=3
 CLIENT_LOG_LEVEL=3

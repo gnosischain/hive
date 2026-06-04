@@ -5,8 +5,8 @@
 ## Builder stage: Compiles reth from a git repository
 FROM rust:latest as builder
 
-ARG github=paradigmxyz/reth
-ARG tag=main
+ARG github=gnosischain/reth_gnosis
+ARG tag=master
 
 RUN rustup update stable && rustup default stable
 RUN apt-get update && apt-get install -y libclang-dev pkg-config build-essential \

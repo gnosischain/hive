@@ -47,17 +47,14 @@
 # Immediately abort the script on any error encountered
 set -e
 
-# Generate JWT file if necessary
-if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
-    JWT_SECRET="0x7365637265747365637265747365637265747365637265747365637265747365"
-    echo -n $JWT_SECRET > /jwt.secret
-fi
+JWT_SECRET="0x7365637265747365637265747365637265747365637265747365637265747365"
+echo -n $JWT_SECRET > /jwt.secret
 
 # Generate the genesis and chainspec file.
 mkdir -p /chainspec
 jq -f /mapper.jq /genesis.json > /chainspec/test.json
 
-# Dump genesis. 
+# Dump genesis.
 if [ "$HIVE_LOGLEVEL" -lt 4 ]; then
     echo "Supplied genesis state (trimmed, use --sim.loglevel 4 or 5 for full output):"
     jq 'del(.accounts[] | select(.balance == "0x123450000000000000000" or has("builtin")))' /chainspec/test.json

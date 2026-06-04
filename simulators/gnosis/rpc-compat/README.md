@@ -16,7 +16,7 @@ go build
 Then start the simulator.
 
 ```
-./hive --sim gnosis/rpc-compat --client go-ethereum-gnosis,nethermind-gnosis
+./hive --sim gnosis/rpc-compat --client go-ethereum,reth,nethermind
 ```
 
 ### Running local tests
