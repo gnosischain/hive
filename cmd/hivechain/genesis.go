@@ -64,6 +64,13 @@ var (
 	withdrawalContractCode       = common.FromHex("0x6080604052348015600e575f5ffd5b50600436106026575f3560e01c806379d0c0bc14602a575b5f5ffd5b603c60353660046082565b5050505050565b005b5f5f83601f840112604d575f5ffd5b5081356001600160401b038111156062575f5ffd5b6020830191508360208260051b8501011115607b575f5ffd5b9250929050565b5f5f5f5f5f606086880312156095575f5ffd5b8535945060208601356001600160401b0381111560b0575f5ffd5b60ba88828901603e565b90955093505060408601356001600160401b0381111560d7575f5ffd5b60e188828901603e565b96999598509396509294939250505056fea2646970667358221220d044cca4aa2b520b54f7d26bdd3e92395a0c5c95d868a809fc97544f0071db4064736f6c63430008220033")
 )
 
+// gnosisBlobConfig is the Gnosis blob schedule, shared across all blob forks.
+var gnosisBlobConfig = &params.BlobConfig{
+	Target:         1,
+	Max:            2,
+	UpdateFraction: 1112826,
+}
+
 // gnosisAuraConfig returns the AuRa consensus config for the Gnosis test chain.
 func gnosisAuraConfig() *params.AuRaConfig {
 	var (
@@ -74,7 +81,7 @@ func gnosisAuraConfig() *params.AuRaConfig {
 		posdaoTransition        = uint64(0)
 	)
 
-	dummyValidator := common.HexToAddress("0x7435ed30A8b4AEb0877CEf0c6E8cFFe834eb865f")
+	dummyValidator := common.HexToAddress("0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B")
 	return &params.AuRaConfig{
 		StepDuration:                &stepDuration,
 		BlockReward:                 &blockReward,
@@ -102,7 +109,7 @@ func gnosisAuraConfig() *params.AuRaConfig {
 func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 	chaincfg := new(params.ChainConfig)
 
-	chainid, _ := new(big.Int).SetString("3503995874084926", 10)
+	chainid, _ := new(big.Int).SetString("100", 10)
 	chaincfg.ChainID = chainid
 
 	// Set consensus algorithm.
@@ -110,6 +117,12 @@ func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 
 	// Set deposit contract address.
 	chaincfg.DepositContractAddress = depositContractAddress
+
+	// Set Gnosis blob parameters.
+	minBlobGasPrice := uint64(params.GnosisBlobTxMinBlobGasprice)
+	chaincfg.MinBlobGasPrice = &minBlobGasPrice
+	maxBlobsPerTx := params.GnosisBlobTxMaxBlobs
+	chaincfg.MaxBlobsPerTransaction = &maxBlobsPerTx
 
 	// Apply forks.
 	forks := cfg.forkBlocks()
@@ -153,13 +166,13 @@ func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 			chaincfg.ShanghaiTime = &timestamp
 		case "cancun":
 			chaincfg.CancunTime = &timestamp
-			chaincfg.BlobScheduleConfig.Cancun = params.DefaultCancunBlobConfig
+			chaincfg.BlobScheduleConfig.Cancun = gnosisBlobConfig
 		case "prague":
 			chaincfg.PragueTime = &timestamp
-			chaincfg.BlobScheduleConfig.Prague = params.DefaultPragueBlobConfig
+			chaincfg.BlobScheduleConfig.Prague = gnosisBlobConfig
 		case "osaka":
 			chaincfg.OsakaTime = &timestamp
-			chaincfg.BlobScheduleConfig.Osaka = params.DefaultOsakaBlobConfig
+			chaincfg.BlobScheduleConfig.Osaka = gnosisBlobConfig
 		default:
 			panic(fmt.Sprintf("unknown fork name %q", fork))
 		}
