@@ -13,14 +13,14 @@ This script allows us to run tests and store all logs, JRPC requests, and respon
 
 Usage:
 ```bash
-./scripts/run_test.sh --test "/Blob Transaction Ordering, Single Account, Dual Blob" --exp "01" --client "nethermind-gnosis" --simulator "ethereum/engine" --proxy "192.168.3.49:8089" > ./scripts/test.log
+./scripts/run_test.sh --test "/Blob Transaction Ordering, Single Account, Dual Blob" --exp "01" --client "nethermind" --simulator "gnosis/engine" --proxy "192.168.3.49:8089" > ./scripts/test.log
 ```
 
 ### Options:
 -t|--test - test regular expression to run, e.g. `/Blob Transaction Ordering, Single Account, Dual Blob
 -e|--exp - experiment number, directory inside scripts/experiments, e.g. `01`
--c|--client - client name, e.g. `nethermind-gnosis`
--s|--simulator - simulator name, e.g. `ethereum/engine`
+-c|--client - client name, e.g. `nethermind`
+-s|--simulator - simulator name, e.g. `gnosis/engine`
 -p|--proxy - IP address of the local machine and mitmproxy port, e.g. `192.168.3.49:8089`
 -pc|--proxy-config - path to the mitmproxy configuration file, e.g. `config` will lead to `./scripts/proxy/config.ini`
 

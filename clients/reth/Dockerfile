@@ -1,4 +1,4 @@
-ARG baseimage=ghcr.io/paradigmxyz/reth
+ARG baseimage=ghcr.io/gnosischain/reth_gnosis
 ARG tag=latest
 
 FROM $baseimage:$tag as builder

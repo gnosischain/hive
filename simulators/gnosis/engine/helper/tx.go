@@ -281,12 +281,12 @@ func (tc *BaseTransactionCreator) MakeTransaction(sender SenderAccount, nonce ui
 	switch tc.TxType {
 	case UnspecifiedTransactionType:
 		// Test case has no specific type of transaction to use.
-		// Select the type of tx based on the nonce and the account index.
+		// Select the type of tx based on the account index.
 		if tc.ForkConfig == nil {
 			return nil, fmt.Errorf("fork config is nil")
 		}
 		forkSupportedTransactionTypes := tc.ForkConfig.GetSupportedTransactionTypes(blockTimestamp)
-		txTypeToUse = forkSupportedTransactionTypes[int(sender.GetIndex()+nonce)%len(forkSupportedTransactionTypes)]
+		txTypeToUse = forkSupportedTransactionTypes[int(sender.GetIndex())%len(forkSupportedTransactionTypes)]
 		if txTypeToUse == types.BlobTxType && tc.Recipient == nil {
 			// Blob txs require a recipient, revert to legacy tx
 			txTypeToUse = types.LegacyTxType

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script to retrieve the enode
-# 
+#
 # This is copied into the validator container by Hive
 # and used to provide a client-specific enode id retriever
 #

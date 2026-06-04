@@ -26,6 +26,8 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 			UpdateFraction: 1112826,
 		},
 	}
+	minBlobGasPrice := MIN_DATA_GASPRICE
+	genesis.Config.MinBlobGasPrice = &minBlobGasPrice
 	if genesis.Timestamp >= forkTimestamp {
 		if genesis.BlobGasUsed == nil {
 			genesis.BlobGasUsed = new(uint64)

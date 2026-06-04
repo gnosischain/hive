@@ -1,11 +1,8 @@
-# hive - Ethereum end-to-end test harness
+# hive - Gnosis end-to-end test harness
 
-Hive is a system for running integration tests against Ethereum clients.
+Hive is a system for running integration tests against Gnosis clients.
 
-Ethereum Foundation maintains two public Hive instances to check for consensus, p2p and
-blockchain compatibility:
-
-- eth1 consensus, EngineAPI, RPC tests, graphql and p2p tests are on <https://hive.ethpandaops.io>
+This is a Gnosis-specific fork of the upstream [hive](https://github.com/ethereum/hive) framework.
 
 **To read more about hive, please check [the documentation][doc].**
 
@@ -15,16 +12,16 @@ Compared with the original hive, the repository contains gnosis specific tests a
 
 Supported clients:
 
-- Nethermind (`nethermind-gnosis`)
-- Erigon (`erigon-gnosis`)
-- Geth (`go-ethereum-gnosis`)
-- Reth (`reth-gnosis`)
+- Nethermind (`nethermind`)
+- Erigon (`erigon`)
+- Geth (`go-ethereum`)
+- Reth (`reth`)
 
 Supported simulators:
 
 - gnosis/engine
 
-The above simulator contains rewritten `ethereum/engine` tests with gnosis specific libraries and configurations.
+The above simulator contains rewritten `gnosis/engine` tests with gnosis specific libraries and configurations.
 Following suites are supported:
 
 - engine-withdrawals
@@ -56,7 +53,7 @@ This script allows us to run tests and store all logs, JRPC requests, and respon
 Usage:
 
 ```bash
-./scripts/run_test.sh --test "/Blob Transaction Ordering, Single Account, Dual Blob" --exp "01" --client "nethermind-gnosis" --simulator "ethereum/gnosis-engine" --proxy "192.168.3.49:8089" > ./scripts/test.log
+./scripts/run_test.sh --test "/Blob Transaction Ordering, Single Account, Dual Blob" --exp "01" --client "nethermind" --simulator "gnosis/engine" --proxy "192.168.3.49:8089" > ./scripts/test.log
 
 ```
 
@@ -64,8 +61,8 @@ Options:
 
 - t|--test - test regular expression to run, e.g. `/Blob Transaction Ordering, Single Account, Dual Blob`
 - `-e|--exp - experiment number, directory inside scripts/experiments, e.g.`01
-- `-c|--client - client name, e.g.`nethermind-gnosis
-- `-s|--simulator - simulator name, e.g.`ethereum/engine
+- `-c|--client - client name, e.g.`nethermind
+- `-s|--simulator - simulator name, e.g.`gnosis/engine
 - `-p|--proxy - IP address of the local machine and mitmproxy port, e.g.`192.168.3.49:8089`
 
 ### Using mitmproxy
@@ -139,7 +136,7 @@ The process is the following:
 1. Merge `reflow` (`develop`) branch into `sync-upstream`
 2. Go to `sync-upstream` branch and click on `Sync fork`
 3. Create a pull request against `reflow` (`develop`) branch
-4. Resolve merge conflicts, check changes of shared code (e.g. `ethereum/engine` tests)
+4. Resolve merge conflicts, check changes of shared code (e.g. `gnosis/engine` tests)
 5. If possible, update `gnosis-engine` simulator with the changes, if not - analyze and mention in the PR description to do later
 6. Run the tests against `sync-upstream` branch using `Daily run Gnosis` workflow
 7. If tests pass, merge the PR
