@@ -15,7 +15,7 @@ require (
 	github.com/lithammer/dedent v1.1.0
 	github.com/lmittmann/tint v1.0.5
 	golang.org/x/exp v0.0.0-20231110203233-9a3e6036ecaa
-	golang.org/x/net v0.47.0
+	golang.org/x/net v0.49.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
@@ -81,8 +81,8 @@ require (
 	go.opentelemetry.io/otel v1.40.0 // indirect
 	go.opentelemetry.io/otel/metric v1.40.0 // indirect
 	go.opentelemetry.io/otel/trace v1.40.0 // indirect
-	golang.org/x/crypto v0.44.0 // indirect
-	golang.org/x/sync v0.18.0 // indirect
+	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/sync v0.19.0 // indirect
 	golang.org/x/sys v0.40.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
@@ -91,4 +91,4 @@ replace github.com/ethereum/hive/hiveproxy => ./hiveproxy
 
 tool github.com/fjl/geas/cmd/geas
 
-replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v0.0.0-20260423161943-e187c5183cc3
+replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v1.17.3-gc

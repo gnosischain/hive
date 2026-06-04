@@ -28,14 +28,17 @@ def to_bool:
   end
 ;
 
+# Rename uncleHash to ommersHash if it exists
+. | if has("uncleHash") then
+  . + {"ommersHash": .uncleHash} | del(.uncleHash)
+else
+  .
+end |
 # Replace config in input.
 . + {
   "config": {
-    "ethash": (if env.HIVE_CLIQUE_PERIOD then null else {} end),
-    "clique": (if env.HIVE_CLIQUE_PERIOD == null then null else {
-      "period": env.HIVE_CLIQUE_PERIOD|to_int,
-    } end),
-    "chainId": (if env.HIVE_CHAIN_ID == null then 1 else env.HIVE_CHAIN_ID|to_int end),
+    "consensus": "aura",
+    "chainId": env.HIVE_CHAIN_ID|to_int,
     "homesteadBlock": env.HIVE_FORK_HOMESTEAD|to_int,
     "daoForkBlock": env.HIVE_FORK_DAO_BLOCK|to_int,
     "daoForkSupport": env.HIVE_FORK_DAO_VOTE|to_bool,
@@ -52,9 +55,12 @@ def to_bool:
     "londonBlock": env.HIVE_FORK_LONDON|to_int,
     "arrowGlacierBlock": env.HIVE_FORK_ARROW_GLACIER|to_int,
     "grayGlacierBlock": env.HIVE_FORK_GRAY_GLACIER|to_int,
+    "burntContract": {
+      "0": "0x1559000000000000000000000000000000000000"
+    },
     "mergeNetsplitBlock": env.HIVE_MERGE_BLOCK_ID|to_int,
     "terminalTotalDifficulty": env.HIVE_TERMINAL_TOTAL_DIFFICULTY|to_int,
-    "terminalTotalDifficultyPassed": env.HIVE_TERMINAL_TOTAL_DIFFICULTY_PASSED|to_bool,
+    "terminalTotalDifficultyPassed": (if env.HIVE_TERMINAL_TOTAL_DIFFICULTY != null then true else null end),
     "shanghaiTime": env.HIVE_SHANGHAI_TIMESTAMP|to_int,
     "cancunTime": env.HIVE_CANCUN_TIMESTAMP|to_int,
     "pragueTime": env.HIVE_PRAGUE_TIMESTAMP|to_int,
@@ -62,51 +68,78 @@ def to_bool:
     "amsterdamTime": env.HIVE_AMSTERDAM_TIMESTAMP|to_int,
     "blobSchedule": {
       "cancun": {
-        "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 3 end),
-        "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_int else 6 end),
-        "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 3338477 end)
+        "target": (if env.HIVE_CANCUN_BLOB_TARGET then env.HIVE_CANCUN_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_CANCUN_BLOB_MAX then env.HIVE_CANCUN_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_CANCUN_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       },
       "prague": {
-        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_int else 6 end),
-        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_int else 9 end),
-        "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 5007716 end)
+        "target": (if env.HIVE_PRAGUE_BLOB_TARGET then env.HIVE_PRAGUE_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_PRAGUE_BLOB_MAX then env.HIVE_PRAGUE_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       },
       "osaka": {
-        "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_int else 6 end),
-        "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_int else 9 end),
-        "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 5007716 end)
+        "target": (if env.HIVE_OSAKA_BLOB_TARGET then env.HIVE_OSAKA_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_OSAKA_BLOB_MAX then env.HIVE_OSAKA_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       },
-      "bpo1": {
-        "target": (if env.HIVE_BPO1_BLOB_TARGET then env.HIVE_BPO1_BLOB_TARGET|to_int else 10 end),
-        "max": (if env.HIVE_BPO1_BLOB_MAX then env.HIVE_BPO1_BLOB_MAX|to_int else 15 end),
-        "baseFeeUpdateFraction": (if env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO1_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8346193 end)
-      },
-      "bpo2": {
-        "target": (if env.HIVE_BPO2_BLOB_TARGET then env.HIVE_BPO2_BLOB_TARGET|to_int else 14 end),
-        "max": (if env.HIVE_BPO2_BLOB_MAX then env.HIVE_BPO2_BLOB_MAX|to_int else 21 end),
-        "baseFeeUpdateFraction": (if env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO2_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 11684671 end)
-      },
-      "bpo3": {
-        "target": (if env.HIVE_BPO3_BLOB_TARGET then env.HIVE_BPO3_BLOB_TARGET|to_int else 9 end),
-        "max": (if env.HIVE_BPO3_BLOB_MAX then env.HIVE_BPO3_BLOB_MAX|to_int else 14 end),
-        "baseFeeUpdateFraction": (if env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO3_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
-      },
-      "bpo4": {
-        "target": (if env.HIVE_BPO4_BLOB_TARGET then env.HIVE_BPO4_BLOB_TARGET|to_int else 9 end),
-        "max": (if env.HIVE_BPO4_BLOB_MAX then env.HIVE_BPO4_BLOB_MAX|to_int else 14 end),
-        "baseFeeUpdateFraction": (if env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO4_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
-      },
-      "bpo5": {
-        "target": (if env.HIVE_BPO5_BLOB_TARGET then env.HIVE_BPO5_BLOB_TARGET|to_int else 9 end),
-        "max": (if env.HIVE_BPO5_BLOB_MAX then env.HIVE_BPO5_BLOB_MAX|to_int else 14 end),
-        "baseFeeUpdateFraction": (if env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_BPO5_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 8832827 end)
+      "amsterdam": {
+        "target": (if env.HIVE_AMSTERDAM_BLOB_TARGET then env.HIVE_AMSTERDAM_BLOB_TARGET|to_int else 1 end),
+        "max": (if env.HIVE_AMSTERDAM_BLOB_MAX then env.HIVE_AMSTERDAM_BLOB_MAX|to_int else 2 end),
+        "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       }
     },
-    "bpo1Time": env.HIVE_BPO1_TIMESTAMP|to_int,
-    "bpo2Time": env.HIVE_BPO2_TIMESTAMP|to_int,
-    "bpo3Time": env.HIVE_BPO3_TIMESTAMP|to_int,
-    "bpo4Time": env.HIVE_BPO4_TIMESTAMP|to_int,
-    "bpo5Time": env.HIVE_BPO5_TIMESTAMP|to_int,
-    "depositContractAddress": "0x00000000219ab540356cBB839Cbe05303d7705Fa"
-  }|remove_empty
-}
+    "blockRewardsContract": "0x2000000000000000000000000000000000000001",
+    "minBlobGasPrice": 1000000000,
+    "maxBlobGasPerBlock": 262144,
+    "targetBlobGasPerBlock": 131072,
+    "blobGasPriceUpdateFraction": 1112826,
+    "aura": {
+      "stepDuration": 5,
+      "blockReward": 0,
+      "maximumUncleCountTransition": 0,
+      "maximumUncleCount": 0,
+      "validators": {
+        "multi": {
+          "0": {
+            "list": [
+              "0xa94f5374Fce5edBC8E2a8697C15331677e6EbF0B"
+            ]
+          }
+        }
+      },
+      "blockRewardContractAddress": "0x2000000000000000000000000000000000000001",
+      "blockRewardContractTransition": 0,
+      "blockRewardContractTransitions": {
+        "9186425": "0x481c034c6d9441db23ea48de68bcae812c5d39ba"
+      },
+      "randomnessContractAddress": {
+        "0": "0x3000000000000000000000000000000000000001"
+      },
+      "withdrawalContractAddress": "0xbabe2bed00000000000000000000000000000003",
+      "twoThirdsMajorityTransition": 0,
+      "posdaoTransition": 0,
+      "blockGasLimitContractTransitions": {
+        "0": "0x4000000000000000000000000000000000000001"
+      },
+      "registrar": "0x6000000000000000000000000000000000000000"
+    },
+    "eip1559collector": "0x1559000000000000000000000000000000000000",
+    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003"
+  }|remove_empty,
+  "baseFeePerGas": .baseFeePerGas,
+  "difficulty": .difficulty,
+  "gasLimit": .gasLimit,
+  "seal": (
+    if (.difficulty // "0x0") | test("^0x0*$") then
+      null
+    else
+      {
+        "authorityRound": {
+          "step": "0x0",
+          "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    end
+  ),
+  "alloc": (.alloc | with_entries(.key |= if startswith("0x") then . else "0x" + . end))
+}|remove_empty

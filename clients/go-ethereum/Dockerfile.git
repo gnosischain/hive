@@ -1,7 +1,7 @@
 ## Pulls geth from a git repository and builds it from source.
 
 FROM golang:1.24-alpine as builder
-ARG github=ethereum/go-ethereum
+ARG github=gnosischain/go-ethereum
 ARG tag=master
 ARG GOPROXY
 

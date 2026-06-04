@@ -17,18 +17,27 @@ import (
 )
 
 func FakeExponential(factor, numerator, denominator uint64) uint64 {
+	// Computed in big.Int to avoid uint64 overflow.
 	var (
-		i               = uint64(1)
-		output          = uint64(0)
-		numerator_accum = uint64(factor * denominator)
+		bigFactor       = new(big.Int).SetUint64(factor)
+		bigNumerator    = new(big.Int).SetUint64(numerator)
+		bigDenominator  = new(big.Int).SetUint64(denominator)
+		output          = new(big.Int)
+		numerator_accum = new(big.Int).Mul(bigFactor, bigDenominator)
+		tmp             = new(big.Int)
+		i               = new(big.Int).SetUint64(1)
+		one             = big.NewInt(1)
 	)
 
-	for numerator_accum > 0 {
-		output += numerator_accum
-		numerator_accum = (numerator_accum * numerator) / (denominator * i)
-		i += 1
+	zero := new(big.Int)
+	for numerator_accum.Cmp(zero) > 0 {
+		output.Add(output, numerator_accum)
+		tmp.Mul(numerator_accum, bigNumerator)
+		denom := new(big.Int).Mul(bigDenominator, i)
+		numerator_accum.Quo(tmp, denom)
+		i.Add(i, one)
 	}
-	return output / denominator
+	return new(big.Int).Quo(output, bigDenominator).Uint64()
 }
 
 func GetBlobGasPrice(excessBlobGas uint64) uint64 {
