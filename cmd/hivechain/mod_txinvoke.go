@@ -147,7 +147,7 @@ func (m *modInvokeEmit) apply(ctx *genBlockContext) bool {
 					StorageKeys: []common.Hash{{}, datahash},
 				},
 			},
-			BlobFeeCap: uint256.NewInt(params.BlobTxMinBlobGasprice),
+			BlobFeeCap: uint256.NewInt(params.GnosisBlobTxMinBlobGasprice),
 			BlobHashes: sidecar.BlobHashes(),
 			Sidecar:    sidecar,
 		}

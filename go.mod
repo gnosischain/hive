@@ -91,4 +91,4 @@ replace github.com/ethereum/hive/hiveproxy => ./hiveproxy
 
 tool github.com/fjl/geas/cmd/geas
 
-replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v1.17.3-gc
+replace github.com/ethereum/go-ethereum => github.com/chetna-mittal/go-ethereum v1.17.3-rc
