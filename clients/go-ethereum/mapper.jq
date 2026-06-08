@@ -88,7 +88,7 @@ end |
         "baseFeeUpdateFraction": (if env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION then env.HIVE_AMSTERDAM_BLOB_BASE_FEE_UPDATE_FRACTION|to_int else 1112826 end)
       }
     },
-    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0x0000000000000000000000000000000000000000"),
     "maxBlobsPerTransaction": 2,
     "minBlobGasPrice": 1000000000,
     "maxBlobGasPerBlock": 262144,
