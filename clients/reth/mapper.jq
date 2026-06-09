@@ -124,7 +124,7 @@ end |
       "registrar": "0x6000000000000000000000000000000000000000"
     },
     "eip1559collector": "0x1559000000000000000000000000000000000000",
-    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0x0000000000000000000000000000000000000000")
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0xbabe2bed00000000000000000000000000000003")
   }|remove_empty,
   "baseFeePerGas": .baseFeePerGas,
   "difficulty": .difficulty,
