@@ -1,42 +1,96 @@
 package main
 
-import "testing"
+import (
+	"testing"
+)
 
-// TestCapabilitiesSchemaValidation verifies that eth_capabilities responses
-// with differing optional fields all validate against the OpenRPC result
-// schema. eth_capabilities retention fields (oldestBlock, deleteStrategy) are
-// client- and config-specific: e.g. an archive/hash geth omits deleteStrategy
-// while a full/path geth includes it, and a client may disable a resource
-// entirely. A speconly test must accept any spec-valid shape, which exact- or
-// structural-matching against a single recorded example cannot do.
-func TestCapabilitiesSchemaValidation(t *testing.T) {
-	schemas, err := parseSpec("testdata/openrpc-capabilities.json")
-	if err != nil {
-		t.Fatalf("parseSpec: %v", err)
-	}
-	schema := schemas["eth_capabilities"]
-	if schema == nil {
-		t.Fatal("no schema for eth_capabilities")
+func TestRedactErrorMessages(t *testing.T) {
+	tests := []struct {
+		name         string
+		resp         string
+		expected     string
+		wantResp     string
+		wantExpected string
+		wantRedacted bool
+	}{
+		{
+			name:         "top-level error message is redacted",
+			resp:         `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"client-specific error"}}`,
+			expected:     `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"expected error message"}}`,
+			wantResp:     `{"jsonrpc":"2.0","id":1,"error":{"code":-32000}}`,
+			wantExpected: `{"jsonrpc":"2.0","id":1,"error":{"code":-32000}}`,
+			wantRedacted: true,
+		},
+		{
+			name:         "nested error message is redacted (eth_simulateV1 style)",
+			resp:         `{"result":{"calls":[{"error":{"code":-32000,"message":"client error"}}]}}`,
+			expected:     `{"result":{"calls":[{"error":{"code":-32000,"message":"spec error"}}]}}`,
+			wantResp:     `{"result":{"calls":[{"error":{"code":-32000}}]}}`,
+			wantExpected: `{"result":{"calls":[{"error":{"code":-32000}}]}}`,
+			wantRedacted: true,
+		},
+		{
+			name:         "no redaction when expected has no error message",
+			resp:         `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"client error"}}`,
+			expected:     `{"jsonrpc":"2.0","id":1,"error":{"code":-32000}}`,
+			wantResp:     `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"client error"}}`,
+			wantExpected: `{"jsonrpc":"2.0","id":1,"error":{"code":-32000}}`,
+			wantRedacted: false,
+		},
+		{
+			name:         "no redaction when resp has no error message",
+			resp:         `{"jsonrpc":"2.0","id":1,"error":{"code":-32000}}`,
+			expected:     `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"spec error"}}`,
+			wantResp:     `{"jsonrpc":"2.0","id":1,"error":{"code":-32000}}`,
+			wantExpected: `{"jsonrpc":"2.0","id":1,"error":{"code":-32000,"message":"spec error"}}`,
+			wantRedacted: false,
+		},
+		{
+			name:         "no error object, no redaction",
+			resp:         `{"jsonrpc":"2.0","id":1,"result":"0x1"}`,
+			expected:     `{"jsonrpc":"2.0","id":1,"result":"0x1"}`,
+			wantResp:     `{"jsonrpc":"2.0","id":1,"result":"0x1"}`,
+			wantExpected: `{"jsonrpc":"2.0","id":1,"result":"0x1"}`,
+			wantRedacted: false,
+		},
+		{
+			name:         "multiple nested errors all redacted",
+			resp:         `{"result":{"calls":[{"error":{"code":-1,"message":"err1"}},{"error":{"code":-2,"message":"err2"}}]}}`,
+			expected:     `{"result":{"calls":[{"error":{"code":-1,"message":"exp1"}},{"error":{"code":-2,"message":"exp2"}}]}}`,
+			wantResp:     `{"result":{"calls":[{"error":{"code":-1}},{"error":{"code":-2}}]}}`,
+			wantExpected: `{"result":{"calls":[{"error":{"code":-1}},{"error":{"code":-2}}]}}`,
+			wantRedacted: true,
+		},
+		{
+			name:         "deeply nested error through non-error objects",
+			resp:         `{"result":{"a":{"b":{"error":{"code":1,"message":"deep client"}}}}}`,
+			expected:     `{"result":{"a":{"b":{"error":{"code":1,"message":"deep spec"}}}}}`,
+			wantResp:     `{"result":{"a":{"b":{"error":{"code":1}}}}}`,
+			wantExpected: `{"result":{"a":{"b":{"error":{"code":1}}}}}`,
+			wantRedacted: true,
+		},
+		{
+			name:         "error sibling does not block recursion into other keys",
+			resp:         `{"error":{"code":1,"message":"top"},"result":{"calls":[{"error":{"code":2,"message":"inner client"}}]}}`,
+			expected:     `{"error":{"code":1,"message":"top spec"},"result":{"calls":[{"error":{"code":2,"message":"inner spec"}}]}}`,
+			wantResp:     `{"error":{"code":1},"result":{"calls":[{"error":{"code":2}}]}}`,
+			wantExpected: `{"error":{"code":1},"result":{"calls":[{"error":{"code":2}}]}}`,
+			wantRedacted: true,
+		},
 	}
 
-	head := `"head":{"number":"0x2d","hash":"0xe27a3e81bd7cfe2aec2cc9e832c73a17c93e7efcf659cf4b39883b96c48708c2"}`
-	valid := map[string]string{
-		// archive/hash geth: no deleteStrategy.
-		"archive-mode": `{` + head + `,"state":{"disabled":false,"oldestBlock":"0x0"},"tx":{"disabled":false,"oldestBlock":"0x0"},"logs":{"disabled":false,"oldestBlock":"0x0"},"receipts":{"disabled":false,"oldestBlock":"0x0"},"blocks":{"disabled":false,"oldestBlock":"0x0"},"stateproofs":{"disabled":false,"oldestBlock":"0x0"}}`,
-		// full/path geth: adds deleteStrategy on state/tx/stateproofs.
-		"full-mode": `{` + head + `,"state":{"disabled":false,"oldestBlock":"0x0","deleteStrategy":{"type":"window","retentionBlocks":"0x80"}},"tx":{"disabled":false,"oldestBlock":"0x0","deleteStrategy":{"type":"window","retentionBlocks":"0x23dbb0"}},"logs":{"disabled":false,"oldestBlock":"0x0","deleteStrategy":{"type":"window","retentionBlocks":"0x23dbb0"}},"receipts":{"disabled":false,"oldestBlock":"0x0"},"blocks":{"disabled":false,"oldestBlock":"0x0"},"stateproofs":{"disabled":false,"oldestBlock":"0x0","deleteStrategy":{"type":"window","retentionBlocks":"0x80"}}}`,
-		// a client with a resource entirely disabled (e.g. no state proofs).
-		"disabled-resource": `{` + head + `,"state":{"disabled":false,"oldestBlock":"0x0"},"tx":{"disabled":false},"logs":{"disabled":false},"receipts":{"disabled":false},"blocks":{"disabled":false},"stateproofs":{"disabled":true}}`,
-	}
-	for name, resp := range valid {
-		if err := validateResult(schema, []byte(resp)); err != nil {
-			t.Errorf("%s: expected valid, got error: %v", name, err)
-		}
-	}
-
-	// Sanity check: an actually-invalid response (unknown key) must be rejected.
-	bad := `{` + head + `,"state":{"disabled":false,"bogus":true},"tx":{"disabled":false},"logs":{"disabled":false},"receipts":{"disabled":false},"blocks":{"disabled":false},"stateproofs":{"disabled":false}}`
-	if err := validateResult(schema, []byte(bad)); err == nil {
-		t.Error("expected invalid response (unknown key) to be rejected, got nil")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotResp, gotExpected, gotRedacted := redactErrorMessages(tt.resp, tt.expected)
+			if gotRedacted != tt.wantRedacted {
+				t.Errorf("redacted = %v, want %v", gotRedacted, tt.wantRedacted)
+			}
+			if gotResp != tt.wantResp {
+				t.Errorf("resp =\n  %s\nwant\n  %s", gotResp, tt.wantResp)
+			}
+			if gotExpected != tt.wantExpected {
+				t.Errorf("expected =\n  %s\nwant\n  %s", gotExpected, tt.wantExpected)
+			}
+		})
 	}
 }
