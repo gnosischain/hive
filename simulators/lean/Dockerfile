@@ -1,8 +1,8 @@
-FROM rust:bookworm AS rust-builder
+FROM rust:1.92.0-bookworm AS rust-builder
 
 WORKDIR /workspace
 
-ENV RUST_MIN_STACK=33554432
+ENV RUST_MIN_STACK=67108864
 
 COPY ./Cargo.toml ./Cargo.toml
 COPY ./Cargo.lock ./Cargo.lock
@@ -32,6 +32,7 @@ RUN rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/* \
 
 ENV RUSTUP_HOME=/usr/local/rustup \
     CARGO_HOME=/usr/local/cargo \
+    RUST_MIN_STACK=134217728 \
     PATH=/usr/local/cargo/bin:$PATH
 
 RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
@@ -183,69 +184,6 @@ RUN mkdir -p \
         "$LEAN_SPEC_TESTS_COMMIT" \
         "$lean_spec_fixtures_tag" \
         "$RUST_NIGHTLY_TOOLCHAIN" > /version.txt
-
-# Fix missing IdentityKeypair.from_bytes in lean_spec
-RUN <<'EOF'
-python3 -c '
-import sys
-
-old_method = """    @classmethod
-    def generate(cls) -> IdentityKeypair:
-        \"\"\"
-        Generate a new random secp256k1 keypair.
-
-        Returns:
-            A fresh identity keypair.
-        \"\"\"
-        private_key = ec.generate_private_key(ec.SECP256K1())
-        public_key = Secp256k1PublicKey(_key=private_key.public_key())
-        return cls(private_key=private_key, public_key=public_key)"""
-
-new_method = """    @classmethod
-    def generate(cls) -> IdentityKeypair:
-        \"\"\"
-        Generate a new random secp256k1 keypair.
-
-        Returns:
-            A fresh identity keypair.
-        \"\"\"
-        private_key = ec.generate_private_key(ec.SECP256K1())
-        public_key = Secp256k1PublicKey(_key=private_key.public_key())
-        return cls(private_key=private_key, public_key=public_key)
-
-    @classmethod
-    def from_bytes(cls, private_key_bytes: bytes) -> IdentityKeypair:
-        \"\"\"
-        Create an identity keypair from raw private key bytes.
-
-        Args:
-            private_key_bytes: 32-byte secp256k1 private key.
-
-        Returns:
-            Identity keypair derived from the private key.
-        \"\"\"
-        private_value = int.from_bytes(private_key_bytes, "big")
-        private_key = ec.derive_private_key(private_value, ec.SECP256K1())
-        public_key = Secp256k1PublicKey(_key=private_key.public_key())
-        return cls(private_key=private_key, public_key=public_key)"""
-
-for devnet in ("devnet4", "devnet5"):
-    filepath = f"/app/{devnet}/src/lean_spec/subspecs/networking/transport/identity/keypair.py"
-    with open(filepath, "r") as f:
-        content = f.read()
-
-    if old_method in content:
-        content = content.replace(old_method, new_method)
-        with open(filepath, "w") as f:
-            f.write(content)
-        print(f"Fixed IdentityKeypair.from_bytes for {devnet}")
-    elif "def from_bytes(cls, private_key_bytes: bytes)" in content:
-        print(f"IdentityKeypair.from_bytes already present for {devnet}")
-    else:
-        print(f"Could not find method to patch for {devnet}")
-        sys.exit(1)
-'
-EOF
 
 EXPOSE 5052 5053 9001/udp
 

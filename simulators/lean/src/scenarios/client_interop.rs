@@ -525,29 +525,25 @@ async fn start_interop_client(
             Ok(client) => return client,
             Err(message) if attempt < CLIENT_STARTUP_ATTEMPTS => {
                 eprintln!(
-                    "Retrying client-interop startup for node {} ({}) after attempt {} failed: {}",
-                    node.node_id, node.client.name, attempt, message
+                    "Retrying client-interop startup for node {} ({}) after startup failure: {}",
+                    node.node_id, node.client.name, message
                 );
                 last_error = Some(message);
                 sleep(Duration::from_secs(1)).await;
             }
             Err(message) => {
                 panic!(
-                    "Unable to start client-interop node {} ({}) after {} attempts: {}",
-                    node.node_id, node.client.name, CLIENT_STARTUP_ATTEMPTS, message
+                    "Client-interop node {} ({}) failed during startup: {}",
+                    node.node_id, node.client.name, message
                 );
             }
         };
     }
 
+    let cause = last_error.unwrap_or_else(|| "no startup failure cause was reported".to_string());
     panic!(
-        "Unable to start client-interop node {} ({}) after {} attempts{}",
-        node.node_id,
-        node.client.name,
-        CLIENT_STARTUP_ATTEMPTS,
-        last_error
-            .map(|error| format!(": {error}"))
-            .unwrap_or_default()
+        "Client-interop node {} ({}) failed during startup: {}",
+        node.node_id, node.client.name, cause
     );
 }
 
@@ -942,13 +938,15 @@ mod tests {
 
     #[test]
     fn two_subnet_node_builder_accepts_all_devnet4_lean_clients() {
+        let clients = devnet4_lean_clients();
+        let expected_topology_count = clients.len() + clients.len() * (clients.len() - 1);
         assert_eq!(
-            two_subnet_interop_topology_matrix(&devnet4_lean_clients()).len(),
-            64
+            two_subnet_interop_topology_matrix(&clients).len(),
+            expected_topology_count
         );
         assert_eq!(aggregator_placements().len(), 2);
 
-        for topology_spec in two_subnet_interop_topology_matrix(&devnet4_lean_clients()) {
+        for topology_spec in two_subnet_interop_topology_matrix(&clients) {
             for placement in aggregator_placements() {
                 let mut nodes = build_two_subnet_interop_nodes(&topology_spec);
                 assign_two_subnet_aggregators(&mut nodes, placement);

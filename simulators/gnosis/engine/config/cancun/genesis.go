@@ -21,6 +21,7 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 	}
 	genesis.Config.BlobScheduleConfig = &params.BlobScheduleConfig{
 		Cancun: &params.BlobConfig{
+<<<<<<< HEAD:simulators/gnosis/engine/config/cancun/genesis.go
 			Target:         1,
 			Max:            2,
 			UpdateFraction: 1112826,
@@ -28,6 +29,13 @@ func ConfigGenesis(genesis *core.Genesis, forkTimestamp uint64) error {
 	}
 	minBlobGasPrice := MIN_DATA_GASPRICE
 	genesis.Config.MinBlobGasPrice = &minBlobGasPrice
+=======
+			Target:         3,
+			Max:            6,
+			UpdateFraction: 3338477,
+		},
+	}
+>>>>>>> upstream/master:simulators/ethereum/engine/config/cancun/genesis.go
 	if genesis.Timestamp >= forkTimestamp {
 		if genesis.BlobGasUsed == nil {
 			genesis.BlobGasUsed = new(uint64)

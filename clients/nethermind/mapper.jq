@@ -166,7 +166,7 @@ def infix_zeros_to_length(s;l):
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
-    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0xbabe2bed00000000000000000000000000000003"),
 
     # Osaka
     "eip7594TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
@@ -180,6 +180,7 @@ def infix_zeros_to_length(s;l):
     "eip7934MaxRlpBlockSize": "0x800000",
 
     # Amsterdam
+    "eip2780TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7708TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7778TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7843TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
@@ -187,8 +188,12 @@ def infix_zeros_to_length(s;l):
     "eip7954TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7976TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip7981TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip7997TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip8024TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
     "eip8037TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip8038TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip8246TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
+    "eip8282TransitionTimestamp": env.HIVE_AMSTERDAM_TIMESTAMP|to_hex,
 
     # Other chain parameters
     "networkID": env.HIVE_NETWORK_ID|to_hex,
