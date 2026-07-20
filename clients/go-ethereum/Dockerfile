@@ -1,5 +1,5 @@
 ARG baseimage=ghcr.io/gnosischain/geth
-ARG tag=latest
+ARG tag=v1.17.3-gc.1
 
 FROM $baseimage:$tag as builder
 
