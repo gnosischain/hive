@@ -161,6 +161,9 @@ func (g *generator) importChain(engine consensus.Engine, chain []*types.Block) (
 	if err != nil {
 		return nil, fmt.Errorf("can't create blockchain: %v", err)
 	}
+	if blockchain.GetHeader(chain[0].ParentHash(), 0) == nil {
+		return nil, fmt.Errorf("generated chain parent %s does not match import genesis %s", chain[0].ParentHash(), blockchain.Genesis().Hash())
+	}
 
 	// Process blocks.
 	i, err := blockchain.InsertChain(chain)

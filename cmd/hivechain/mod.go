@@ -69,12 +69,7 @@ func (ctx *genBlockContext) TxSenderAccount() *genAccount {
 
 // TxCreateIntrinsicGas gives the 'intrinsic gas' of a contract creation transaction.
 func (ctx *genBlockContext) TxCreateIntrinsicGas(data []byte) uint64 {
-	genesis := ctx.gen.genesis
-	isHomestead := genesis.Config.IsHomestead(ctx.block.Number())
-	isEIP2028 := genesis.Config.IsIstanbul(ctx.block.Number())
-	isEIP3860 := genesis.Config.IsShanghai(ctx.block.Number(), ctx.block.Timestamp())
-	isAmsterdam := genesis.Config.IsAmsterdam(ctx.block.Number(), ctx.block.Timestamp())
-	igas, err := core.IntrinsicGas(data, nil, nil, true, isHomestead, isEIP2028, isEIP3860, isAmsterdam)
+	igas, err := core.IntrinsicGas(data, nil, nil, true, ctx.Rules(), params.CostPerStateByte)
 	if err != nil {
 		panic(err)
 	}
@@ -108,6 +103,12 @@ func (ctx *genBlockContext) TxCount() int {
 // ChainConfig returns the chain config.
 func (ctx *genBlockContext) ChainConfig() *params.ChainConfig {
 	return ctx.gen.genesis.Config
+}
+
+// Rules returns the protocol rules active for the block being generated.
+func (ctx *genBlockContext) Rules() params.Rules {
+	isMerge := ctx.block.Difficulty().Sign() == 0
+	return ctx.ChainConfig().Rules(ctx.Number(), isMerge, ctx.Timestamp())
 }
 
 // ParentBlock returns the parent of the current block.
