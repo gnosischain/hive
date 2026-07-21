@@ -48,8 +48,8 @@ func TestGnosisExecutionAPIConfig(t *testing.T) {
 	genesis := cfg.createGenesis()
 	chaincfg := genesis.Config
 
-	if chaincfg.ChainID.Cmp(big.NewInt(100)) != 0 {
-		t.Fatalf("chain ID is %v, want 100", chaincfg.ChainID)
+	if chaincfg.ChainID.Cmp(big.NewInt(10209)) != 0 {
+		t.Fatalf("chain ID is %v, want 10209", chaincfg.ChainID)
 	}
 	if chaincfg.Aura == nil {
 		t.Fatal("AuRa configuration is missing")

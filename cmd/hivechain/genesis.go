@@ -109,7 +109,7 @@ func gnosisAuraConfig() *params.AuRaConfig {
 func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 	chaincfg := new(params.ChainConfig)
 
-	chainid, _ := new(big.Int).SetString("100", 10)
+	chainid, _ := new(big.Int).SetString("10209", 10)
 	chaincfg.ChainID = chainid
 
 	// Set consensus algorithm.
