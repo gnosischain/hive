@@ -99,7 +99,7 @@ def to_int:
     "bpo3Time": env.HIVE_BPO3_TIMESTAMP|to_int,
     "bpo4Time": env.HIVE_BPO4_TIMESTAMP|to_int,
     "bpo5Time": env.HIVE_BPO5_TIMESTAMP|to_int,
-    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0x00000000219ab540356cbb839cbe05303d7705fa"),
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0x00000000219ab540356cBB839Cbe05303d7705Fa"),
     "withdrawalRequestContractAddress": "0x00000961ef480eb55e80d19ad83579a64c007002",
     "consolidationRequestContractAddress": "0x0000bbddc7ce488642fb579f8b00f3a590007251",
     "builderDepositRequestContractAddress": "0x0000bff46984e3725691fa540a8c7589300d8282",
