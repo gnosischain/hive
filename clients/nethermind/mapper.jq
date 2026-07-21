@@ -32,14 +32,6 @@ def to_hex:
   end
 ;
 
-# Zero-pads hex string.
-def infix_zeros_to_length(s;l):
-  if . != null then
-    (.[0:s])+("0"*(l-(.|length)))+(.[s:l])
-  else .
-  end
-;
-
 {
   "version": "1",
   "engine": {
@@ -222,23 +214,12 @@ def infix_zeros_to_length(s;l):
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
-    "seal": (
-      if has("auraSeal") then
-        {
-          "authorityRound": {
-            "step": "0x0",
-            "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-          }
-        }
-      else
-        {
-          "ethereum": {
-            "nonce": .nonce|infix_zeros_to_length(2;18),
-            "mixHash": .mixHash
-          }
-        }
-      end
-    ),
+    "seal": {
+      "authorityRound": {
+        "step": "0x0",
+        "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
     "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
