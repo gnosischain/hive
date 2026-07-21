@@ -14,6 +14,9 @@ func (g *generator) writeForkEnv() error {
 	env["HIVE_CHAIN_ID"] = fmt.Sprint(cfg.ChainID)
 	env["HIVE_NETWORK_ID"] = fmt.Sprint(cfg.ChainID)
 
+	// system contracts
+	env["HIVE_DEPOSIT_CONTRACT_ADDRESS"] = cfg.DepositContractAddress.Hex()
+
 	// config consensus algorithm
 	if cfg.Clique != nil {
 		env["HIVE_CLIQUE_PERIOD"] = fmt.Sprint(cfg.Clique.Period)
@@ -47,6 +50,7 @@ func (g *generator) writeForkEnv() error {
 	setTime("HIVE_SHANGHAI_TIMESTAMP", cfg.ShanghaiTime)
 	setTime("HIVE_CANCUN_TIMESTAMP", cfg.CancunTime)
 	setTime("HIVE_PRAGUE_TIMESTAMP", cfg.PragueTime)
+	setTime("HIVE_OSAKA_TIMESTAMP", cfg.OsakaTime)
 
 	// blob schedule
 	if cfg.BlobScheduleConfig != nil {
@@ -59,6 +63,11 @@ func (g *generator) writeForkEnv() error {
 			env["HIVE_PRAGUE_BLOB_TARGET"] = fmt.Sprint(cfg.BlobScheduleConfig.Prague.Target)
 			env["HIVE_PRAGUE_BLOB_MAX"] = fmt.Sprint(cfg.BlobScheduleConfig.Prague.Max)
 			env["HIVE_PRAGUE_BLOB_BASE_FEE_UPDATE_FRACTION"] = fmt.Sprint(cfg.BlobScheduleConfig.Prague.UpdateFraction)
+		}
+		if cfg.BlobScheduleConfig.Osaka != nil {
+			env["HIVE_OSAKA_BLOB_TARGET"] = fmt.Sprint(cfg.BlobScheduleConfig.Osaka.Target)
+			env["HIVE_OSAKA_BLOB_MAX"] = fmt.Sprint(cfg.BlobScheduleConfig.Osaka.Max)
+			env["HIVE_OSAKA_BLOB_BASE_FEE_UPDATE_FRACTION"] = fmt.Sprint(cfg.BlobScheduleConfig.Osaka.UpdateFraction)
 		}
 	}
 

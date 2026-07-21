@@ -147,7 +147,9 @@ func (m *modInvokeEmit) apply(ctx *genBlockContext) bool {
 					StorageKeys: []common.Hash{{}, datahash},
 				},
 			},
-			BlobFeeCap: uint256.NewInt(params.GnosisBlobTxMinBlobGasprice),
+			// Leave headroom above the minimum because consecutive blob blocks
+			// increase Gnosis' blob base fee.
+			BlobFeeCap: uint256.NewInt(params.GnosisBlobTxMinBlobGasprice * 10),
 			BlobHashes: sidecar.BlobHashes(),
 			Sidecar:    sidecar,
 		}

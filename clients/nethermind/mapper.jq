@@ -32,14 +32,6 @@ def to_hex:
   end
 ;
 
-# Zero-pads hex string.
-def infix_zeros_to_length(s;l):
-  if . != null then
-    (.[0:s])+("0"*(l-(.|length)))+(.[s:l])
-  else .
-  end
-;
-
 {
   "version": "1",
   "engine": {
@@ -166,7 +158,7 @@ def infix_zeros_to_length(s;l):
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
-    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0xbabe2bed00000000000000000000000000000003"),
 
     # Osaka
     "eip7594TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
@@ -222,18 +214,12 @@ def infix_zeros_to_length(s;l):
     ] | map(select(. != null)) | reverse | unique_by(.timestamp)
   },
   "genesis": {
-    "seal": (
-      if (.difficulty // "0x0") | test("^0x0*$") then
-        null
-      else
-        {
-          "authorityRound": {
-            "step": "0x0",
-            "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
-          }
-        }
-      end
-    ),
+    "seal": {
+      "authorityRound": {
+        "step": "0x0",
+        "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      }
+    },
     "difficulty": .difficulty,
     "author": .coinbase,
     "timestamp": .timestamp,
