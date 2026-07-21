@@ -40,9 +40,8 @@ def infix_zeros_to_length(s;l):
   end
 ;
 
-{
-  "version": "1",
-  "engine": {
+def authorityRound_engine:
+  {
     "authorityRound": {
       "params": {
         "stepDuration": 5,
@@ -74,7 +73,42 @@ def infix_zeros_to_length(s;l):
         }
       }
     }
-  },
+  }
+;
+
+def ethash_engine:
+  {
+    "Ethash": {
+      "params": {
+        "minimumDifficulty": "0x20000",
+        "difficultyBoundDivisor": "0x800",
+        "durationLimit": "0x0d",
+        "homesteadTransition": env.HIVE_FORK_HOMESTEAD|to_hex,
+        "eip100bTransition": env.HIVE_FORK_BYZANTIUM|to_hex,
+        "daoHardforkTransition": env.HIVE_FORK_DAO_BLOCK|to_hex,
+        "daoHardforkBeneficiary": "0xbf4ed7b27f1d666546e30d74d50d173d20bca754",
+        "blockReward": {
+          "0x0": "0x4563918244F40000",
+          (env.HIVE_FORK_BYZANTIUM|to_hex//""): "0x29A2241AF62C0000",
+          (env.HIVE_FORK_CONSTANTINOPLE|to_hex//""): "0x1BC16D674EC80000"
+        },
+        "difficultyBombDelays": {
+          (env.HIVE_FORK_BYZANTIUM|to_hex//""): 3000000,
+          (env.HIVE_FORK_CONSTANTINOPLE|to_hex//""): 2000000,
+          (env.HIVE_FORK_MUIR_GLACIER|to_hex//""): 4000000,
+          (env.HIVE_FORK_LONDON|to_hex//""): 700000,
+          (env.HIVE_FORK_ARROW_GLACIER|to_hex//""): 1000000,
+          (env.HIVE_FORK_GRAY_GLACIER|to_hex//""): 700000
+        }
+      }
+    }
+  }
+;
+
+{
+  "version": "1",
+  # AuRa's step/signature header can't encode hivechain's plain nonce/mixHash genesis.
+  "engine": (if has("mixHash") then ethash_engine else authorityRound_engine end),
   "params": {
     "gasLimitBoundDivisor": "0x400",
     "minGasLimit": "0x1388",
