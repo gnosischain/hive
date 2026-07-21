@@ -28,6 +28,14 @@ def to_bool:
   end
 ;
 
+# Zero-pads hex string.
+def infix_zeros_to_length(s;l):
+  if . != null then
+    (.[0:s])+("0"*(l-(.|length)))+(.[s:l])
+  else .
+  end
+;
+
 # Rename uncleHash to ommersHash if it exists
 . | if has("uncleHash") then
   . + {"ommersHash": .uncleHash} | del(.uncleHash)
@@ -130,13 +138,18 @@ end |
   "difficulty": .difficulty,
   "gasLimit": .gasLimit,
   "seal": (
-    if (.difficulty // "0x0") | test("^0x0*$") then
-      null
-    else
+    if has("auraSeal") then
       {
         "authorityRound": {
           "step": "0x0",
           "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    else
+      {
+        "ethereum": {
+          "nonce": .nonce|infix_zeros_to_length(2;18),
+          "mixHash": .mixHash
         }
       }
     end

@@ -7,6 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
 
@@ -110,8 +111,7 @@ func (m *mod7702) authorizeCode(ctx *genBlockContext) error {
 		To:        common.Address{},
 		AuthList:  []types.SetCodeAuthorization{auth},
 	}
-	isAmsterdam := ctx.ChainConfig().IsAmsterdam(ctx.Number(), ctx.Timestamp())
-	gas, err := core.IntrinsicGas(txdata.Data, txdata.AccessList, txdata.AuthList, false, true, true, true, isAmsterdam)
+	gas, err := core.IntrinsicGas(txdata.Data, txdata.AccessList, txdata.AuthList, false, ctx.Rules(), params.CostPerStateByte)
 	if err != nil {
 		panic(err)
 	}
