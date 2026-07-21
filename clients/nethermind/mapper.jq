@@ -223,8 +223,13 @@ def infix_zeros_to_length(s;l):
   },
   "genesis": {
     "seal": (
-      if (.difficulty // "0x0") | test("^0x0*$") then
-        null
+      if has("mixHash") then
+        {
+          "ethereum": {
+            "nonce": .nonce|infix_zeros_to_length(2;18),
+            "mixHash": .mixHash
+          }
+        }
       else
         {
           "authorityRound": {
