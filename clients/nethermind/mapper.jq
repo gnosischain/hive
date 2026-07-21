@@ -166,7 +166,7 @@ def infix_zeros_to_length(s;l):
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
-    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0xbabe2bed00000000000000000000000000000003"),
 
     # Osaka
     "eip7594TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
@@ -223,13 +223,18 @@ def infix_zeros_to_length(s;l):
   },
   "genesis": {
     "seal": (
-      if (.difficulty // "0x0") | test("^0x0*$") then
-        null
-      else
+      if has("auraSeal") then
         {
           "authorityRound": {
             "step": "0x0",
             "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      else
+        {
+          "ethereum": {
+            "nonce": .nonce|infix_zeros_to_length(2;18),
+            "mixHash": .mixHash
           }
         }
       end
