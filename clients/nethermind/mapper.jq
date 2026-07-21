@@ -40,8 +40,9 @@ def infix_zeros_to_length(s;l):
   end
 ;
 
-def authorityRound_engine:
-  {
+{
+  "version": "1",
+  "engine": {
     "authorityRound": {
       "params": {
         "stepDuration": 5,
@@ -73,42 +74,7 @@ def authorityRound_engine:
         }
       }
     }
-  }
-;
-
-def ethash_engine:
-  {
-    "Ethash": {
-      "params": {
-        "minimumDifficulty": "0x20000",
-        "difficultyBoundDivisor": "0x800",
-        "durationLimit": "0x0d",
-        "homesteadTransition": env.HIVE_FORK_HOMESTEAD|to_hex,
-        "eip100bTransition": env.HIVE_FORK_BYZANTIUM|to_hex,
-        "daoHardforkTransition": env.HIVE_FORK_DAO_BLOCK|to_hex,
-        "daoHardforkBeneficiary": "0xbf4ed7b27f1d666546e30d74d50d173d20bca754",
-        "blockReward": {
-          "0x0": "0x4563918244F40000",
-          (env.HIVE_FORK_BYZANTIUM|to_hex//""): "0x29A2241AF62C0000",
-          (env.HIVE_FORK_CONSTANTINOPLE|to_hex//""): "0x1BC16D674EC80000"
-        },
-        "difficultyBombDelays": {
-          (env.HIVE_FORK_BYZANTIUM|to_hex//""): 3000000,
-          (env.HIVE_FORK_CONSTANTINOPLE|to_hex//""): 2000000,
-          (env.HIVE_FORK_MUIR_GLACIER|to_hex//""): 4000000,
-          (env.HIVE_FORK_LONDON|to_hex//""): 700000,
-          (env.HIVE_FORK_ARROW_GLACIER|to_hex//""): 1000000,
-          (env.HIVE_FORK_GRAY_GLACIER|to_hex//""): 700000
-        }
-      }
-    }
-  }
-;
-
-{
-  "version": "1",
-  # AuRa's step/signature header can't encode hivechain's plain nonce/mixHash genesis.
-  "engine": (if has("mixHash") then ethash_engine else authorityRound_engine end),
+  },
   "params": {
     "gasLimitBoundDivisor": "0x400",
     "minGasLimit": "0x1388",
@@ -200,7 +166,7 @@ def ethash_engine:
     "eip7702TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
     "eip7623TransitionTimestamp": env.HIVE_PRAGUE_TIMESTAMP|to_hex,
 
-    "depositContractAddress": "0xbabe2bed00000000000000000000000000000003",
+    "depositContractAddress": (env.HIVE_DEPOSIT_CONTRACT_ADDRESS // "0xbabe2bed00000000000000000000000000000003"),
 
     # Osaka
     "eip7594TransitionTimestamp": env.HIVE_OSAKA_TIMESTAMP|to_hex,
@@ -257,18 +223,18 @@ def ethash_engine:
   },
   "genesis": {
     "seal": (
-      if has("mixHash") then
-        {
-          "ethereum": {
-            "nonce": .nonce|infix_zeros_to_length(2;18),
-            "mixHash": .mixHash
-          }
-        }
-      else
+      if has("auraSeal") then
         {
           "authorityRound": {
             "step": "0x0",
             "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+          }
+        }
+      else
+        {
+          "ethereum": {
+            "nonce": .nonce|infix_zeros_to_length(2;18),
+            "mixHash": .mixHash
           }
         }
       end

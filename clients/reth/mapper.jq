@@ -138,18 +138,18 @@ end |
   "difficulty": .difficulty,
   "gasLimit": .gasLimit,
   "seal": (
-    if has("mixHash") then
-      {
-        "ethereum": {
-          "nonce": .nonce|infix_zeros_to_length(2;18),
-          "mixHash": .mixHash
-        }
-      }
-    else
+    if has("auraSeal") then
       {
         "authorityRound": {
           "step": "0x0",
           "signature": "0x0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+        }
+      }
+    else
+      {
+        "ethereum": {
+          "nonce": .nonce|infix_zeros_to_length(2;18),
+          "mixHash": .mixHash
         }
       }
     end
