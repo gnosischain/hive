@@ -2,5 +2,5 @@
   nametag: geth-from-git
   dockerfile: git
   build_args:
-    github: ethereum/go-ethereum             # default in Dockerfile.git
-    tag: aditya/remove-codeless-reward-skip  # branch/tag/commit
+    github: gnosischain/go-ethereum             # default in Dockerfile.git
+    tag: aditya/remove-codeless-reward-skip     # branch/tag/commit
