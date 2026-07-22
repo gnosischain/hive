@@ -1,6 +1,0 @@
-- client: nethermind
-  nametag: nethermind-from-git
-  dockerfile: git
-  build_args:
-    github: NethermindEth/nethermind     # default in Dockerfile.git
-    tag: fix/gnosis-hive-genesis-hash    # branch/tag/commit
