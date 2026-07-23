@@ -13,7 +13,10 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use alloy_primitives::B256;
 use hivesim::types::ClientDefinition;
-use hivesim::{types::TestResult, Client, Simulation, Test};
+use hivesim::{
+    types::{SuiteID, TestID, TestResult},
+    Client, Simulation, Test,
+};
 use reqwest::{header::ACCEPT, Client as HttpClient, Url};
 use serde::{de::DeserializeOwned, Deserialize};
 use tokio::time::{sleep, timeout};
@@ -37,6 +40,8 @@ pub(crate) const LEAN_HELPER_IDENTITY_PRIVATE_KEY_ENVIRONMENT_VARIABLE: &str =
 const LEAN_CLIENT_RUNTIME_ROLE_ENVIRONMENT_VARIABLE: &str = "HIVE_LEAN_CLIENT_RUNTIME_ROLE";
 const CLIENT_RUNTIME_ASSET_PREPARER: &str = "/app/hive/prepare_lean_client_assets.py";
 const LEAN_GENESIS_DELAY_SECS: u64 = 30;
+const TIMEOUT_ATTRIBUTION_CLIENT_START_TIMEOUT_SECS: u64 = 120;
+const TIMEOUT_ATTRIBUTION_CLIENT_STOP_TIMEOUT_SECS: u64 = 30;
 pub(crate) const DEVNET4_HELPER_GOSSIP_FORK_DIGEST: &str = "12345678";
 pub(crate) const HEALTHY_STATUS: &str = "healthy";
 pub(crate) const LEAN_RPC_SERVICE: &str = "lean-rpc-api";
@@ -60,6 +65,14 @@ impl LeanDevnet {
 
     pub(crate) fn uses_latest_leanspec_format(self) -> bool {
         matches!(self, Self::Devnet4 | Self::Devnet5)
+    }
+
+    /// Devnet5 replaced the per-attestation signature list on the signed-block
+    /// envelope with a single merged multi-message aggregate proof, matching
+    /// leanSpec's `SignedBlock { block, proof: MultiMessageAggregate }`.
+    /// Devnet4 still ships `SignedBlock { block, signature: BlockSignatures }`.
+    pub(crate) fn uses_merged_block_proof(self) -> bool {
+        matches!(self, Self::Devnet5)
     }
 }
 
@@ -537,6 +550,27 @@ pub(crate) async fn load_fork_choice_response(client: &Client) -> ForkChoiceResp
     get_json_with_retry(&http, &lean_api_url(client, "/lean/v0/fork_choice")).await
 }
 
+pub(crate) async fn try_load_fork_choice_response(
+    client: &Client,
+) -> Result<ForkChoiceResponse, String> {
+    let http = http_client();
+    let url = lean_api_url(client, "/lean/v0/fork_choice");
+    let response = http
+        .get(&url)
+        .send()
+        .await
+        .map_err(|err| format!("request to {url} failed: {err}"))?;
+    let status = response.status();
+    if !status.is_success() {
+        return Err(format!("received HTTP {status} from {url}"));
+    }
+
+    response
+        .json::<ForkChoiceResponse>()
+        .await
+        .map_err(|err| format!("Unable to decode response from {url}: {err}"))
+}
+
 pub(crate) fn expect_single_client(clients: Vec<Client>) -> Client {
     clients
         .into_iter()
@@ -579,50 +613,87 @@ fn annotate_failed_client(mut test_result: TestResult, client_name: &str) -> Tes
     test_result
 }
 
-pub(crate) async fn run_data_test<T: Send + 'static>(
-    host_test: &Test,
-    name: String,
-    description: String,
-    always_run: bool,
-    test_data: T,
-    func: AsyncLeanDataTestFunc<T>,
+async fn register_timeout_client_for_failed_setup(
+    simulation: Simulation,
+    suite_id: SuiteID,
+    test_id: TestID,
+    client_name: String,
 ) {
-    if host_test.plan_test(&name, always_run) {
-        return;
-    }
-
-    if let Some(test_match) = host_test.sim.test_matcher.clone() {
-        if !always_run && !test_match.match_test(&host_test.suite.name, &name) {
+    let environment = lean_environment();
+    let files = match prepare_client_runtime_files(&client_name, &environment) {
+        Ok(files) => files,
+        Err(err) => {
+            eprintln!(
+                "Unable to prepare runtime assets for timeout attribution client {client_name}: {err}"
+            );
             return;
         }
-    }
+    };
 
-    let test_id = host_test
-        .sim
-        .start_test(host_test.suite_id, name, description)
-        .await;
-    let suite_id = host_test.suite_id;
-    let suite = host_test.suite.clone();
-    let simulation = host_test.sim.clone();
-
-    let test_result = extract_data_test_result(
-        tokio::spawn(async move {
-            let test = &mut Test {
-                sim: simulation,
-                test_id,
-                suite,
+    let start_simulation = simulation.clone();
+    let start_client_name = client_name.clone();
+    let mut start_handle = tokio::spawn(async move {
+        start_simulation
+            .start_client_with_files(
                 suite_id,
-                result: Default::default(),
-            };
+                test_id,
+                start_client_name,
+                Some(environment),
+                Some(files),
+            )
+            .await
+    });
 
-            test.result.pass = true;
-            (func)(test, test_data).await;
-        })
-        .await,
-    );
+    let container = match timeout(
+        Duration::from_secs(TIMEOUT_ATTRIBUTION_CLIENT_START_TIMEOUT_SECS),
+        &mut start_handle,
+    )
+    .await
+    {
+        Ok(Ok((container, _ip))) => container,
+        Ok(Err(err)) => {
+            eprintln!("Timeout attribution client {client_name} startup failed: {err}");
+            return;
+        }
+        Err(_) => {
+            start_handle.abort();
+            start_handle.await.ok();
+            eprintln!(
+                "Timeout attribution client {client_name} startup exceeded {TIMEOUT_ATTRIBUTION_CLIENT_START_TIMEOUT_SECS} seconds"
+            );
+            return;
+        }
+    };
 
-    host_test.sim.end_test(suite_id, test_id, test_result).await;
-    host_test.sim.test_progress(&host_test.suite.name);
+    let stop_simulation = simulation.clone();
+    let stop_container = container.clone();
+    let mut stop_handle = tokio::spawn(async move {
+        stop_simulation
+            .stop_client(suite_id, test_id, &stop_container)
+            .await
+    });
+
+    match timeout(
+        Duration::from_secs(TIMEOUT_ATTRIBUTION_CLIENT_STOP_TIMEOUT_SECS),
+        &mut stop_handle,
+    )
+    .await
+    {
+        Ok(Ok(Ok(()))) => {}
+        Ok(Ok(Err(err))) => {
+            eprintln!("Unable to stop timeout attribution client {client_name}: {err}");
+        }
+        Ok(Err(err)) => {
+            eprintln!("Timeout attribution client {client_name} stop task failed: {err}");
+        }
+        Err(_) => {
+            stop_handle.abort();
+            stop_handle.await.ok();
+            eprintln!(
+                "Timeout attribution client {client_name} stop exceeded {TIMEOUT_ATTRIBUTION_CLIENT_STOP_TIMEOUT_SECS} seconds"
+            );
+        }
+    }
 }
 
 pub(crate) async fn run_data_test_with_timeout<T: Send + 'static>(
@@ -658,7 +729,7 @@ pub(crate) async fn run_data_test_with_timeout<T: Send + 'static>(
     let simulation = host_test.sim.clone();
 
     let mut join_handle = tokio::spawn(async move {
-        let test = &mut Test {
+        let mut test = Test {
             sim: simulation,
             test_id,
             suite,
@@ -667,7 +738,7 @@ pub(crate) async fn run_data_test_with_timeout<T: Send + 'static>(
         };
 
         test.result.pass = true;
-        (func)(test, test_data).await;
+        (func)(&mut test, test_data).await;
     });
 
     let test_result = match timeout(timeout_duration, &mut join_handle).await {
@@ -677,6 +748,13 @@ pub(crate) async fn run_data_test_with_timeout<T: Send + 'static>(
         Err(_) => {
             join_handle.abort();
             join_handle.await.ok();
+            register_timeout_client_for_failed_setup(
+                host_test.sim.clone(),
+                suite_id,
+                test_id,
+                client_name.clone(),
+            )
+            .await;
             TestResult {
                 pass: false,
                 details: format!(

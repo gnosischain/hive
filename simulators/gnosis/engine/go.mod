@@ -116,4 +116,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v1.17.3-gc
+replace github.com/ethereum/go-ethereum => github.com/gnosischain/go-ethereum v1.17.3-gc.1.0.20260706155812-67ca2a57b348
