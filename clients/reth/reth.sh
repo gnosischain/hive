@@ -153,7 +153,7 @@ if [ -n "${HIVE_CLIQUE_PRIVATEKEY}" ] || [ -n "${HIVE_CLIQUE_PERIOD}" ]; then
 fi
 
 # Configure RPC.
-FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.api=admin,debug,trace,eth,net,txpool,web3,testing"
+FLAGS="$FLAGS --http --http.addr=0.0.0.0 --http.api all"
 FLAGS="$FLAGS --ws --ws.addr=0.0.0.0 --ws.api=admin,debug,trace,eth,net,txpool,web3,testing"
 FLAGS="$FLAGS --rpc.compute-state-root-for-eth-simulate"
 
