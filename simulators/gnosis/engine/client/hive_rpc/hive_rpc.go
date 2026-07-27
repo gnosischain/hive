@@ -2,6 +2,7 @@ package hive_rpc
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/big"
 	"net"
@@ -248,12 +249,45 @@ func (ec *HiveRPCEngineClient) StorageAtKeys(ctx context.Context, account common
 }
 
 func (ec *HiveRPCEngineClient) HeaderByNumber(ctx context.Context, number *big.Int) (*types.Header, error) {
-	var header *types.Header
-	err := ec.cEth.CallContext(ctx, &header, "eth_getBlockByNumber", toBlockNumArg(number), false)
-	if err == nil && header == nil {
-		err = ethereum.NotFound
+	return ec.headerByBlockArg(ctx, "eth_getBlockByNumber", toBlockNumArg(number))
+}
+
+func (ec *HiveRPCEngineClient) headerByBlockArg(ctx context.Context, method string, arg interface{}) (*types.Header, error) {
+	var raw json.RawMessage
+	if err := ec.cEth.CallContext(ctx, &raw, method, arg, false); err != nil {
+		return nil, err
 	}
+	if len(raw) == 0 || string(raw) == "null" {
+		return nil, ethereum.NotFound
+	}
+	header, err := decodeHeader(raw)
 	return header, err
+}
+
+func decodeHeader(raw json.RawMessage) (*types.Header, error) {
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(raw, &fields); err != nil {
+		return nil, err
+	}
+	if step, ok := fields["step"]; ok {
+		var n uint64
+		if err := json.Unmarshal(step, &n); err == nil {
+			encoded, err := json.Marshal(hexutil.EncodeUint64(n))
+			if err != nil {
+				return nil, err
+			}
+			fields["step"] = encoded
+			raw, err = json.Marshal(fields)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
+	var header types.Header
+	if err := json.Unmarshal(raw, &header); err != nil {
+		return nil, err
+	}
+	return &header, nil
 }
 
 func (ec *HiveRPCEngineClient) Close() error {

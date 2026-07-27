@@ -14,7 +14,7 @@ from lean_spec_runtime import (
     ATTESTATION_SECRET_FIELD,
     PROPOSAL_SECRET_FIELD,
     ValidatorIndex,
-    api_server_supports_signed_block_getter,
+    build_api_server,
     build_helper_bootnode_enr,
     build_node_config,
     cache_signed_block,
@@ -25,12 +25,10 @@ from lean_spec_runtime import (
     helper_genesis_metadata,
     identity_keypair_from_private_key_hex,
     install_fast_ssz_deserialization,
-    install_legacy_signed_block_wire_compatibility,
     install_low_s_identity_signature_compatibility,
     install_setup_prover_compatibility,
     install_snappy_compress_fallback,
     keep_status_current,
-    legacy_signed_block_compatibility_enabled,
     load_genesis,
     load_validator,
     load_validator_registry_from_manifest,
@@ -43,16 +41,26 @@ from lean_spec_runtime import (
     start_metadata_server,
     subscribe_gossip_topics,
     uses_latest_leanspec_format,
-    wire_compat_mode,
 )
 
-from lean_spec.subspecs.api import ApiServer, ApiServerConfig
-from lean_spec.subspecs.metrics import registry as metrics
-from lean_spec.subspecs.networking.client import LiveNetworkEventSource
-from lean_spec.subspecs.networking.transport.quic.connection import QuicConnectionManager
-from lean_spec.subspecs.node import Node, NodeConfig
-from lean_spec.subspecs.validator import ValidatorRegistry
-from lean_spec.types import Bytes32
+try:
+    from lean_spec.node.api import ApiServer, ApiServerConfig
+    from lean_spec.node.metrics import registry as metrics
+    from lean_spec.node.networking.client import LiveNetworkEventSource
+    from lean_spec.node.networking.transport.quic.connection import QuicConnectionManager
+    from lean_spec.node.node import Node, NodeConfig
+    from lean_spec.node.validator import ValidatorRegistry
+    from lean_spec.spec.ssz import Bytes32
+except (ImportError, ModuleNotFoundError):
+    from lean_spec.subspecs.api import ApiServer, ApiServerConfig
+    from lean_spec.subspecs.metrics import registry as metrics
+    from lean_spec.subspecs.networking.client import LiveNetworkEventSource
+    from lean_spec.subspecs.networking.transport.quic.connection import (
+        QuicConnectionManager,
+    )
+    from lean_spec.subspecs.node import Node, NodeConfig
+    from lean_spec.subspecs.validator import ValidatorRegistry
+    from lean_spec.types import Bytes32
 
 GOSSIP_FORK_DIGEST: Final = "devnet0"
 LISTEN_ADDR: Final = "/ip4/0.0.0.0/udp/9001/quic-v1"
@@ -120,9 +128,6 @@ async def run() -> None:
     install_snappy_compress_fallback()
     install_fast_ssz_deserialization()
     install_setup_prover_compatibility()
-    logger.info("LeanSpec wire compatibility mode: %s", wire_compat_mode())
-    if legacy_signed_block_compatibility_enabled():
-        install_legacy_signed_block_wire_compatibility()
     metrics.init(name="lean-spec-client", version="0.0.1")
 
     node_id = os.environ.get("HIVE_NODE_ID", DEFAULT_NODE_ID)
@@ -216,9 +221,11 @@ async def run() -> None:
         store = node.sync_service.store
         return store.blocks[store.head].slot
 
-    if api_server_supports_signed_block_getter(ApiServer):
-        api_server_kwargs["signed_block_getter"] = lambda root: published_blocks.get(root)
-    api_server = ApiServer(**api_server_kwargs)
+    api_server = build_api_server(
+        ApiServer,
+        api_server_kwargs,
+        lookup_published_block,
+    )
 
     event_source.set_block_lookup(lookup_published_block)
     event_source.set_block_by_slot_lookup(lookup_published_block_by_slot_async)

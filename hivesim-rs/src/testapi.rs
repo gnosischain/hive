@@ -212,32 +212,6 @@ impl Client {
     }
 }
 
-impl Client {
-    /// Stops the client container.
-    pub async fn stop(&self) -> Result<(), String> {
-        self.test
-            .sim
-            .stop_client(self.test.suite_id, self.test.test_id, &self.container)
-            .await
-    }
-
-    /// Pauses the client container.
-    pub async fn pause(&self) -> Result<(), String> {
-        self.test
-            .sim
-            .pause_client(self.test.suite_id, self.test.test_id, &self.container)
-            .await
-    }
-
-    /// Unpauses the client container.
-    pub async fn unpause(&self) -> Result<(), String> {
-        self.test
-            .sim
-            .unpause_client(self.test.suite_id, self.test.test_id, &self.container)
-            .await
-    }
-}
-
 #[derive(Clone)]
 pub struct TestSpec {
     // These fields are displayed in the UI. Be sure to add
@@ -627,6 +601,21 @@ impl Drop for OwnerGuard {
     }
 }
 
+fn join_error_to_string(err: tokio::task::JoinError) -> String {
+    if !err.is_panic() {
+        return err.to_string();
+    }
+
+    let payload = err.into_panic();
+    if let Some(message) = payload.downcast_ref::<&'static str>() {
+        message.to_string()
+    } else if let Some(message) = payload.downcast_ref::<String>() {
+        message.clone()
+    } else {
+        format!("?{payload:?}")
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 async fn run_shared_client_test<T: Clone + Send + Sync + 'static>(
     host: Simulation,
@@ -642,32 +631,93 @@ async fn run_shared_client_test<T: Clone + Send + Sync + 'static>(
 ) {
     // The owner test keeps the shared container alive across scenarios.
     let owner_test_id = host.start_test(suite_id, owner_name, owner_desc).await;
-
-    let (container_id, ip) = host
-        .start_client_with_files(
-            suite_id,
-            owner_test_id,
-            client_def.name.clone(),
-            environment,
-            files,
-        )
-        .await;
-
     let mut guard = OwnerGuard::new(host.clone(), suite_id, owner_test_id);
     guard.arm();
 
+    let mut scenarios_filtered: usize = 0;
+    let scenarios = scenarios
+        .into_iter()
+        .filter(|scenario| {
+            if let Some(test_match) = host.test_matcher.clone() {
+                if !scenario.always_run && !test_match.match_test(&suite.name, &scenario.name) {
+                    scenarios_filtered += 1;
+                    return false;
+                }
+            }
+            true
+        })
+        .collect::<Vec<_>>();
+
+    let host_for_start = host.clone();
+    let client_name_for_start = client_def.name.clone();
+    let start_result = tokio::spawn(async move {
+        host_for_start
+            .start_client_with_files(
+                suite_id,
+                owner_test_id,
+                client_name_for_start,
+                environment,
+                files,
+            )
+            .await
+    })
+    .await;
+
+    let (container_id, ip) = match start_result {
+        Ok(client) => client,
+        Err(err) => {
+            let startup_error = join_error_to_string(err);
+            let owner_details = format!(
+                "shared-client lifecycle owner failed to start client {}: {}",
+                client_def.name, startup_error
+            );
+            let mut scenarios_run = 0usize;
+
+            for scenario in scenarios {
+                let scenario_test_id = host
+                    .start_test(
+                        suite_id,
+                        scenario.name.clone(),
+                        scenario.description.clone(),
+                    )
+                    .await;
+                host.end_test(
+                    suite_id,
+                    scenario_test_id,
+                    TestResult {
+                        pass: false,
+                        details: format!(
+                            "shared-client owner failed to start client {}; skipping scenario. Cause: {}",
+                            client_def.name, startup_error
+                        ),
+                    },
+                )
+                .await;
+                host.test_progress(&suite.name);
+                scenarios_run += 1;
+            }
+
+            host.end_test(
+                suite_id,
+                owner_test_id,
+                TestResult {
+                    pass: false,
+                    details: format!(
+                        "{owner_details}; 0/{scenarios_run} scenario(s) passed ({scenarios_filtered} filtered)"
+                    ),
+                },
+            )
+            .await;
+            host.test_progress(&suite.name);
+            guard.disarm();
+            return;
+        }
+    };
+
     let mut scenarios_run: usize = 0;
     let mut scenarios_passed: usize = 0;
-    let mut scenarios_filtered: usize = 0;
 
     for scenario in scenarios {
-        if let Some(test_match) = host.test_matcher.clone() {
-            if !scenario.always_run && !test_match.match_test(&suite.name, &scenario.name) {
-                scenarios_filtered += 1;
-                continue;
-            }
-        }
-
         let scenario_test_id = host
             .start_test(
                 suite_id,
@@ -750,6 +800,14 @@ async fn run_shared_client_test<T: Clone + Send + Sync + 'static>(
 }
 
 pub async fn run_suite(host: Simulation, suites: Vec<Suite>) {
+    run_suite_with_plan_metadata(host, suites, serde_json::json!({})).await;
+}
+
+pub async fn run_suite_with_plan_metadata(
+    host: Simulation,
+    suites: Vec<Suite>,
+    plan_metadata: serde_json::Value,
+) {
     let suites = suites
         .into_iter()
         .filter(|suite| {
@@ -767,10 +825,13 @@ pub async fn run_suite(host: Simulation, suites: Vec<Suite>) {
         }
         suite_plan.push(serde_json::json!({ "name": suite.name.as_str(), "tests": tests }));
     }
-    println!(
-        "HIVE_SUITE_PLAN {}",
-        serde_json::json!({ "suites": suite_plan })
-    );
+    let mut plan = serde_json::json!({ "suites": suite_plan });
+    if let (Some(plan), Some(metadata)) = (plan.as_object_mut(), plan_metadata.as_object()) {
+        for (key, value) in metadata {
+            plan.insert(key.clone(), value.clone());
+        }
+    }
+    println!("HIVE_SUITE_PLAN {}", plan);
     let heartbeat = tokio::spawn(async {
         loop {
             println!("HIVE_RUN_HEARTBEAT {}", serde_json::json!({}));
