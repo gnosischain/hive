@@ -47,8 +47,11 @@
 # Immediately abort the script on any error encountered
 set -e
 
-JWT_SECRET="0x7365637265747365637265747365637265747365637265747365637265747365"
-echo -n $JWT_SECRET > /jwt.secret
+# Generate JWT file if necessary
+if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
+    JWT_SECRET="0x7365637265747365637265747365637265747365637265747365637265747365"
+    echo -n $JWT_SECRET > /jwt.secret
+fi
 
 # Generate a Geth-style genesis file.
 mv /genesis.json /genesis-input.json
