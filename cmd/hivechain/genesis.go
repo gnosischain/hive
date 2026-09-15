@@ -294,11 +294,20 @@ func addModContracts(ga types.GenesisAlloc) {
 	}
 	ga[common.HexToAddress(calltreeAddr)] = types.Account{
 		Code:    calltreeCode,
-		Balance: big.NewInt(1000000000),
+		Balance: big.NewInt(1000000000), // need balance to forward
 	}
-	ga[common.HexToAddress(calltreeCallmeAddr)] = types.Account{Code: callmeCode, Balance: new(big.Int)}
-	ga[common.HexToAddress(calltreeCallenvAddr)] = types.Account{Code: callenvCode, Balance: new(big.Int)}
-	ga[common.HexToAddress(calltreeCallrevertAddr)] = types.Account{Code: callrevertCode, Balance: new(big.Int)}
+	ga[common.HexToAddress(calltreeCallmeAddr)] = types.Account{
+		Code:    callmeCode,
+		Balance: new(big.Int),
+	}
+	ga[common.HexToAddress(calltreeCallenvAddr)] = types.Account{
+		Code:    callenvCode,
+		Balance: new(big.Int),
+	}
+	ga[common.HexToAddress(calltreeCallrevertAddr)] = types.Account{
+		Code:    callrevertCode,
+		Balance: new(big.Int),
+	}
 }
 
 // addGnosisSystemContracts adds the system contracts used by Gnosis.
