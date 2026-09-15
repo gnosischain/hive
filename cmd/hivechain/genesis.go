@@ -48,8 +48,7 @@ var (
 		"cancun",
 		"prague",
 		"osaka",
-		"bpo1",
-		"bpo2",
+		"amsterdam",
 	}
 )
 
@@ -174,7 +173,8 @@ func (cfg *generatorConfig) createChainConfig() *params.ChainConfig {
 			chaincfg.BlobScheduleConfig.Prague = gnosisBlobConfig
 		case "osaka":
 			chaincfg.OsakaTime = &timestamp
-			chaincfg.BlobScheduleConfig.Osaka = gnosisBlobConfig
+		case "amsterdam":
+			chaincfg.AmsterdamTime = &timestamp
 		default:
 			panic(fmt.Sprintf("unknown fork name %q", fork))
 		}
@@ -224,6 +224,7 @@ func (cfg *generatorConfig) createGenesis() *core.Genesis {
 	}
 	addCancunSystemContracts(g.Alloc)
 	addPragueSystemContracts(g.Alloc)
+	addAmsterdamSystemContracts(g.Alloc)
 	addSnapTestContract(g.Alloc)
 	addModContracts(g.Alloc)
 	addGnosisSystemContracts(g.Alloc)
@@ -244,6 +245,16 @@ func addPragueSystemContracts(ga types.GenesisAlloc) {
 	ga[params.ConsolidationQueueAddress] = types.Account{Balance: big.NewInt(1), Code: params.ConsolidationQueueCode}
 }
 
+func addAmsterdamSystemContracts(ga types.GenesisAlloc) {
+	ga[params.BuilderDepositAddress] = types.Account{Balance: big.NewInt(1), Code: params.BuilderDepositCode}
+	ga[params.BuilderExitAddress] = types.Account{Balance: big.NewInt(1), Code: params.BuilderExitCode}
+	ga[params.DeterministicFactoryAddress] = types.Account{
+		Balance: new(big.Int),
+		Nonce:   1,
+		Code:    params.DeterministicFactoryCode,
+	}
+}
+
 func addSnapTestContract(ga types.GenesisAlloc) {
 	addr := common.HexToAddress("0x8bebc8ba651aee624937e7d897853ac30c95a067")
 	h := common.HexToHash
@@ -261,6 +272,14 @@ func addSnapTestContract(ga types.GenesisAlloc) {
 const (
 	emitAddr      = "0x7dcd17433742f4c0ca53122ab541d0ba67fc27df"
 	largeLogsAddr = "0x8dcd17433742f4c0ca53122ab541d0ba67fc27ff"
+
+	// The callees are predeployed, rather than reusing the deploy mod instances,
+	// because the tracetest mod needs to create a tx calling the calltree
+	// contract and does not have access to the deploy mod tx info.
+	calltreeAddr           = "0x9dcd17433742f4c0ca53122ab541d0ba67fc27d0"
+	calltreeCallmeAddr     = "0x9dcd17433742f4c0ca53122ab541d0ba67fc27d1"
+	calltreeCallenvAddr    = "0x9dcd17433742f4c0ca53122ab541d0ba67fc27d2"
+	calltreeCallrevertAddr = "0x9dcd17433742f4c0ca53122ab541d0ba67fc27d3"
 )
 
 // addModContracts adds the contracts used by block modifiers.
@@ -273,6 +292,13 @@ func addModContracts(ga types.GenesisAlloc) {
 		Code:    modLargeReceiptCode,
 		Balance: new(big.Int),
 	}
+	ga[common.HexToAddress(calltreeAddr)] = types.Account{
+		Code:    calltreeCode,
+		Balance: big.NewInt(1000000000),
+	}
+	ga[common.HexToAddress(calltreeCallmeAddr)] = types.Account{Code: callmeCode, Balance: new(big.Int)}
+	ga[common.HexToAddress(calltreeCallenvAddr)] = types.Account{Code: callenvCode, Balance: new(big.Int)}
+	ga[common.HexToAddress(calltreeCallrevertAddr)] = types.Account{Code: callrevertCode, Balance: new(big.Int)}
 }
 
 // addGnosisSystemContracts adds the system contracts used by Gnosis.

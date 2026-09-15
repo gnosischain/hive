@@ -9,6 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/params"
+	"github.com/holiman/uint256"
 )
 
 type blockModifier interface {
@@ -69,11 +70,12 @@ func (ctx *genBlockContext) TxSenderAccount() *genAccount {
 
 // TxCreateIntrinsicGas gives the 'intrinsic gas' of a contract creation transaction.
 func (ctx *genBlockContext) TxCreateIntrinsicGas(data []byte) uint64 {
-	igas, err := core.IntrinsicGas(data, nil, nil, true, ctx.Rules(), params.CostPerStateByte)
+	rules := ctx.ChainConfig().Rules(ctx.Number(), true, ctx.Timestamp())
+	igas, err := core.IntrinsicGas(data, nil, nil, ctx.TxSenderAccount().addr, nil, uint256.NewInt(0), rules)
 	if err != nil {
 		panic(err)
 	}
-	return igas.Sum()
+	return igas
 }
 
 // TxGasFeeCap returns the minimum gasprice that should be used for transactions.
