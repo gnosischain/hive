@@ -142,7 +142,7 @@ jobs:
 
       - name: Send file over SSH
         if: always()
-        uses: appleboy/scp-action@1.2.5
+        uses: appleboy/scp-action@v1.2.4
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USERNAME }}
