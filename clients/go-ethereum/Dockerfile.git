@@ -1,8 +1,8 @@
 ## Pulls geth from a git repository and builds it from source.
 
-FROM golang:1.24-alpine as builder
+FROM golang:1.25-alpine as builder
 ARG github=gnosischain/go-ethereum
-ARG tag=release-1.17.4-gc
+ARG tag=release-1.17.5-gc
 ARG GOPROXY
 
 ENV GOPROXY=${GOPROXY}

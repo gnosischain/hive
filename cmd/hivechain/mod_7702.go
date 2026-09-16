@@ -7,7 +7,6 @@ import (
 	"github.com/ethereum/go-ethereum/core"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
-	"github.com/ethereum/go-ethereum/params"
 	"github.com/holiman/uint256"
 )
 
@@ -111,12 +110,20 @@ func (m *mod7702) authorizeCode(ctx *genBlockContext) error {
 		To:        common.Address{},
 		AuthList:  []types.SetCodeAuthorization{auth},
 	}
-	gas, err := core.IntrinsicGas(txdata.Data, txdata.AccessList, txdata.AuthList, false, ctx.Rules(), params.CostPerStateByte)
+	gas, err := core.IntrinsicGas(
+		txdata.Data,
+		txdata.AccessList,
+		txdata.AuthList,
+		sender.addr,
+		&txdata.To,
+		uint256.NewInt(0),
+		ctx.ChainConfig().Rules(ctx.Number(), true, ctx.Timestamp()),
+	)
 	if err != nil {
 		panic(err)
 	}
-	txdata.Gas = gas.Sum()
-	if !ctx.HasGas(gas.Sum()) {
+	txdata.Gas = gas
+	if !ctx.HasGas(gas) {
 		return fmt.Errorf("not enough gas to authorize")
 	}
 	tx := ctx.AddNewTx(sender, txdata)

@@ -53,6 +53,7 @@ func (g *generator) writeForkEnv() error {
 	setTime("HIVE_CANCUN_TIMESTAMP", cfg.CancunTime)
 	setTime("HIVE_PRAGUE_TIMESTAMP", cfg.PragueTime)
 	setTime("HIVE_OSAKA_TIMESTAMP", cfg.OsakaTime)
+	setTime("HIVE_AMSTERDAM_TIMESTAMP", cfg.AmsterdamTime)
 
 	// blob schedule
 	setBlobConfig := func(fork string, bc *params.BlobConfig) {
@@ -65,7 +66,9 @@ func (g *generator) writeForkEnv() error {
 	if cfg.BlobScheduleConfig != nil {
 		setBlobConfig("CANCUN", cfg.BlobScheduleConfig.Cancun)
 		setBlobConfig("PRAGUE", cfg.BlobScheduleConfig.Prague)
-		setBlobConfig("OSAKA", cfg.BlobScheduleConfig.Osaka)
+		// Keep exporting the Osaka aliases for client mappers
+		// which still model Osaka explicitly.
+		setBlobConfig("OSAKA", cfg.BlobScheduleConfig.Prague)
 	}
 
 	return g.writeJSON("forkenv.json", env)

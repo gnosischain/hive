@@ -122,6 +122,9 @@ fi
 if [ "$HIVE_MINER_EXTRA" != "" ]; then
     FLAGS="$FLAGS --miner-extra-data=$HIVE_MINER_EXTRA"
 fi
+if [ "$HIVE_TARGET_GAS_LIMIT" != "" ]; then
+    FLAGS="$FLAGS --target-gas-limit=$HIVE_TARGET_GAS_LIMIT"
+fi
 FLAGS="$FLAGS --min-gas-price=1 --tx-pool-price-bump=0 --rpc-gas-cap=50000000"
 
 # Configure peer-to-peer networking.
@@ -168,11 +171,6 @@ RPCFLAGS="$RPCFLAGS --rpc-ws-enabled --rpc-ws-api=DEBUG,TRACE,ETH,NET,TXPOOL,WEB
 if [ "$HIVE_TERMINAL_TOTAL_DIFFICULTY" != "" ]; then
     echo "0x7365637265747365637265747365637265747365637265747365637265747365" > /jwtsecret
     RPCFLAGS="$RPCFLAGS --engine-host-allowlist=* --engine-jwt-secret /jwtsecret"
-fi
-
-# Enable discv5 if requested by the test suite.
-if [ "$HIVE_DISCV5" != "" ]; then
-    FLAGS="$FLAGS --Xv5-discovery-enabled"
 fi
 
 # Disable parallel transaction processing
